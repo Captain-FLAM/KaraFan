@@ -1,3 +1,4 @@
-Config.ini
 __pycache__
+/Config.ini
+/.vscode/
 /models/

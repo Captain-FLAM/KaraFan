@@ -41,9 +41,9 @@ Perhaps it's time to turn on your dreams too ... ?
 
 # 🧒 BIOGRAPHY
 
-Programmer since the age of 12 (1981).
-Before, I developed in ASM, C, C++, Basic, Visual Basic.
-Since the year 2000, I have been coding in PHP, MySQL, JavaScript, jQuery, HTML, CSS.
+Programmer since the age of 12 (1981).  
+Before, I developed in ASM, C, C++, Basic, Visual Basic.  
+Since the year 2000, I have been coding in PHP, MySQL, JavaScript, jQuery, HTML, CSS.  
 And today in Python. ❤️
 
 # 📆 HISTORY
@@ -69,7 +69,7 @@ I develop this project with and it works on :
 
 Go there :
 
-and copy this Colab notebook on your Google Drive.
+and copy this Colab notebook on your Google Drive.  
 Then open it with Google Colab.
 
 **IMPORTANT** :
@@ -229,14 +229,14 @@ Downside is first, the doubled separation time because of the 2 passes, and that
 
 All these wonderful people who have indirectly contributed to the realization of this project :
 
-✔️ [Jarredou]()
-✔️ [deton24]()
-✔️ [MVSep.com]()
+✔️ [Jarredou]()  
+✔️ [deton24]()  
+✔️ [MVSep.com]()  
 
-✔️ [Kuielab]()
-✔️ [Anjok07]()
-✔️ [Kimberley Jensen]()
-✔️ [Facebook Research]()
+✔️ [Kuielab]()  
+✔️ [Anjok07]()  
+✔️ [Kimberley Jensen]()  
+✔️ [Facebook Research]()  
 
 We are all standing on the shoulders of giants !
 .
@@ -275,6 +275,7 @@ Stupid ideas given by Copilot : (I'm not responsible for this !) 😆
 - [ ] Add a « Remix » mode (with a different mix)
 
 ..., and now, my brain is overheating ! 😵
+
 - [ ] Add more Models (but always with fine-tuned volume compensation !)
 - [ ] Separate Choirs from Vocals (very hard challenge !)
 - [ ] etc ...

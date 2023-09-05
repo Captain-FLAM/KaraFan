@@ -379,8 +379,8 @@ class MusicSeparationModel:
 				sample_width = 2  # sample width (in bytes)
 			)
 
-			# audio_segment.export(audio_mp3, format='mp3', bitrate='192k', codec='libshine')
-			audio_segment.export(audio_mp3, format='mp3', bitrate='192k', codec='libmp3lame')
+			# audio_segment.export(audio_mp3, format='mp3', bitrate='192k', codec='libmp3lame')
+			audio_segment.export(audio_mp3, format='mp3', bitrate='192k', codec='libshine')
 			# audio_mp3.seek(0)
 
 			display(HTML(
@@ -928,7 +928,7 @@ if __name__ == '__main__':
 	m = argparse.ArgumentParser()
 	m.add_argument('--input', nargs='+', type=str, help='Input audio file or location. You can provide multiple files at once', required=True)
 	m.add_argument('--use_config', action='store_true', help='Use "Config_PC.ini" instead of specifying all options in command line.', default=False)
-	m.add_argument('--output_format', type=str, help='Output audio format : "FLAC" (24 bits), "MP3" (VBR 220-260 kbps), "PCM_16" or "FLOAT" (WAV - PCM 16 bits / FLOAT 32 bits).', default='FLAC')
+	m.add_argument('--output_format', type=str, help='Output audio format : "FLAC" (24 bits), "MP3" (CBR 320 kbps), "PCM_16" or "FLOAT" (WAV - PCM 16 bits / FLOAT 32 bits).', default='FLAC')
 	m.add_argument('--preset_genre', type=str, help='Genre of music to automatically select the best A.I models', default='Pop Rock')
 	m.add_argument('--bigshifts_MDX', type=int, help='Managing MDX "BigShifts" trick value.', required=False, default=12)
 	m.add_argument('--overlap_MDX', type=float, help='Overlap of splited audio for heavy models. Closer to 1.0 - slower', required=False, default=0.0)

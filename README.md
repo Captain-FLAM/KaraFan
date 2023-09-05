@@ -1,7 +1,7 @@
 # 🎵 KaraFan  [![](https://img.shields.io/github/stars/Captain-FLAM/KaraFan?color=ff0080&style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/stargazers) [![](https://img.shields.io/github/license/Captain-FLAM/KaraFan?style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/blob/master/LICENSE)
 
 <div style="float:right">
-[![KaraFan](images/KaraFan_mini.png)](images/KaraFan.png)
+<img src="https://github.com/Captain-FLAM/KaraFan/blob/master/images/KaraFan_mini.png" alt="KaraFan"/>
 </div>
 
 The BEST music separation model with help of **A.I** ... to my ears ! 👂👂
@@ -12,9 +12,9 @@ This project is open to all goodwill.
 
 If you want to encourage me to give more time to improve this project, you can make a donation or become one of my patrons :
 
-* [![Patreon](https://img.shields.io/badge/Donate-Patreon-red.svg)](https://www.patreon.com/Captain_FLAM)
+* [![Patreon](https://img.shields.io/badge/Donat-Patreon-red.svg)](https://www.patreon.com/Captain_FLAM)
 
-Soon ...
+Coming Soon ...
 * ![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg)
 * ![Beer](https://img.shields.io/badge/Donate-Buy%20me%20a%20beer-yellow.svg)
 

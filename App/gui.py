@@ -48,7 +48,7 @@ def Run(Gdrive, isColab):
 #HELP > div { margin: 5px 10px }\
 .console { font: normal '+ font +' monospace; line-height: 1.6 }\
 .player { margin-bottom: 5px }\
-.player > div { min-width: 180px; display: inline-block; font: normal '+ font +' monospace }\
+.player > div { min-width: 200px; display: inline-block; font: normal '+ font +' monospace }\
 .player > audio { vertical-align: middle }\
 </style>'
 	))
@@ -73,7 +73,7 @@ def Run(Gdrive, isColab):
 	output_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path : ALL audio files inside this folder will be separated by a Batch processing.</div>')
 	Btn_Create_input  = widgets.Button(description='➕', tooltip="Create the input folder",  button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
 	# PROCESS
-	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - VBR 220~260 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'150px'}, style=font_input)
+	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'150px'}, style=font_input)
 	preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
 	preset_models	= widgets.HTML('<div style="font-size: '+ font_small + '; margin-left: 12px">♒ Vocals : « Kim Vocal 2 », Instrum : « Inst HQ 3 »</div>')
 	# OPTIONS

@@ -8,16 +8,16 @@ import os, sys, re, glob, json, subprocess
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
-def Run(Gdrive, isColab):
+def Run(Gdrive, isColab, Fresh_install):
 
 	# 1st : Install all required packages
 	import App.setup
-	Version = App.setup.Install(Gdrive, isColab)
+	Version = App.setup.Install(Gdrive, isColab, Fresh_install)
 
 	import App.settings, App.inference
 
-	width  = '650px'
-	height = '600px'
+	width  = '670px'
+	height = '650px'
 
 	# Set the font size when running on your PC
 	font = '14px'
@@ -33,9 +33,9 @@ def Run(Gdrive, isColab):
 	max_width = str(int(width.replace('px','')) - 18) + 'px'  # = border + Left and Right "panel_layout" padding
 	console_max_height = str(int(height.replace('px','')) - 18) + 'px'
 
+	# This CSS is the style for HTML elements for BOTH : PC and Colab
 	# BUG on Colab: "style={'font_size':'16px'}" as widgets param doesn't work !!
 	# I've fixed it with this Trick --> #output_body > element { font-size: 16px; }
-	# ... Add also style for HTML elements for both PC and Colab
 	display(HTML(
 '<style>\
 #output-body input, #output-body button, #output-body select, #output-body select > option, #output-body .widget-readout { font-size: '+ font +' }\
@@ -43,7 +43,7 @@ def Run(Gdrive, isColab):
 #output-body .progress-bar-success, .progress-bar-success { background-color: lightblue}\
 .option-label { font-size: '+ font +'; width: 135px }\
 .path-info { font-size: '+ font +'; font-weight: bold }\
-.path-warning { font-size: '+ font_small +'; font-style: italic; color: #c00000; margin: -3px 0 10px 0; display: none }\
+.path-warning { font-size: '+ font_small +'; font-style: italic; color: #c00000; margin: -3px 0 5px 0 }\
 #HELP { font-size: '+ font +'; background-color: #ffffd2; border: solid 1px #333; width: 100%; height: 63px; line-height: 1.2 }\
 #HELP > div { margin: 5px 10px }\
 .console { font: normal '+ font +' monospace; line-height: 1.6 }\
@@ -69,9 +69,11 @@ def Run(Gdrive, isColab):
 	separator = widgets.HTML('<div style="border-bottom: dashed 1px #000; margin: 5px 0 5px 0; width: 100%">')
 	# PATHS
 	input_path		= widgets.Text(config['PATHS']['input'], continuous_update=True, style=font_input)
+	input_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path : ALL audio files inside this folder will be separated by a Batch processing.</div>')
+	output_path		= widgets.Text(config['PATHS']['output'], continuous_update=True, style=font_input)
 	output_info		= widgets.HTML()
-	output_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path : ALL audio files inside this folder will be separated by a Batch processing.</div>')
 	Btn_Create_input  = widgets.Button(description='➕', tooltip="Create the input folder",  button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
+	Btn_Create_output = widgets.Button(description='➕', tooltip="Create the output folder",  button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
 	# PROCESS
 	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'150px'}, style=font_input)
 	preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
@@ -92,7 +94,7 @@ def Run(Gdrive, isColab):
 	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'15px 0 15px 0'})
 
 	# TAB 2
-	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'hidden scroll'})
+	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'auto scroll'})
 	
 	# TAB 3
 	sys_info		= widgets.HTML()
@@ -106,7 +108,9 @@ def Run(Gdrive, isColab):
 			children = [
 				widgets.VBox([
 					widgets.HBox([ Label("Input X file or PATH", 101), input_path, Btn_Create_input ]),
-					widgets.HBox([ Label("Output path", 102), output_info ]),
+					input_warning,
+					widgets.HBox([ Label("Output PATH", 102), output_path, Btn_Create_output ]),
+					widgets.HBox([ widgets.HTML('<div class="option-label">Your final path</div>'), output_info ]),
 				]),
 				separator,
 				widgets.VBox([
@@ -161,7 +165,14 @@ def Run(Gdrive, isColab):
 		else:
 			path = os.path.join(Gdrive, input_path.value)
 			if not os.path.isfile(path) and not os.path.isdir(path):
-				msg += "Your Input is not a valid file or path !<br>You MUST set it to an existing audio file or folder path.<br>"
+				msg += "Your Input is not a valid file or folder !<br>You MUST set it to an existing audio file or folder path.<br>"
+		
+		if output_path.value == "":
+			msg += "Output is required !<br>"
+		else:
+			path = os.path.join(Gdrive, output_path.value)
+			if not os.path.isdir(path):
+				msg += "Your Output is not a valid folder !<br>You MUST set it to an existing folder path.<br>"
 		
 		if msg != "":
 			msg = "ERROR !!<br>"+ msg
@@ -171,6 +182,7 @@ def Run(Gdrive, isColab):
 		# Save config
 		config['PATHS'] = {
 			'input': input_path.value,
+			'output': output_path.value,
 		}
 		config['PROCESS'] = {
 			'output_format': output_format.value,
@@ -200,6 +212,7 @@ def Run(Gdrive, isColab):
 		
 		options = {
 			'CONSOLE': CONSOLE,
+			'output': output_path.value,
 			'output_format': output_format.value,
 			'preset_genre': preset_genre.value,
 			'bigshifts_MDX': bigshifts_MDX.value,
@@ -236,8 +249,13 @@ def Run(Gdrive, isColab):
 		os.makedirs(os.path.join(Gdrive, input_path.value), exist_ok=True)
 		Btn_Create_input.layout.display = 'none'
 	
+	def on_Create_output_clicked(b):
+		os.makedirs(os.path.join(Gdrive, output_path.value), exist_ok=True)
+		Btn_Create_output.layout.display = 'none'
+	
 	# Link Buttons to functions
 	Btn_Create_input.on_click(on_Create_input_clicked)
+	Btn_Create_output.on_click(on_Create_output_clicked)
 	Btn_Start.on_click(on_Start_clicked)
 	Btn_SysInfo.on_click(on_SysInfo_clicked)
 
@@ -252,20 +270,47 @@ def Run(Gdrive, isColab):
 		path = os.path.normpath(change['new'])
 
 		if path.find(Gdrive) != -1:
-			input_path.value = path.replace(Gdrive, "")  # Remove Gdrive path from "input"
-		else:
-			path = os.path.join(Gdrive, path)
+			path = path.replace(Gdrive, "")  # Remove Gdrive path from "input"
 		
-		output_info.value = '<div class="path-info">'+ path.capitalize() + os.path.sep +" [ NAME of FILE ] "+ os.path.sep +' </div>'
-
-		is_dir = os.path.isdir(path)
-		is_file = os.path.isfile(path)
+		# BUG signaled by Jarredou : remove the first separator
+		if path[0] == os.path.sep:
+			path = path[1:]
 		
-		output_warning.layout.display = 'inline' if input_path.value != "" and is_dir else 'none'
+		if path != input_path.value:  input_path.value = path
+		
+		path	= os.path.join(Gdrive, path)
+		is_dir	= os.path.isdir(path)
+		is_file	= os.path.isfile(path)
+		
+		name = "[ NAME of FILES ]"
+		if is_file:
+			name = os.path.splitext(os.path.basename(path))[0]
+		
+		output_info.value = f'<div class="path-info">{Gdrive}{os.path.sep}{output_path.value} {os.path.sep} {name} {os.path.sep}</div>'
+		
+		input_warning.layout.display = 'block' if input_path.value != "" and is_dir else 'none'
 		Btn_Create_input.layout.display = 'inline' if not is_file and not is_dir else 'none'
+
+	def on_output_change(change):
+		if HELP.value.find("ERROR") != -1:
+			HELP.value = '<div id="HELP"></div>'  # Clear HELP
+			
+		path = os.path.normpath(change['new'])
+
+		if path.find(Gdrive) != -1:
+			path = path.replace(Gdrive, "")  # Remove Gdrive path from "output"
+
+		# BUG signaled by Jarredou : remove the first separator
+		if path[0] == os.path.sep:
+			path = path[1:]
+		
+		if path != output_path.value:  output_path.value = path
+
+		Btn_Create_output.layout.display = 'inline' if not os.path.isdir(os.path.join(Gdrive, path)) else 'none'
 
 	# Link Events to functions
 	input_path.observe(on_input_change, names='value')
+	output_path.observe(on_output_change, names='value')
 
 	#*************
 	#**  FINAL  **
@@ -327,6 +372,7 @@ function show_help(index) {\
 
 	# Update input_info and output_info after loading
 	on_input_change({'new': input_path.value})
+	on_output_change({'new': output_path.value})
 
 
 def Get_SysInfos(font_size):

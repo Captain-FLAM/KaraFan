@@ -221,7 +221,7 @@ def demix_base(mix, device, models, infer_session):
 
 		except Exception as e:
 			print("\n\nError in demix_base() with Torch : ", e)
-			exit(1)
+			sys.exit(1)
 	
 	return np.array(sources)
 
@@ -285,18 +285,19 @@ class MusicSeparationModel:
 
 		self.CONSOLE = options['CONSOLE']
 
-		self.output_format = options['output_format']
-		self.preset_genre = options['preset_genre']
+		self.output			= options['output']
+		self.output_format	= options['output_format']
+		self.preset_genre	= options['preset_genre']
 		
-		self.bigshifts_MDX = int(options['bigshifts_MDX'])
-		self.overlap_MDX = float(options['overlap_MDX'])
-#		self.overlap_MDXv3 = int(options['overlap_MDXv3'])
-		self.use_SRS = options['use_SRS']
-		self.large_gpu = options['large_gpu']
+		self.bigshifts_MDX	= int(options['bigshifts_MDX'])
+		self.overlap_MDX	= float(options['overlap_MDX'])
+#		self.overlap_MDXv3	= int(options['overlap_MDXv3'])
+		self.use_SRS		= options['use_SRS']
+		self.large_gpu		= options['large_gpu']
 
-		self.DEBUG = options['DEBUG']
-		self.GOD_MODE = options['GOD_MODE']
-		self.PREVIEWS = options['PREVIEWS']
+		self.DEBUG		= options['DEBUG']
+		self.GOD_MODE	= options['GOD_MODE']
+		self.PREVIEWS	= options['PREVIEWS']
 			
 		self.device = 'cpu'
 		if torch.cuda.is_available():  self.device = 'cuda:0'
@@ -329,12 +330,12 @@ class MusicSeparationModel:
 		remote_url = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/UVR-MDX-NET-Inst_HQ_3.onnx'
 		self.model_path_onnx1 = os.path.join(model_folder, 'UVR_MDX_Instr_HQ3.onnx')
 		if not os.path.isfile(self.model_path_onnx1):
-			torch.hub.download_url_to_file(remote_url, model_folder)
+			torch.hub.download_url_to_file(remote_url, self.model_path_onnx1)
 
 		remote_url = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/Kim_Vocal_2.onnx'
 		self.model_path_onnx2 = os.path.join(model_folder, 'Kim_Vocal_2.onnx')
 		if not os.path.isfile(self.model_path_onnx2):
-			torch.hub.download_url_to_file(remote_url, model_folder)
+			torch.hub.download_url_to_file(remote_url, self.model_path_onnx2)
 		
 		if self.large_gpu:
 			print("Large GPU mode is enabled : Loading models now...")
@@ -397,21 +398,21 @@ class MusicSeparationModel:
 		Else :
 			- Return FALSE.
 		"""
-		name = self.AudioFiles[file_key]
+		filename = self.AudioFiles[file_key]
 		if self.DEBUG:
-			name = f"{file_key} - {name}"
+			filename = f"{file_key} - {filename}"
 
-		file = os.path.join(self.output_path, name)
+		file = os.path.join(self.song_output_path, filename)
 		
 		if self.GOD_MODE and os.path.isfile(file):
 			
 			if just_check:  return True
 			
-			print(name + " --> Already processed (loading now...)")
+			print(filename + " --> Already processed (loading now...)")
 			audio, _ = librosa.load(file, mono=False, sr=self.sample_rate)
 			
 			# Preview Audio file
-			if self.PREVIEWS and self.CONSOLE:  self.Show_Preview(name, audio)
+			if self.PREVIEWS and self.CONSOLE:  self.Show_Preview(filename, audio)
 
 			return audio
 		
@@ -419,16 +420,16 @@ class MusicSeparationModel:
 	
 	def Save_Audio(self, file_key, audio):
 		"""
-		file_key : key of AudioFiles list or "str" (direct name for test mode)
+		file_key : key of AudioFiles list or "str" (direct filename for test mode)
 		"""
 
 		if file_key in self.AudioFiles:
-			name = self.AudioFiles[file_key]
+			filename = self.AudioFiles[file_key]
 			if self.DEBUG:
-				name = f"{file_key} - {name}"
+				filename = f"{file_key} - {filename}"
 		else:
-			name = "Unknown"
-		file = os.path.join(self.output_path, name)
+			filename = "Unknown"
+		file = os.path.join(self.song_output_path, filename)
 
 		# Save as WAV
 		match self.output_format:
@@ -460,7 +461,7 @@ class MusicSeparationModel:
 				audio_segment.export(file, format='mp3', bitrate='320k', codec='libmp3lame')
 		
 		# Preview Audio file
-		if self.PREVIEWS and self.CONSOLE:  self.Show_Preview(name, audio)
+		if self.PREVIEWS and self.CONSOLE:  self.Show_Preview(filename, audio)
 
 
 	def Extract_with_Model(self, text, audio, stem, bigshifts_divisor = 1, SRS = False):
@@ -544,11 +545,12 @@ class MusicSeparationModel:
 		self.COMPENSATION_Instrum = 1.0240
 		self.COMPENSATION_Vocals  = 1.0085
 
-		print("Go with : " + os.path.splitext(os.path.basename(file))[0])
+		name = os.path.splitext(os.path.basename(file))[0]
+		print("Go with : " + name)
 
 		# Create a folder based on input audio file's name
-		self.output_path = os.path.splitext(file)[0]
-		if not os.path.exists(self.output_path): os.makedirs(self.output_path)
+		self.song_output_path = os.path.join(self.output, name)
+		if not os.path.exists(self.song_output_path): os.makedirs(self.song_output_path)
 		
 		original_audio, self.sample_rate = librosa.load(file, mono=False, sr=44100)
 		
@@ -719,8 +721,8 @@ class MusicSeparationModel:
 
 			instrum_final = normalized - vocals_final
 
-			# DON'T apply silence filter here !!
-			# instrum_final = Silent(instrum_final, self.sample_rate)
+			# Apply silence filter : -61 dB !
+			instrum_final = Silent(instrum_final, self.sample_rate, threshold_db = -61)
 
 			self.Save_Audio("5_F", instrum_final)
 
@@ -926,17 +928,18 @@ if __name__ == '__main__':
 	"""
 
 	m = argparse.ArgumentParser()
-	m.add_argument('--input', nargs='+', type=str, help='Input audio file or location. You can provide multiple files at once', required=True)
+	m.add_argument('--input', nargs='+', type=str, help='Input audio file or location. You can provide multiple files at once.', required=True)
+	m.add_argument('--output', type=str, help='Output folder location for extracted audio files results.')
 	m.add_argument('--use_config', action='store_true', help='Use "Config_PC.ini" instead of specifying all options in command line.', default=False)
 	m.add_argument('--output_format', type=str, help='Output audio format : "FLAC" (24 bits), "MP3" (CBR 320 kbps), "PCM_16" or "FLOAT" (WAV - PCM 16 bits / FLOAT 32 bits).', default='FLAC')
-	m.add_argument('--preset_genre', type=str, help='Genre of music to automatically select the best A.I models', default='Pop Rock')
-	m.add_argument('--bigshifts_MDX', type=int, help='Managing MDX "BigShifts" trick value.', required=False, default=12)
-	m.add_argument('--overlap_MDX', type=float, help='Overlap of splited audio for heavy models. Closer to 1.0 - slower', required=False, default=0.0)
-#	m.add_argument('--overlap_MDXv3', type=int, help='MDXv3 overlap', required=False, default=8)
-	m.add_argument('--chunk_size', type=int, help='Chunk size for ONNX models. Set lower to reduce GPU memory consumption. Default: 500000', required=False, default=500000)
+	m.add_argument('--preset_genre', type=str, help='Genre of music to automatically select the best A.I models.', default='Pop Rock')
+	m.add_argument('--bigshifts_MDX', type=int, help='Managing MDX "BigShifts" trick value.', default=12)
+	m.add_argument('--overlap_MDX', type=float, help='Overlap of splited audio for heavy models. Closer to 1.0 - slower.', default=0.0)
+#	m.add_argument('--overlap_MDXv3', type=int, help='MDXv3 overlap', default=8)
+	m.add_argument('--chunk_size', type=int, help='Chunk size for ONNX models. Set lower to reduce GPU memory consumption. Default: 500000', default=500000)
 	m.add_argument('--use_SRS', action='store_true', help='Use "SRS" vocal 2nd pass : can be useful for high vocals (Soprano by e.g)', default=False)
 	m.add_argument('--large_gpu', action='store_true', help='It will store all models on GPU for faster processing of multiple audio files. Requires more GB of free GPU memory.', default=False)
-	m.add_argument('--DEBUG', action='store_true', help='This option will save all intermediate audio files to compare with the final result', default=False)
+	m.add_argument('--DEBUG', action='store_true', help='This option will save all intermediate audio files to compare with the final result.', default=False)
 	m.add_argument('--GOD_MODE', action='store_true', help='Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,\nNO NEED to process it again and again !!\nYou\'ll be warned : You have to delete each file that you want to re-process MANUALLY !', default=False)
 	
 	options = m.parse_args().__dict__
@@ -944,11 +947,11 @@ if __name__ == '__main__':
 	if options['use_config'] == True:
 		
 		# We are on a PC : Get the current path and remove last part (KaraFan)
-		parts  = os.getcwd().split(os.path.sep)[:-1]
-		Gdrive = os.path.sep.join(parts)
+		Gdrive = os.getcwd().replace("KaraFan","").rstrip(os.path.sep)
 
 		config = App.settings.Load(Gdrive, False)
 		
+		options['output']			= config['PATHS']['output']
 		options['output_format']	= config['PROCESS']['output_format']
 		options['preset_genre']		= config['PROCESS']['preset_genre']
 		options['bigshifts_MDX']	= int(config['OPTIONS']['bigshifts_MDX'])
@@ -959,6 +962,10 @@ if __name__ == '__main__':
 		options['large_gpu']		= (config['OPTIONS']['large_gpu'].lower() == "true")
 		options['DEBUG']			= (config['BONUS']['DEBUG'].lower() == "true")
 		options['GOD_MODE']			= (config['BONUS']['GOD_MODE'].lower() == "true")
+	
+	elif options['output'] is None:
+		print("Error !! You must specify an output folder !")
+		sys.exit(0)
 
 	options['CONSOLE'] = None
 	options['PREVIEWS'] = False

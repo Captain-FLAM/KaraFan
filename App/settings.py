@@ -17,6 +17,7 @@ def Load(Gdrive, isColab):
 	defaults = {
 		'PATHS': {
 			'input': "Music",
+			'output': "Results",
 		},
 		'PROCESS': {
 			'output_format': "FLAC",

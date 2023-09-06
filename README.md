@@ -13,6 +13,7 @@ If you want to encourage me to give more time to improve this project, you can m
 * [![Patreon](https://img.shields.io/badge/Donate-Patreon-red.svg)](https://www.patreon.com/Captain_FLAM)
 
 Coming Soon ...
+
 * ![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg)
 * ![Beer](https://img.shields.io/badge/Donate-Buy%20me%20a%20beer-yellow.svg)
 
@@ -28,10 +29,13 @@ You can reach me by [email](https://github.com/Captain-FLAM) or Join all of us o
 - [🚀 INSTALLATION](#-installation)
 - [📂 STRUCTURE](#-structure)
 - [💡 TECHNICAL DETAILS](#-technical-details)
+- [🦄 NEAR FUTURE](#-near-future)
+- [😍 WALL OF FAME](#-wall-of-fame)
+- [📝 TODO LIST](#-todo-list)
 - [💗 SPECIAL THANKS TO...](#-special-thanks-to)
-- [🦄 IN THE NEAR FUTURE](#-in-the-near-future)
-- [📝 TODO](#-todo)
 - [📜 LICENSE](#-license)
+
+---
 
 # 🔥 INTRODUCTION
 
@@ -61,6 +65,8 @@ Before, I developed in ASM, C, C++, Basic, Visual Basic.
 Since the year 2000, I have been coding in PHP, MySQL, JavaScript, jQuery, HTML, CSS.
 And today in Python. ❤️
 
+---
+
 # 📆 HISTORY
 
 I first started with the Demucs facebook research model, but I was disappointed with the results, especially with the instrumental part.
@@ -78,16 +84,18 @@ I also added a few tricks to improve the quality of the results.
 
 ... to get the best instrumental results :
 
-- Use a **Full Band** input audio file (preferably FLAC instead of MP3)
-- Check the quality of the input audio file in Audacity (with **Linear** Spectrogram view) to have at least 20 Khz of bandwidth
-  [![Audacity Spectrogram](images/Advice_Spectrogram_mini.jpg)](images/Advice_Spectrogram.jpg)
-- Use the « SRS » option (see below) to get a full band result with the narrow band models (e.g : Kim Vocal 2)
+- Use a **Full Band** input audio files (preferably FLAC instead of MP3).
+- Save your audio files in **FLAC** format instead of MP3, because it's a destructive format (by e.g : I had to use CBR 320k joint-stereo to avoid cut-off @ 16 Khz).
+- Check the quality of the input audio file in Audacity (with **Linear** Spectrogram view) to have at least 20 Khz of bandwidth.[![Audacity Spectrogram](images/Advice_Spectrogram_mini.jpg)](images/Advice_Spectrogram.jpg)
+- Use the « SRS » option (see below) to get a full band result with the narrow band voices models (e.g : Kim Vocal 2).
+
+---
 
 # 🚀 INSTALLATION
 
 📦 **Prerequisites**
 
-- Python **3.10**
+- **Python 3.10**  (Torch CUDA doesn't work yet with 3.11 !)
 - PyTorch CUDA
 
 You can run KaraFan with any [Frontends that support Jupyter widgets](https://github.com/jupyter/jupyter/wiki/Jupyter-Widgets#frontends-that-support-jupyter-widgets)
@@ -158,6 +166,8 @@ python -m App.setup
 **Examples of usage :**
 
 ```bash
+py -3.10 -m App.inference --help
+or
 python -m App.inference --help
 ```
 
@@ -169,7 +179,7 @@ python -m App.inference --input song1.mp3 song2.flac song3.wav --use_config
 *You **still need** to specify the input files or songs folder.*
 
 ```bash
-python -m App.inference --input song1.mp3 song2.flac song3.wav --output_format MP3 --overlap_MDX 0.25 --chunk_size 500000 --DEBUG --GOD_MODE
+python -m App.inference --input song1.mp3 song2.flac song3.wav --output Results --output_format MP3 --overlap_MDX 0.25 --chunk_size 500000 --DEBUG --GOD_MODE
 ```
 
 # 📂 STRUCTURE
@@ -183,13 +193,15 @@ After installation, you'll find a new folder at the root of your Google Drive na
 | / KaraFan / Models | Where all the models are stored                           |
 | / Music            | Here you can put your audio files (or choose another one) |
 
+---
+
 # 💡 TECHNICAL DETAILS
 
 ## « My Magic Recipe »
 
 For now, I use only these 2 MDX models : « **Int HQ 3** » & « **Kim Vocal 2** »
 (I know some people prefer the « Voc_FT model », but personally I found it muddier than Kim Vocal 2 in my tests)
-.
+\--
 
 | Step                                                               | Filename                    |
 | ------------------------------------------------------------------ | --------------------------- |
@@ -302,7 +314,54 @@ A smooth transition with zerophase soft filtering between the 2 bands works bett
 Make sure to not have volume changes in the crossover region (I've used Linkwitz-Riley filters).
 
 Downside is first, the doubled separation time because of the 2 passes, and that the separation quality of the shifted sample rate audio is often lower than the normal processed one, but in most of the cases, as it's using only its high freq, it's enough the make that "fullband trick" works very well !
-.
+
+---
+
+# 🦄 NEAR FUTURE
+
+You will see ... I have hundreds of ideas, but I need time to implement them.
+
+And as I'm an independent developer, I have to work to earn my living.
+
+So if you want to encourage me to give more time to improve this project, you can make a donation or become one of my patrons :
+
+🎵 **[Go back to the top of this page](#-karafan)** 🎵 where you can find the donation buttons.
+
+**This helps me to :**
+
+- Pay calculation time on Google Colab (100 units = 11 €, I eat all in 3-4 days)
+- Perhaps, buy new hardware to make more and more tests to improve the quality of the results.
+  I'm currently using a 4 years old laptop with a GTX 1060 Ti **4GB**
+  I'm dreaming of a RTX 4090 ... and I'm NOT a gamer !
+  ... and if you are too generous, Me can buy an Nvidia A100 40GB !! 😍
+
+---
+
+# 😍 WALL OF FAME
+
+My beloved Patrons & Donators :
+
+- ### Your name here !!
+
+---
+
+# 📝 TODO LIST
+
+Stupid ideas given by my A.I assistant « GitHub Copilot » : (I'm not responsible for this !) 😆
+
+- [ ] Add a « Karaoke » mode (with lyrics)
+- [ ] Add a « Music » mode (without lyrics)
+- [ ] Add a « Instrumental » mode (without vocals)
+- [ ] Add a « Acapella » mode (without instruments)
+- [ ] Add a « Remix » mode (with a different mix)
+
+..., and now, my brain is overheating ! 😵
+
+- [ ] Add more Models (but always with fine-tuned volume compensation for each !)
+- [ ] Separate Choirs from Vocals (very hard challenge !)
+- [ ] etc ... etc ... etc ..
+
+---
 
 # 💗 SPECIAL THANKS TO...
 
@@ -322,44 +381,9 @@ And it's also the creator of [MVSEP.com](https://mvsep.com/en), where you can fo
 
 We are all standing on the shoulders of giants !
 
-Thousands Thanks to all of you ! I love you ! ❤️
-.
+Thousands Thanks to all of you ! **I love you !** ❤️
 
-# 🦄 IN THE NEAR FUTURE
-
-You will see ... I have hundreds of ideas, but I need time to implement them.
-
-And as I'm an independent developer, I have to work to earn my living.
-
-So if you want to encourage me to give more time to improve this project, you can make a donation or become one of my patrons :
-
-🎵 **[Go back to the top of this page](#-karafan)** 🎵 where you can find the donation buttons.
-
-**This helps me to :**
-
-- Pay calculation time on Google Colab (100 units = 11 €, I eat all in 3-4 days)
-- Perhaps, buy new hardware to make more and more tests to improve the quality of the results.
-  I'm currently using a 4 years old laptop with a GTX 1060 Ti **4GB**
-  I'm dreaming of a RTX 4090 ... and I'm NOT a gamer !
-  ... and if you are too generous, Me can buy an Nvidia A100 40GB !! 😍
-
-.
-
-# 📝 TODO
-
-Stupid ideas given by my A.I assistant « GitHub Copilot » : (I'm not responsible for this !) 😆
-
-- [ ] Add a « Karaoke » mode (with lyrics)
-- [ ] Add a « Music » mode (without lyrics)
-- [ ] Add a « Instrumental » mode (without vocals)
-- [ ] Add a « Acapella » mode (without instruments)
-- [ ] Add a « Remix » mode (with a different mix)
-
-..., and now, my brain is overheating ! 😵
-
-- [ ] Add more Models (but always with fine-tuned volume compensation for each !)
-- [ ] Separate Choirs from Vocals (very hard challenge !)
-- [ ] etc ...
+---
 
 # 📜 LICENSE
 

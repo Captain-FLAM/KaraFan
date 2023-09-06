@@ -5,7 +5,7 @@
 
 import os, sys, requests, subprocess
 
-def Install(Gdrive, isColab):
+def Install(Gdrive, isColab, Fresh_install):
 	
 	#****************************************************************************************************
 
@@ -20,15 +20,15 @@ def Install(Gdrive, isColab):
 		Requirements += ["soundfile", "librosa", "ipywidgets", "numpy", "scipy", "tqdm"]
 
 	# Audio		: soundfile, librosa, pydub
-	# MP3 Tags	: mutagen
 	# GUI		: configparse, ipywidgets
 	# Inference	: numpy, scipy, tqdm, ml_collections, onnxruntime-gpu
+	# MP3 Tags	: mutagen (for future use)
 	
 	# Note : on PC, We need to install PyTorch_CUDA, not torch ! (already installed on Colab)
 
 	#****************************************************************************************************
 
-	Version = Git_version = "";  New_Version = False
+	Version = ""; Git_version = "";  New_Version = False
 
 	if not os.path.exists(Gdrive):
 		print("ERROR : Google Drive path is not valid !")
@@ -37,15 +37,16 @@ def Install(Gdrive, isColab):
 	os.chdir(Gdrive)
 	Project_path = os.path.join(Gdrive, "KaraFan")
 
-	if not os.path.exists(Project_path):
-		print('Cloning "KaraFan" Repository...')
-		try:
-			subprocess.run(["git", "clone", f"{Repo_url}.git"], text=True, capture_output=True, check=True)
-		except subprocess.CalledProcessError as e:
-			print("Error during Cloning :\n" + e.stderr + "\n" + e.stdout)
-			sys.exit(1)
-	else:
-		# Auto-Magic update !
+	# Create Models directory if not exists
+	if not os.path.exists(os.path.join(Project_path, "Models")):
+		os.mkdir(os.path.join(Project_path, "Models"))
+
+	# Get local version
+	with open(os.path.join(Project_path, "App", "__init__.py"), "r") as version_file:
+		Version = version_file.readline().replace("# Version", "").strip()
+
+	# Auto-Magic update !
+	if not Fresh_install:
 		try:
 			response = requests.get(Version_url)
 			if response.status_code == requests.codes.ok:
@@ -57,39 +58,29 @@ def Install(Gdrive, isColab):
 		except requests.exceptions.ConnectionError as e:
 			print("Connection error while trying to fetch version :", e)
 
-	# Create Models directory if not exists
-	if not os.path.exists(os.path.join(Project_path, "Models")):
-		os.mkdir(os.path.join(Project_path, "Models"))
+		if Version and Git_version:
+			if Git_version > Version:
+				print(f'Updating "KaraFan" project to version {Git_version} ...')
+				try:
+					subprocess.run(["git", "-C", Project_path, "pull"], text=True, capture_output=True, check=True)
 
-	# Get local version
-	with open(os.path.join(Project_path, "App", "__init__.py"), "r") as version_file:
-		Version = version_file.readline().replace("# Version", "").strip()
+					Version = Git_version;  New_Version = True
+					
+					if isColab:
+						print('NOW, you have to go in Colab menu, "Runtime > Restart runtime and Run all" to use the new version of "KaraFan" !')
+						sys.exit(0)
 
-	if Version and Git_version:
-		if Git_version > Version:
-			print(f'Updating "KaraFan" project to version {Git_version} ...')
-			try:
-				subprocess.run(["git", "-C", Project_path, "pull"], text=True, capture_output=True, check=True)
-
-				Version = Git_version;  New_Version = True
-				
-				if isColab:
-					print('NOW, you have to go in Colab menu, "Runtime > Restart runtime and Run all" to use the new version of "KaraFan" !')
-					exit(0)
-
-			except subprocess.CalledProcessError as e:
-				if e.returncode == 127:
-					print('ERROR : Git is not installed on your system !')
-					print('... and there is a new version of "KaraFan" available !')
-					print('You have to download it manually from :')
-					print(Repo_url)
-					print('... and extract it in your Google Drive folder.')
-				else:
-					print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
-		else:
-			print('"KaraFan" is up to date.')
-
-#	os.chdir(Project_path)
+				except subprocess.CalledProcessError as e:
+					if e.returncode == 127:
+						print('WARNING : Git is not installed on your system !')
+						print('... and there is a new version of "KaraFan" available !')
+						print('You have to download it manually from :')
+						print(Repo_url)
+						print('... and extract it in your Google Drive folder.')
+					else:
+						print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
+			else:
+				print('"KaraFan" is up to date.')
 
 	# Dependencies already installed ?
 	if isColab or New_Version:
@@ -108,8 +99,8 @@ def Install(Gdrive, isColab):
 	return Version
 
 if __name__ == '__main__':
-	# We are on a PC : Get the current path and remove last part (KaraFan)
-	parts  = os.getcwd().split(os.path.sep)[:-1]
-	Gdrive = os.path.sep.join(parts)
 
-	Install(Gdrive, False)
+	# We are on a PC : Get the current path and remove last part (KaraFan)
+	Gdrive = os.getcwd().replace("KaraFan","").rstrip(os.path.sep)
+
+	Install(Gdrive, False, False)

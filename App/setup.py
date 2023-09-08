@@ -65,7 +65,7 @@ def Install(Gdrive, isColab, Fresh_install):
 					
 					if isColab:
 						print('NOW, you have to go in Colab menu, "Runtime > Restart runtime and Run all" to use the new version of "KaraFan" !')
-						sys.exit(0)
+						quit()
 
 				except subprocess.CalledProcessError as e:
 					if e.returncode == 127:

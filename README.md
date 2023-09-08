@@ -44,7 +44,9 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 - [💗 Special Thanks To...](#-special-thanks-to)
 - [📜 LICENSE](#-license)
 
-----
+.
+
+---
 
 # 🔥 INTRODUCTION
 
@@ -74,6 +76,8 @@ Before, I developed in ASM, C, C++, Basic, Visual Basic.
 Since the year 2000, I have been coding in PHP, MySQL, JavaScript, jQuery, HTML, CSS.
 
 And today in Python. ❤️
+
+.
 
 ----
 
@@ -123,6 +127,8 @@ With the choice of Models in new **version 1.2** :
 4. Then, you can eventually affinate the choice of the best model for **Instrum**  
 	(and **re-process** Vocals again)  
 	(and don't forget to check the **bleedings** with DEBUG mode)
+
+.
 
 ---
 
@@ -228,6 +234,8 @@ After installation, you'll find new folders at the root of your Google Drive wit
 | / KaraFan / Models | Where all the models are stored                           |
 | / Music            | Here you can put your audio files (or choose another one) |
 | / Results          | Here you will find your extracted audio files (or choose another one) |
+
+.
 
 ---
 
@@ -354,6 +362,8 @@ Make sure to not have volume changes in the crossover region (I've used Linkwitz
 
 Downside is first, the doubled separation time because of the 2 passes, and that the separation quality of the shifted sample rate audio is often lower than the normal processed one, but in most of the cases, as it's using only its high freq, it's enough the make that "fullband trick" works very well !
 
+.
+
 ---
 
 # 🦄 NEAR FUTURE
@@ -372,8 +382,10 @@ you can make a donation or become one of my patrons :
 - Pay calculation time on Google Colab (100 units = 11 €, I eat all in 3-4 days)
 - Perhaps, buy new hardware to make more and more tests to improve the quality of the results.  
   I'm currently using a 4 years old laptop with a GTX 1060 Ti **4GB**  
-  I'm dreaming of a RTX 4090 ... and I'm NOT a gamer !  
-  ... and if you are too generous, Me can buy an Nvidia A100 40GB !! 😍
+  I'm dreaming of a **RTX 4090** ... and I'm NOT a gamer !  
+  ... and if you are too generous, Me can buy an **Nvidia A100 40GB** !! 😍
+
+.
 
 ---
 
@@ -381,7 +393,10 @@ you can make a donation or become one of my patrons :
 
 My beloved Patrons & Donators :
 
+
 - ### Your name here !!
+
+.
 
 ---
 
@@ -394,7 +409,9 @@ My brain is overheating ! 😵
 - [ ] Add a TEST option to quickly do only 1 pass on audio files for testing purposes.
 - [ ] Automatic fine-tuning of volume compensation for each song (am I Crazy ??).
 - [ ] Separate Choirs from Vocals (very hard challenge !)
-- [ ] etc ... etc ... etc ..
+- [ ] etc ... etc ... etc ...  
+
+.
 
 ---
 
@@ -417,6 +434,8 @@ And it's also the creator of [MVSEP.com](https://mvsep.com/en), where you can fo
 We are all standing on the shoulders of giants !
 
 Thousands Thanks to all of you ! **I love you !** ❤️
+
+.
 
 ---
 

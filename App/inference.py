@@ -568,7 +568,10 @@ class MusicSeparationModel:
 		"""
 
 		name = os.path.splitext(os.path.basename(file))[0]
-		print("Go with : " + name)
+		if self.CONSOLE:
+			print("Go with : <b>" + name + "</b>")
+		else:
+			print("Go with : " + name)
 
 		# Create a folder based on input audio file's name
 		self.song_output_path = os.path.join(self.output, name)

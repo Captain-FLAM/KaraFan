@@ -5,7 +5,7 @@ The BEST music separation model with help of **A.I** ... to my ears ! 👂👂
 As you've guessed, it was made specially for Karaoke (▶️ focus on musical part).  
 This project is **open to all goodwill**.
 
-<a href="images/KaraFan.png"><img class="float-right" src="images/KaraFan_mini.png" alt="KaraFan"></a>
+<a class="float-right" href="images/KaraFan.png"><img src="images/KaraFan_mini.png" alt="KaraFan"></a>
 
 ## 💲 DONATE
 
@@ -113,6 +113,15 @@ I also added a few tricks to improve the quality of the results.
   (it can helps to get more brillant vocals)
 - Check the quality of the **input audio** file in Audacity (with **Linear Spectrogram** view) to have at least 20 Khz of Bandwidth.  
 [![Audacity Spectrogram](images/Advice_Spectrogram_mini.jpg)](images/Advice_Spectrogram.jpg)
+
+- With the choice of Models in new **version 1.2** :
+  1. Choose a very hard song that you've failed to separate before and that you know by heart.
+  2. Try all the Vocals models one by one, and compare the results with Audacity.  
+  	 (with **RMS Contrast Analyse of dB levels** and **Linear Spectrogram** views)
+  3. Choose the best model for **Vocals** first
+  4. Then, you can eventually affinate the choice of the best model for **Instrum**  
+     (and **re-process** Vocals again)  
+	 (and don't forget to check the bleedings )
 
 ---
 

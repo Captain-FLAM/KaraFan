@@ -25,7 +25,7 @@ click here to send me an email, I'll give you my wallet address :
 
 # [![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)](mailto:Captain_FLAM@gmx.fr) 😍
 
-You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us** on this  [![Discord](images/discord.svg) Discord server](https://discord.com/channels/708579735583588363/887455924845944873) !
+You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us** on ![Discord](images/discord.svg) [this Discord server](https://discord.com/channels/708579735583588363/887455924845944873) !
 
 # 📖 Table of Contents
 

@@ -31,7 +31,7 @@ def Install(Gdrive, isColab, Fresh_install):
 	Version = ""; Git_version = "";  New_Version = False
 
 	if not os.path.exists(Gdrive):
-		print("ERROR : Google Drive path is not valid !")
+		print("ERROR : Google Drive path is not valid !\n")
 		sys.exit(1)
 	
 	os.chdir(Gdrive)
@@ -64,8 +64,8 @@ def Install(Gdrive, isColab, Fresh_install):
 					Version = Git_version;  New_Version = True
 					
 					if isColab:
-						print('NOW, you have to go in Colab menu, "Runtime > Restart runtime and Run all" to use the new version of "KaraFan" !')
-						exit(0)
+						print('NOW, you have to go in Colab menu, "Runtime > Restart runtime and Run all" to use the new version of "KaraFan" !\n')
+						sys.exit(0)
 
 				except subprocess.CalledProcessError as e:
 					if e.returncode == 127:
@@ -90,7 +90,7 @@ def Install(Gdrive, isColab, Fresh_install):
 				print("\rInstallation done !                                     ") # Clean line
 			
 			except subprocess.CalledProcessError as e:
-				print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout)
+				print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout + "\n")
 				sys.exit(1)
 
 	return Version

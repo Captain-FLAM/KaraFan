@@ -3,7 +3,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, sys, requests, subprocess
+import os, sys, requests, subprocess, warnings
 
 def Install(Gdrive, isColab, Fresh_install):
 	
@@ -32,7 +32,7 @@ def Install(Gdrive, isColab, Fresh_install):
 
 	if not os.path.exists(Gdrive):
 		print("ERROR : Google Drive path is not valid !\n")
-		raise SystemExit(1)
+		sys.exit(1)
 	
 	os.chdir(Gdrive)
 	Project_path = os.path.join(Gdrive, "KaraFan")
@@ -41,8 +41,12 @@ def Install(Gdrive, isColab, Fresh_install):
 	with open(os.path.join(Project_path, "App", "__init__.py"), "r") as version_file:
 		Version = version_file.readline().replace("# Version", "").strip()
 
+	# Suppress Warnings on Exit
+	warnings.filterwarnings("ignore", category=UserWarning)
+
 	# Auto-Magic update !
 	if not Fresh_install:
+		
 		try:
 			response = requests.get(Version_url)
 			if response.status_code == requests.codes.ok:
@@ -65,7 +69,7 @@ def Install(Gdrive, isColab, Fresh_install):
 					
 					if isColab:
 						print('NOW, you have to go in Colab menu, "Runtime > Restart runtime and Run all" to use the new version of "KaraFan" !\n')
-						raise SystemExit(0)
+						sys.exit(0)
 
 				except subprocess.CalledProcessError as e:
 					if e.returncode == 127:
@@ -76,7 +80,7 @@ def Install(Gdrive, isColab, Fresh_install):
 						print('... and extract it in your Google Drive folder.')
 					else:
 						print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
-						raise SystemExit(1)
+						sys.exit(1)
 			else:
 				print('"KaraFan" is up to date.')
 
@@ -92,7 +96,10 @@ def Install(Gdrive, isColab, Fresh_install):
 			
 			except subprocess.CalledProcessError as e:
 				print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout + "\n")
-				raise SystemExit(1)
+				sys.exit(1)
+
+	# Restore warnings
+	warnings.resetwarnings()
 
 	return Version
 

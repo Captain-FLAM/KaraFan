@@ -10,7 +10,7 @@
 #   https://github.com/Captain-FLAM/KaraFan
 
 
-import os, gc, io, sys, csv, base64, argparse, yaml
+import os, gc, io, sys, csv, base64, argparse, requests
 import numpy as np
 import onnxruntime as ort
 import torch, torch.nn as nn
@@ -101,84 +101,84 @@ def get_models(device, FFT, primary_stem = 'vocals'):
 	)
 	return [model]
 
-def demix_base_mdxv3(config, model, mix, device, overlap):
-	mix = torch.tensor(mix, dtype=torch.float32)
-	try:
-		S = model.num_target_instruments
-	except Exception as e:
-		S = model.module.num_target_instruments
+# def demix_base_mdxv3(config, model, mix, device, overlap):
+# 	mix = torch.tensor(mix, dtype=torch.float32)
+# 	try:
+# 		S = model.num_target_instruments
+# 	except Exception as e:
+# 		S = model.module.num_target_instruments
 
-	mdx_window_size = config.inference.dim_t
+# 	mdx_window_size = config.inference.dim_t
 	
-	# batch_size = config.inference.batch_size
-	batch_size = 1
-	C = config.audio.hop_length * (mdx_window_size - 1)
+# 	# batch_size = config.inference.batch_size
+# 	batch_size = 1
+# 	C = config.audio.hop_length * (mdx_window_size - 1)
 	
-	H = C // overlap
-	L = mix.shape[1]
-	pad_size = H - (L - C) % H
-	mix = torch.cat([torch.zeros(2, C - H), mix, torch.zeros(2, pad_size + C - H)], 1)
-	mix = mix.to(device)
+# 	H = C // overlap
+# 	L = mix.shape[1]
+# 	pad_size = H - (L - C) % H
+# 	mix = torch.cat([torch.zeros(2, C - H), mix, torch.zeros(2, pad_size + C - H)], 1)
+# 	mix = mix.to(device)
 
-	chunks = []
-	i = 0
-	while i + C <= mix.shape[1]:
-		chunks.append(mix[:, i:i + C])
-		i += H
-	chunks = torch.stack(chunks)
+# 	chunks = []
+# 	i = 0
+# 	while i + C <= mix.shape[1]:
+# 		chunks.append(mix[:, i:i + C])
+# 		i += H
+# 	chunks = torch.stack(chunks)
 
-	batches = []
-	i = 0
-	while i < len(chunks):
-		batches.append(chunks[i:i + batch_size])
-		i = i + batch_size
+# 	batches = []
+# 	i = 0
+# 	while i < len(chunks):
+# 		batches.append(chunks[i:i + batch_size])
+# 		i = i + batch_size
 
-	X = torch.zeros(S, 2, C - H) if S > 1 else torch.zeros(2, C - H)
-	X = X.to(device)
+# 	X = torch.zeros(S, 2, C - H) if S > 1 else torch.zeros(2, C - H)
+# 	X = X.to(device)
 
-	with torch.cuda.amp.autocast():
-		with torch.no_grad():
-			for batch in tqdm(batches, ncols=60):
-				# self.running_inference_progress_bar(len(batches))
-				x = model(batch)
-				for w in x:
-					a = X[..., :-(C - H)]
-					b = X[..., -(C - H):] + w[..., :(C - H)]
-					c = w[..., (C - H):]
-					X = torch.cat([a, b, c], -1)
+# 	with torch.cuda.amp.autocast():
+# 		with torch.no_grad():
+# 			for batch in tqdm(batches, ncols=60):
+# 				# self.running_inference_progress_bar(len(batches))
+# 				x = model(batch)
+# 				for w in x:
+# 					a = X[..., :-(C - H)]
+# 					b = X[..., -(C - H):] + w[..., :(C - H)]
+# 					c = w[..., (C - H):]
+# 					X = torch.cat([a, b, c], -1)
 
-	estimated_sources = X[..., C - H:-(pad_size + C - H)] / overlap
+# 	estimated_sources = X[..., C - H:-(pad_size + C - H)] / overlap
 
-	if S > 1:
-		return {k: v for k, v in zip(config.training.instruments, estimated_sources.cpu().numpy())}
+# 	if S > 1:
+# 		return {k: v for k, v in zip(config.training.instruments, estimated_sources.cpu().numpy())}
 	
-	est_s = estimated_sources.cpu().numpy()
-	return est_s
+# 	est_s = estimated_sources.cpu().numpy()
+# 	return est_s
 
-def demix_full_mdx23c(mix, device, overlap):
-	model_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "Models")
+# def demix_full_mdx23c(mix, device, overlap):
+# 	model_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "Models")
 
-	remote_url_mdxv3 = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/MDX23C_D1581.ckpt'
-	remote_url_conf = 'https://raw.githubusercontent.com/Anjok07/ultimatevocalremovergui/new-patch-3-20/models/MDX_Net_Models/model_data/mdx_c_configs/model_2_stem_061321.yaml'
-	if not os.path.isfile(os.path.join(model_folder, 'MDX23C_D1581.ckpt')):
-		torch.hub.download_url_to_file(remote_url_mdxv3, os.path.join(model_folder, 'MDX23C_D1581.ckpt'))
-	if not os.path.isfile(os.path.join(model_folder, 'model_2_stem_061321.yaml')):
-		torch.hub.download_url_to_file(remote_url_conf, os.path.join(model_folder, 'model_2_stem_061321.yaml'))
+# 	remote_url_mdxv3 = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/MDX23C_D1581.ckpt'
+# 	remote_url_conf = 'https://raw.githubusercontent.com/Anjok07/ultimatevocalremovergui/new-patch-3-20/models/MDX_Net_Models/model_data/mdx_c_configs/model_2_stem_061321.yaml'
+# 	if not os.path.isfile(os.path.join(model_folder, 'MDX23C_D1581.ckpt')):
+# 		torch.hub.download_url_to_file(remote_url_mdxv3, os.path.join(model_folder, 'MDX23C_D1581.ckpt'))
+# 	if not os.path.isfile(os.path.join(model_folder, 'model_2_stem_061321.yaml')):
+# 		torch.hub.download_url_to_file(remote_url_conf, os.path.join(model_folder, 'model_2_stem_061321.yaml'))
 
-	with open(os.path.join(model_folder, 'model_2_stem_061321.yaml')) as f:
-		config = ConfigDict(yaml.load(f, Loader=yaml.FullLoader))
+# 	with open(os.path.join(model_folder, 'model_2_stem_061321.yaml')) as f:
+# 		config = ConfigDict(yaml.load(f, Loader=yaml.FullLoader))
 
-	model = TFC_TDF_net(config)
-	model.load_state_dict(torch.load(os.path.join(model_folder, 'MDX23C_D1581.ckpt')))
-	device = torch.device(device)
-	model = model.to(device)
-	model.eval()
+# 	model = TFC_TDF_net(config)
+# 	model.load_state_dict(torch.load(os.path.join(model_folder, 'MDX23C_D1581.ckpt')))
+# 	device = torch.device(device)
+# 	model = model.to(device)
+# 	model.eval()
 
-	sources = demix_base_mdxv3(config, model, mix, device, overlap)
-	del model
-	gc.collect()
+# 	sources = demix_base_mdxv3(config, model, mix, device, overlap)
+# 	del model
+# 	gc.collect()
 
-	return sources
+# 	return sources
 
 def demix_base(mix, device, models, infer_session):
 	sources = []
@@ -223,7 +223,7 @@ def demix_base(mix, device, models, infer_session):
 	
 	return np.array(sources)
 
-def demix_full(mix, device, chunk_size, model, infer_session, overlap=0.2, bigshifts=1, CONSOLE=None):
+def demix_full(mix, device, chunk_size, model, infer_session, overlap=0.2, bigshifts=1, CONSOLE = None):
 	step = int(chunk_size * (1 - overlap))
 	shift_number = bigshifts # must not be <= 0 !
 	if shift_number < 1:
@@ -266,10 +266,6 @@ def demix_full(mix, device, chunk_size, model, infer_session, overlap=0.2, bigsh
 			result = np.concatenate((result[..., shift_samples:], result[..., :shift_samples]), axis=-1)
 			results.append(result)
 		
-	# Reopen std output previously closed by tqdm
-	# if not CONSOLE:
-	# 	sys.stdout = sys.__stdout__
-
 	results = np.mean(results, axis=0)
 	return results
 
@@ -339,10 +335,10 @@ class MusicSeparationModel:
 				elif name == vocals:  self.model_vocals = row
 		
 		if self.model_instrum is None:
-			self.raise_aicrowd_error("Model for Instrumentals not found !")
+			print("Parameters for this Instrumentals model not found in the CSV !")
 			sys.exit(1)
 		if self.model_vocals is None:
-			self.raise_aicrowd_error("Model for Vocals not found !")
+			print("Parameters for this Vocals model not found in the CSV !")
 			sys.exit(1)
 		
 		# IMPORTANT : Volume Compensations specific for each model !
@@ -356,12 +352,16 @@ class MusicSeparationModel:
 		filename = self.model_instrum['Repo_FileName'].replace("UVR-MDX-NET-","").replace("UVR_MDXNET_","")
 		self.model_path_onnx1 = os.path.join(self.Project, "Models", filename)
 		if not os.path.isfile(self.model_path_onnx1):
-			torch.hub.download_url_to_file(remote_url + self.model_instrum['Repo_FileName'], self.model_path_onnx1)
+			if not Download_Model(self.model_instrum['Name'], remote_url + self.model_instrum['Repo_FileName'], self.model_path_onnx1, self.CONSOLE):
+				print("Download of model for Instrumentals FAILED !!")
+				sys.exit(1)
 
 		filename = self.model_vocals['Repo_FileName'].replace("UVR-MDX-NET-","").replace("UVR_MDXNET_","")
 		self.model_path_onnx2 = os.path.join(self.Project, "Models", filename)
 		if not os.path.isfile(self.model_path_onnx2):
-			torch.hub.download_url_to_file(remote_url + self.model_vocals['Repo_FileName'], self.model_path_onnx2)
+			if not Download_Model(self.model_vocals['Name'], remote_url + self.model_vocals['Repo_FileName'], self.model_path_onnx2, self.CONSOLE):
+				print("Download of model for Vocals FAILED !!")
+				sys.exit(1)
 		
 		# Load Models
 		if self.large_gpu:
@@ -395,7 +395,7 @@ class MusicSeparationModel:
 			audio_mp3.name = "Preview.mp3"
 			
 			# Get the first 60 seconds of the audio
-			audio = audio[:, :int(60.5 * self.sample_rate)]
+			audio = audio[:, :int(60.3 * self.sample_rate)]
 
 			# Convert audio to PCM_16 audio data (bytes)
 			audio_tmp = (audio.T * 32768).astype(np.int16)  # 2 ^15
@@ -781,6 +781,34 @@ class MusicSeparationModel:
 		# self.Save_Audio("Bleedings - Test 2" + format, bleeding_2)
 		# self.Save_Audio("Bleedings - Test 3" + format, bleeding_3)
 
+
+def Download_Model(name, remote_url, local_path, CONSOLE = None):
+	
+	print(f'Downloading model : "{name}" ...')
+	try:
+		response = requests.get(remote_url, stream=True)
+		response.raise_for_status()  # Raise an exception in case of HTTP error code
+		
+		if response.status_code == 200:
+			total_size = int(response.headers.get('content-length', 0))
+			with open(local_path, 'wb') as file:
+				with CONSOLE if CONSOLE else stdout_redirect_tqdm() as output:
+					with tqdm(
+						file=output, total=total_size,
+						unit='B', unit_scale=True, unit_divisor=1024,
+						ncols=40, dynamic_ncols=True, mininterval=1.0
+					) as bar:
+						for data in response.iter_content(chunk_size=1024):
+							bar.update(len(data))
+							file.write(data)
+			return True
+		else:
+			return False
+	
+	except (requests.exceptions.RequestException, requests.exceptions.ChunkedEncodingError) as e:
+		print(f"Error during Downloading !!\n{e}")
+		if os.path.exists(local_path):  os.remove(local_path)
+		return False
 
 def Normalize(audio):
 	"""

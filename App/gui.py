@@ -59,6 +59,15 @@ def Run(Gdrive, isColab, Fresh_install):
 	# Get config values
 	config = App.settings.Load(Gdrive, isColab)
 
+	# Fill Models dropdowns
+	instrum = []; vocals = []
+	with open(os.path.join(Gdrive, "KaraFan", "Models", "_PARAMETERS_.csv")) as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			# ignore "Other" stems
+			if row['Stem'] == "Instrumental":	instrum.append(row['Name'])
+			elif row['Stem'] == "Vocals":		vocals.append(row['Name'])
+
 	# KaraFan Title
 	display(HTML('<div style="font-size: 24px; font-weight: bold; margin: 15px 0">KaraFan - version '+ Version +'</div>'))
 	
@@ -78,8 +87,8 @@ def Run(Gdrive, isColab, Fresh_install):
 	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'200px'}, style=font_input)
 	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
 	# preset_models	= widgets.HTML('<div style="font-size: '+ font_small + '; margin-left: 12px">♒ Vocals : « Kim Vocal 2 », Instrum : « Inst HQ 3 »</div>')
-	model_instrum	= widgets.Dropdown(options = [], layout = {'width':'200px'}, style=font_input)
-	model_vocals	= widgets.Dropdown(options = [], layout = {'width':'200px'}, style=font_input)
+	model_instrum	= widgets.Dropdown(value = config['PROCESS']['model_instrum'], options = instrum, layout = {'width':'200px'}, style=font_input)
+	model_vocals	= widgets.Dropdown(value = config['PROCESS']['model_vocals'],  options = vocals,  layout = {'width':'200px'}, style=font_input)
 	# OPTIONS
 	bigshifts_MDX	= widgets.IntSlider(int(config['OPTIONS']['bigshifts_MDX']), min=1, max=41, step=1, style=font_input)
 	overlap_MDX		= widgets.FloatSlider(float(config['OPTIONS']['overlap_MDX']), min=0, max=0.95, step=0.05, style=font_input)
@@ -389,26 +398,6 @@ function show_help(index) {\
 	# Update input_info and output_info after loading
 	on_input_change({'new': input_path.value})
 	on_output_change({'new': output_path.value})
-
-	# Fill & Select Models dropdowns
-	instrum = []; vocals = []
-	with open(os.path.join(Gdrive, "KaraFan", "Models", "_PARAMETERS_.csv")) as csvfile:
-		reader = csv.DictReader(csvfile)
-		for row in reader:
-			# ignore "Other" stems
-			if row['Stem'] == "Instrumental":	instrum.append(row['Name'])
-			elif row['Stem'] == "Vocals":		vocals.append(row['Name'])
-
-	model_instrum.options = instrum
-	model_vocals.options  = vocals
-
-	# Select the current model
-	select = config['PROCESS']['model_instrum']
-	for name in instrum:
-		if name == select: model_instrum.value = name
-	select = config['PROCESS']['model_vocals']
-	for name in vocals:
-		if name == select: model_vocals.value = name
 
 
 def Get_SysInfos(font_size):

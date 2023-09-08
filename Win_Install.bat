@@ -1,6 +1,5 @@
 @echo off
 
-
 echo ` ****  Install_PyTorch_CUDA  ****
 echo.
 echo ` You have to uninstall "Torch" before

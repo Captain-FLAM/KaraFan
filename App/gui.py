@@ -3,7 +3,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, sys, re, glob, json, subprocess
+import os, sys, re, csv, glob, json, subprocess
 
 import ipywidgets as widgets
 from IPython.display import display, HTML
@@ -75,9 +75,11 @@ def Run(Gdrive, isColab, Fresh_install):
 	Btn_Create_input  = widgets.Button(description='➕', tooltip="Create the input folder",  button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
 	Btn_Create_output = widgets.Button(description='➕', tooltip="Create the output folder",  button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
 	# PROCESS
-	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'150px'}, style=font_input)
-	preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
-	preset_models	= widgets.HTML('<div style="font-size: '+ font_small + '; margin-left: 12px">♒ Vocals : « Kim Vocal 2 », Instrum : « Inst HQ 3 »</div>')
+	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'200px'}, style=font_input)
+	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
+	# preset_models	= widgets.HTML('<div style="font-size: '+ font_small + '; margin-left: 12px">♒ Vocals : « Kim Vocal 2 », Instrum : « Inst HQ 3 »</div>')
+	model_instrum	= widgets.Dropdown(options = [], layout = {'width':'200px'}, style=font_input)
+	model_vocals	= widgets.Dropdown(options = [], layout = {'width':'200px'}, style=font_input)
 	# OPTIONS
 	bigshifts_MDX	= widgets.IntSlider(int(config['OPTIONS']['bigshifts_MDX']), min=1, max=41, step=1, style=font_input)
 	overlap_MDX		= widgets.FloatSlider(float(config['OPTIONS']['overlap_MDX']), min=0, max=0.95, step=0.05, style=font_input)
@@ -110,12 +112,13 @@ def Run(Gdrive, isColab, Fresh_install):
 					widgets.HBox([ Label("Input X file or PATH", 101), input_path, Btn_Create_input ]),
 					input_warning,
 					widgets.HBox([ Label("Output PATH", 102), output_path, Btn_Create_output ]),
-					widgets.HBox([ widgets.HTML('<div class="option-label">Your final path</div>'), output_info ]),
+					widgets.HBox([ widgets.HTML('<div class="option-label" style="color:#999">Your Final path</div>'), output_info ]),
 				]),
 				separator,
 				widgets.VBox([
 					widgets.HBox([ Label("Output Format", 201), output_format ]),
-					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
+#					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
+					widgets.HBox([ Label("MDX Models", 203), model_instrum, widgets.HTML('<span style="font-size:20px"> 🎵 &nbsp;</span>'), model_vocals, widgets.HTML('<span style="font-size:20px"> 💋</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
@@ -179,6 +182,9 @@ def Run(Gdrive, isColab, Fresh_install):
 			HELP.value = '<div id="HELP"><div style="color: #f00">'+ msg +'</div></div>'
 			return
 		
+		input_path.value = os.path.normpath(input_path.value)
+		output_path.value = os.path.normpath(output_path.value)
+
 		# Save config
 		config['PATHS'] = {
 			'input': input_path.value,
@@ -186,7 +192,9 @@ def Run(Gdrive, isColab, Fresh_install):
 		}
 		config['PROCESS'] = {
 			'output_format': output_format.value,
-			'preset_genre': preset_genre.value,
+#			'preset_genre': preset_genre.value,
+			'model_instrum': model_instrum.value,
+			'model_vocals': model_vocals.value,
 		}
 		config['OPTIONS'] = {
 			'bigshifts_MDX': bigshifts_MDX.value,
@@ -211,10 +219,13 @@ def Run(Gdrive, isColab, Fresh_install):
 		real_input  = os.path.join(Gdrive, input_path.value)
 		
 		options = {
+			'Gdrive': Gdrive,
 			'CONSOLE': CONSOLE,
 			'output': output_path.value,
 			'output_format': output_format.value,
-			'preset_genre': preset_genre.value,
+#			'preset_genre': preset_genre.value,
+			'model_instrum': model_instrum.value,
+			'model_vocals': model_vocals.value,
 			'bigshifts_MDX': bigshifts_MDX.value,
 			'overlap_MDX': overlap_MDX.value,
 #			'overlap_MDXv3': overlap_MDXv3.value,
@@ -267,7 +278,10 @@ def Run(Gdrive, isColab, Fresh_install):
 		if HELP.value.find("ERROR") != -1:
 			HELP.value = '<div id="HELP"></div>'  # Clear HELP
 			
-		path = os.path.normpath(change['new'])
+		# DO NOT USE os.path.normpath() :
+		# it will remove the last separator in real-time --> impossible to type it in the input field !
+		path = change['new']
+		path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
 
 		if path.find(Gdrive) != -1:
 			path = path.replace(Gdrive, "")  # Remove Gdrive path from "input"
@@ -295,7 +309,8 @@ def Run(Gdrive, isColab, Fresh_install):
 		if HELP.value.find("ERROR") != -1:
 			HELP.value = '<div id="HELP"></div>'  # Clear HELP
 			
-		path = os.path.normpath(change['new'])
+		path = change['new']
+		path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
 
 		if path.find(Gdrive) != -1:
 			path = path.replace(Gdrive, "")  # Remove Gdrive path from "output"
@@ -337,10 +352,11 @@ help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside th
 help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
 help_index[2][1] = "Choose your prefered audio format to save audio files.";\
 help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
+help_index[2][3] = "MDX A.I models : Choose the best pair to your audio file.<br>Instrumental is ONLY used to help Vocals processing, so better to focus more on Vocals...<br><b>WARNING</b> : Actually, I only FINE-TUNED « Kim Vocal 2 » and « Inst HQ 3 » (best for ROCK).";\
 help_index[3][1] = "Set MDX « BigShifts » trick value. (default : 11)<br><br>Set it to = 1 to disable that feature.";\
 help_index[3][2] = "Overlap of splited audio for heavy models. (default : 0.0)<br><br>Closer to 1.0 - slower.";\
 help_index[3][3] = "MDX version 3 overlap. (default : 8)";\
-help_index[3][4] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption and if you have memory errors !";\
+help_index[3][4] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
 help_index[3][5] = "Use « SRS » vocal 2nd pass : can be useful for high vocals (Soprano by e.g)";\
 help_index[3][6] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
 help_index[4][1] = "IF checked, it will save all intermediate audio files to compare with the final result.";\
@@ -373,6 +389,26 @@ function show_help(index) {\
 	# Update input_info and output_info after loading
 	on_input_change({'new': input_path.value})
 	on_output_change({'new': output_path.value})
+
+	# Fill & Select Models dropdowns
+	instrum = []; vocals = []
+	with open(os.path.join(Gdrive, "KaraFan", "Models", "_PARAMETERS_.csv")) as csvfile:
+		reader = csv.DictReader(csvfile)
+		for row in reader:
+			# ignore "Other" stems
+			if row['Stem'] == "Instrumental":	instrum.append(row['Name'])
+			elif row['Stem'] == "Vocals":		vocals.append(row['Name'])
+
+	model_instrum.options = instrum
+	model_vocals.options  = vocals
+
+	# Select the current model
+	select = config['PROCESS']['model_instrum']
+	for name in instrum:
+		if name == select: model_instrum.value = name
+	select = config['PROCESS']['model_vocals']
+	for name in vocals:
+		if name == select: model_vocals.value = name
 
 
 def Get_SysInfos(font_size):

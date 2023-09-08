@@ -1,5 +1,6 @@
 __pycache__
 /.vscode/
-/Models/
+/Models/*.onnx
+/Models/*.ckpt
 /Config_PC.ini
 /Config_Colab.ini

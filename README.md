@@ -1,6 +1,6 @@
 # 🎵 KaraFan  [![](https://img.shields.io/github/stars/Captain-FLAM/KaraFan?color=ff0080&style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/stargazers) [![](https://img.shields.io/github/license/Captain-FLAM/KaraFan?style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/blob/master/LICENSE)
 
-[![KaraFan](images/KaraFan_mini.png)](images/KaraFan.png)
+<img src="images/KaraFan_mini.png" style="float:right" alt="KaraFan">
 
 The BEST music separation model with help of **A.I** ... to my ears ! 👂👂
 
@@ -8,31 +8,35 @@ As you've guessed, it was made specially for Karaoke (▶️ focus on musical pa
 
 This project is open to all goodwill.
 
-If you want to encourage me to give more time to improve this project, you can make a donation or become one of my patrons :
+If you want to encourage me to give more time to improve this project,
+you can make a donation or become one of my patrons :
 
-* [![Patreon](https://img.shields.io/badge/Donate-Patreon-red.svg)](https://www.patreon.com/Captain_FLAM)
+[![](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee%20for%20morning&emoji=:☕&slug=Captain_FLAM&button_colour=c29883&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=FFDD00)](https://www.buymeacoffee.com/Captain_FLAM/membership)
+[![](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20beer%20for%20the%20night&emoji=🍺&slug=Captain_FLAM&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/Captain_FLAM/membership)
 
-Coming Soon ...
+[![Patreon](https://img.shields.io/badge/Donate-Patreon-red.svg?style=for-the-badge)](https://www.patreon.com/Captain_FLAM/membership)
 
-* ![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg)
-* ![Beer](https://img.shields.io/badge/Donate-Buy%20me%20a%20beer-yellow.svg)
+And if you have some Bitcoins (or cryptos) that you don't know what to do with : Coming Soon ... (in waiting, )
+
+![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)
 
 You can reach me by [email](https://github.com/Captain-FLAM) or Join all of us on this  [![Discord](images/discord.svg) Discord server](https://discord.com/channels/708579735583588363/887455924845944873) !
 
 # 📖 Table of Contents
 
-- [🔥 INTRODUCTION](#-introduction)
-- [💤 AN OLD DREAM](#-an-old-dream)
-- [🧒 BIOGRAPHY](#-biography)
-- [📆 HISTORY](#-history)
-- [🤡 MY ADVICES](#-my-advices)
-- [🚀 INSTALLATION](#-installation)
-- [📂 STRUCTURE](#-structure)
-- [💡 TECHNICAL DETAILS](#-technical-details)
-- [🦄 NEAR FUTURE](#-near-future)
-- [😍 WALL OF FAME](#-wall-of-fame)
-- [📝 TODO LIST](#-todo-list)
-- [💗 SPECIAL THANKS TO...](#-special-thanks-to)
+- [🔥 Introduction](#-introduction)
+- [💤 An Old Dream](#-an-old-dream)
+- [🧒 Biography](#-biography)
+- [📆 History](#-history)
+- [📈 Changes Log](#-changes-log)
+- [🤡 My Advices](#-my-advices)
+- [🚀 Installation](#-installation)
+- [📂 Structure](#-structure)
+- [💡 Technical Details](#-technical-details)
+- [🦄 Near Future](#-near-future)
+- [😍 Wall of Fame](#-wall-of-fame)
+- [📝 Todo List](#-todo-list)
+- [💗 Special Thanks To...](#-special-thanks-to)
 - [📜 LICENSE](#-license)
 
 ---
@@ -51,7 +55,7 @@ Since my childhood, I sing everytime and I've been dreaming of a software that w
 
 TODAY, I'M 54 YEARS OLD, I'M STILL SINGING, AND MY DREAM HAS COME TRUE !
 
-Now, I have the ability to create my own « **KFN** » files for my favorite songs, featuring real musicians who played on the original track, and use them with my beloved software : « KaraFun » 🎤💋.
+Now, I have the ability to create my own « **KFN** » files for my favorite songs, featuring real musicians who played on the original track, and use them with my beloved software : « KaraFun » 🎤💋
 
 [KaraFun](https://www.karafun.com/) is a free software that you can use to play Karaoke files on your PC.
 They have subscription plans to access their huge library of songs, but you can also use for free with **your own** MID, KAR, CDG & KFN files !!
@@ -80,14 +84,27 @@ So I decided to create my own process, based on the MDX models, but with the **b
 
 I also added a few tricks to improve the quality of the results.
 
+# 📈 CHANGES LOG
+
+| Date       | Version | Description                                                                                                                                                                                                                                       |
+| ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2023-09-07 | 1.2     | Possibility to choose any MDX A.I models for Instrum & Vocals                                                                                                                                                                                     |
+| 2023-09-06 | 1.1     | - Bugs Fixed with the returns of Discord's people<br />- One can choose the ouput directory                                                                                                                                                       |
+| 2023-09-05 | 1.0     | First version[ dropped on Discord](https://discord.com/channels/708579735583588363/887455924845944873/1148718029857890324) (buggy)                                                                                                                   |
+| 2023-09-03 | 0.8     | Post the first R.T.F.R.M. (Read The Fucking "READ ME") on GitHub                                                                                                                                                                                  |
+| 2023-08-19 | 0.5     | - Inform people on Discord that I'm working on a it...<br />« KaraFan » was born ! 🎉🎉🎉                                                                                                                                                       |
+| 2023-08-03 | 0.1     | I started to dig infos on Discord to find the best models & process to use<br />(follow this link if you wanna [read all the story](https://discord.com/channels/708579735583588363/887455924845944873/1136629816246935654) since the beginning ...) |
+| 2023-07-12 | 0.0     | I found & tried Facebook Demucs model, and the idea started to grow in my mind ...                                                                                                                                                                |
+
 # 🤡 MY ADVICES
 
 ... to get the best instrumental results :
 
 - Use a **Full Band** input audio files (preferably FLAC instead of MP3).
-- Save your audio files in **FLAC** format instead of MP3, because it's a destructive format (by e.g : I had to use CBR 320k joint-stereo to avoid cut-off @ 16 Khz).
-- Check the quality of the input audio file in Audacity (with **Linear** Spectrogram view) to have at least 20 Khz of bandwidth.[![Audacity Spectrogram](images/Advice_Spectrogram_mini.jpg)](images/Advice_Spectrogram.jpg)
-- Use the « SRS » option (see below) to get a full band result with the narrow band voices models (e.g : Kim Vocal 2).
+- Save your audio files in **FLAC** format instead of MP3, because it's a destructive format !(by e.g : I had to propose to you ONLY the CBR 320k Joint-Stereo to avoid Cut-OFF @ 16 Khz in saved files).
+- Check the quality of the **input audio** file in Audacity (with **Linear Spectrogram** view) to have at least 20 Khz of Bandwidth.[![Audacity Spectrogram](images/Advice_Spectrogram_mini.jpg)](images/Advice_Spectrogram.jpg)
+- Use the « SRS » option (see below) to get a full band result with the Narrow Band voices models.
+  (it can helps to get more brillant vocals)
 
 ---
 
@@ -106,7 +123,7 @@ I develop this project with **GUI** in mind and it works :
 
 ### ✅ on Google Colab
 
-1️⃣ Go there : [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/13-OUDee682Do1fnvbIGqnto0aaHjcn-X/view?usp=sharing)
+1️⃣ Go there : [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Captain-FLAM/KaraFan/blob/master/KaraFan.ipynb)
 
 and **copy** this Colab notebook on your Google Drive.
 (Menu > File > Save a copy on Drive)
@@ -218,16 +235,16 @@ Details of each step :
 
  1️⃣ **Normalization of Original audio**
 
-- Normalize audio to -1.0 db peak amplitude
+- Normalize audio to -1.0 dB peak amplitude
 
-This is mandatory because every process is based on RMS db levels.
+This is mandatory because every process is based on RMS dB levels.
 (Volumes Compensations & audio Substractions)
 
 2️⃣ **Instrumental Extraction from Normalized**
 You will understand that I only use this model to extract the instrumental part to have at most a clean vocals, but it is not used in the final result.
 In all my tests, I saw (in Audacity) & heard that this helps to reduce the artifacts in the final Vocals result.
 
-- Use the MDX model to isolate the instrumental parts of the audio track.
+- Use the **MDX model** to isolate the instrumental parts of the audio track.
 
 3️⃣ **Volume Compensation for Instrumental**
 
@@ -240,11 +257,12 @@ The instrumental part is then subtracted from the previously normalized to obtai
 
 5️⃣ **Vocal Extraction from cleaned "Audio_sub_Music"**
 
-- Use the MDX model to isolate the vocal component of the music track, removing any remaining instrumental or background noise.
+- Use the **MDX model** to isolate the vocal component of the music track, removing any remaining instrumental or background noise.
 
-6️⃣ **Volume Compensation for Vocals**
+6️⃣ **Volume Compensation for Vocals + « Silent »**
 
 - Internal step involving volume compensation for the extracted vocal audio.
+- Pass the result trough the **« Silent » filter** (read below ...)
 
 7️⃣ **Subtraction of Vocals from Normalized**
 The vocal parts are subtracted from the previously normalized to obtain an audio track with only instrumental music.
@@ -357,7 +375,8 @@ Stupid ideas given by my A.I assistant « GitHub Copilot » : (I'm not responsib
 
 ..., and now, my brain is overheating ! 😵
 
-- [ ] Add more Models (but always with fine-tuned volume compensation for each !)
+- [X] Add more Models (but NOT with fine-tuned volume compensation for each !)
+- [ ] Automatic fine-tuning of volume compensation for each song
 - [ ] Separate Choirs from Vocals (very hard challenge !)
 - [ ] etc ... etc ... etc ..
 

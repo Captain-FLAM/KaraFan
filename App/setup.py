@@ -35,14 +35,10 @@ def Install(Gdrive, isColab, Fresh_install):
 		sys.exit(1)
 	
 	os.chdir(Gdrive)
-	Project_path = os.path.join(Gdrive, "KaraFan")
-
-	# Create Models directory if not exists
-	if not os.path.exists(os.path.join(Project_path, "Models")):
-		os.mkdir(os.path.join(Project_path, "Models"))
+	Project = os.path.join(Gdrive, "KaraFan")
 
 	# Get local version
-	with open(os.path.join(Project_path, "App", "__init__.py"), "r") as version_file:
+	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
 		Version = version_file.readline().replace("# Version", "").strip()
 
 	# Auto-Magic update !
@@ -62,7 +58,7 @@ def Install(Gdrive, isColab, Fresh_install):
 			if Git_version > Version:
 				print(f'Updating "KaraFan" project to version {Git_version} ...')
 				try:
-					subprocess.run(["git", "-C", Project_path, "pull"], text=True, capture_output=True, check=True)
+					subprocess.run(["git", "-C", Project, "pull"], text=True, capture_output=True, check=True)
 
 					Version = Git_version;  New_Version = True
 					

@@ -10,7 +10,7 @@
 #   https://github.com/Captain-FLAM/KaraFan
 
 
-import os, gc, io, sys, base64, argparse, yaml
+import os, gc, io, sys, csv, base64, argparse, yaml
 import numpy as np
 import onnxruntime as ort
 import torch, torch.nn as nn
@@ -89,19 +89,17 @@ class Conv_TDF_net_trim_model(nn.Module):
 		x = self.final_conv(x)
 		return x
 
-def get_models(device, vocals_model_type = 0, primary_stem = 'vocals'):
-	fft = None
-	match vocals_model_type:
-		case 2: fft = 7680  # Narrow Band
-		case 3: fft = 6144  # FULL Band
-	if fft:
-		model = Conv_TDF_net_trim_model(
-			device = device,
-			target_name = primary_stem,  # I suppose you can use '*' to get both vocals and instrum, with the new MDX23C model ...
-			L = 11,
-			n_fft = fft
-		)
-		return [model]
+def get_models(device, FFT, primary_stem = 'vocals'):
+	# ??? NOT so simple ... ???
+	# FFT = 7680  --> Narrow Band
+	# FFT = 6144  --> FULL Band
+	model = Conv_TDF_net_trim_model(
+		device = device,
+		target_name = primary_stem,  # I suppose you can use '*' to get both vocals and instrum, with the new MDX23C model ...
+		L = 11,
+		n_fft = int(FFT)
+	)
+	return [model]
 
 def demix_base_mdxv3(config, model, mix, device, overlap):
 	mix = torch.tensor(mix, dtype=torch.float32)
@@ -281,13 +279,13 @@ class MusicSeparationModel:
 	"""
 	def __init__(self, options):
 
-		model_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "Models")
-
+		# self.Gdrive  = options['Gdrive']
+		self.Project = os.path.join(options['Gdrive'], "KaraFan")
 		self.CONSOLE = options['CONSOLE']
 
 		self.output			= options['output']
 		self.output_format	= options['output_format']
-		self.preset_genre	= options['preset_genre']
+#		self.preset_genre	= options['preset_genre']
 		
 		self.bigshifts_MDX	= int(options['bigshifts_MDX'])
 		self.overlap_MDX	= float(options['overlap_MDX'])
@@ -326,22 +324,51 @@ class MusicSeparationModel:
 		if self.bigshifts_MDX < 1:		self.bigshifts_MDX = 1
 
 		# MDX-B models initialization
-		
-		remote_url = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/UVR-MDX-NET-Inst_HQ_3.onnx'
-		self.model_path_onnx1 = os.path.join(model_folder, 'UVR_MDX_Instr_HQ3.onnx')
-		if not os.path.isfile(self.model_path_onnx1):
-			torch.hub.download_url_to_file(remote_url, self.model_path_onnx1)
 
-		remote_url = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/Kim_Vocal_2.onnx'
-		self.model_path_onnx2 = os.path.join(model_folder, 'Kim_Vocal_2.onnx')
-		if not os.path.isfile(self.model_path_onnx2):
-			torch.hub.download_url_to_file(remote_url, self.model_path_onnx2)
+		self.model_instrum = None
+		self.model_vocals  = None
+		instrum = options['model_instrum'].replace("_", " ")  # _ is used for command line
+		vocals  = options['model_vocals'].replace("_", " ")
+
+		with open(os.path.join(self.Project, "Models", "_PARAMETERS_.csv")) as csvfile:
+			reader = csv.DictReader(csvfile)
+			for row in reader:
+				# ignore "Other" stems for now !
+				name = row['Name']
+				if name == instrum:   self.model_instrum = row
+				elif name == vocals:  self.model_vocals = row
 		
+		if self.model_instrum is None:
+			self.raise_aicrowd_error("Model for Instrumentals not found !")
+			sys.exit(1)
+		if self.model_vocals is None:
+			self.raise_aicrowd_error("Model for Vocals not found !")
+			sys.exit(1)
+		
+		# IMPORTANT : Volume Compensations specific for each model !
+
+		self.COMPENSATION_Instrum = float(self.model_instrum['Compensation'])
+		self.COMPENSATION_Vocals  = float(self.model_vocals['Compensation'])
+
+		# Download Models
+		remote_url = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/'
+		
+		filename = self.model_instrum['Repo_FileName'].replace("UVR-MDX-NET-","").replace("UVR_MDXNET_","")
+		self.model_path_onnx1 = os.path.join(self.Project, "Models", filename)
+		if not os.path.isfile(self.model_path_onnx1):
+			torch.hub.download_url_to_file(remote_url + self.model_instrum['Repo_FileName'], self.model_path_onnx1)
+
+		filename = self.model_vocals['Repo_FileName'].replace("UVR-MDX-NET-","").replace("UVR_MDXNET_","")
+		self.model_path_onnx2 = os.path.join(self.Project, "Models", filename)
+		if not os.path.isfile(self.model_path_onnx2):
+			torch.hub.download_url_to_file(remote_url + self.model_vocals['Repo_FileName'], self.model_path_onnx2)
+		
+		# Load Models
 		if self.large_gpu:
 			print("Large GPU mode is enabled : Loading models now...")
 
-			self.mdx_model1 = get_models(device = self.device, vocals_model_type = 3, primary_stem = 'instrum')
-			self.mdx_model2 = get_models(device = self.device, vocals_model_type = 2, primary_stem = 'vocals')
+			self.mdx_model1 = get_models(self.device, self.model_instrum['N_FFT_scale'], primary_stem = 'instrum')
+			self.mdx_model2 = get_models(self.device, self.model_vocals['N_FFT_scale'],  primary_stem = 'vocals')
 
 			self.infer_session1 = ort.InferenceSession(
 				self.model_path_onnx1,
@@ -475,7 +502,7 @@ class MusicSeparationModel:
 		ZFTurbo also added this to Demucs in the original MVSep-MDX23 code.
 
 		Jarredou -> I've never really tested whether it's really useful for Demucs or not, though.
-		Captain-FLAM -> I've tested it, and it's really useful : suppress noise between ~ -42 db < -58 db !
+		Captain-FLAM -> I've tested it, and it's really useful : suppress noise between ~ -42 dB < -58 dB !
 		"""
 
 		if stem == 'vocals':
@@ -540,11 +567,6 @@ class MusicSeparationModel:
 		Implements the sound separation for a single sound file
 		"""
 
-		# IMPORTANT : Volumes Compensation specific for each model !
-
-		self.COMPENSATION_Instrum = 1.0240
-		self.COMPENSATION_Vocals  = 1.0085
-
 		name = os.path.splitext(os.path.basename(file))[0]
 		print("Go with : " + name)
 
@@ -597,7 +619,7 @@ class MusicSeparationModel:
 		if instrum is False:
 			if not self.large_gpu:
 				print("(Large GPU mode is disabled : Loading Instrumental model now...)")
-				self.mdx_model1 = get_models(device = self.device, vocals_model_type = 3, primary_stem = 'instrum')
+				self.mdx_model1 = get_models(self.device, self.model_instrum['N_FFT_scale'], primary_stem = 'instrum')
 				self.infer_session1 = ort.InferenceSession(
 					self.model_path_onnx1,
 					providers = self.providers,
@@ -649,7 +671,7 @@ class MusicSeparationModel:
 				load_model = True
 			if load_model:
 				print("(Large GPU mode is disabled : Loading Vocals model now...)")
-				self.mdx_model2 = get_models(device = self.device, vocals_model_type = 2, primary_stem = 'vocals')
+				self.mdx_model2 = get_models(self.device, self.model_vocals['N_FFT_scale'], primary_stem = 'vocals')
 				self.infer_session2 = ort.InferenceSession(
 					self.model_path_onnx2,
 					providers = self.providers,
@@ -691,7 +713,7 @@ class MusicSeparationModel:
 
 			# *3/4 = Dynamic SRS personal taste of "Jarredou", to avoid too much SRS noise
 			# He also told me that 12 Khz cut-off was setted for MDX23C model, but 14 Khz is better for other MDX models
-			# vocals = lr_filter(vocals.T, 12000, 'lowpass') + lr_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
+			# old formula :  vocals = lr_filter(vocals.T, 12000, 'lowpass') + lr_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
 
 			vocals = lr_filter(vocals.T, 14000, 'lowpass') + lr_filter(vocals_SRS.T, 14000, 'highpass')
 			vocals = vocals.T
@@ -762,8 +784,8 @@ class MusicSeparationModel:
 
 def Normalize(audio):
 	"""
-	Normalize audio to -1.0 db peak amplitude
-	This is mandatory because every process is based on RMS db levels.
+	Normalize audio to -1.0 dB peak amplitude
+	This is mandatory because every process is based on RMS dB levels.
 	(Volumes Compensations & audio Substractions)
 	"""
 	audio = audio.T
@@ -771,10 +793,10 @@ def Normalize(audio):
 	# Suppress DC shift (center on 0.0 vertically)
 	audio -= np.mean(audio)
 
-	# Normalize audio peak amplitude to -1.0 db
+	# Normalize audio peak amplitude to -1.0 dB
 	max_peak = np.max(np.abs(audio))
 	if max_peak > 0.0:
-		max_db = 10**(-1.0 / 20)  # Convert -1.0 dB to linear scale
+		max_db = 10 ** (-1.0 / 20)  # Convert -1.0 dB to linear scale
 		audio /= max_peak
 		audio *= max_db
 
@@ -932,11 +954,13 @@ if __name__ == '__main__':
 	m.add_argument('--output', type=str, help='Output folder location for extracted audio files results.')
 	m.add_argument('--use_config', action='store_true', help='Use "Config_PC.ini" instead of specifying all options in command line.', default=False)
 	m.add_argument('--output_format', type=str, help='Output audio format : "FLAC" (24 bits), "MP3" (CBR 320 kbps), "PCM_16" or "FLOAT" (WAV - PCM 16 bits / FLOAT 32 bits).', default='FLAC')
-	m.add_argument('--preset_genre', type=str, help='Genre of music to automatically select the best A.I models.', default='Pop Rock')
+#	m.add_argument('--preset_genre', type=str, help='Genre of music to automatically select the best A.I models.', default='Pop Rock')
+	m.add_argument('--model_instrum', type=str, help='MDX A.I Instrumental model NAME : Replace "spaces" in model\'s name by underscore "_".', default='Instrum HQ 3')
+	m.add_argument('--model_vocals',  type=str, help='MDX A.I Vocals model NAME : Replace "spaces" in model\'s name by underscore "_".', default='Kim Vocal 2')
 	m.add_argument('--bigshifts_MDX', type=int, help='Managing MDX "BigShifts" trick value.', default=12)
 	m.add_argument('--overlap_MDX', type=float, help='Overlap of splited audio for heavy models. Closer to 1.0 - slower.', default=0.0)
 #	m.add_argument('--overlap_MDXv3', type=int, help='MDXv3 overlap', default=8)
-	m.add_argument('--chunk_size', type=int, help='Chunk size for ONNX models. Set lower to reduce GPU memory consumption. Default: 500000', default=500000)
+	m.add_argument('--chunk_size', type=int, help='Chunk size for ONNX models. Set lower to reduce GPU memory consumption OR if you have GPU memory errors !. Default: 500000', default=500000)
 	m.add_argument('--use_SRS', action='store_true', help='Use "SRS" vocal 2nd pass : can be useful for high vocals (Soprano by e.g)', default=False)
 	m.add_argument('--large_gpu', action='store_true', help='It will store all models on GPU for faster processing of multiple audio files. Requires more GB of free GPU memory.', default=False)
 	m.add_argument('--DEBUG', action='store_true', help='This option will save all intermediate audio files to compare with the final result.', default=False)
@@ -944,16 +968,22 @@ if __name__ == '__main__':
 	
 	options = m.parse_args().__dict__
 
+	# We are on a PC : Get the current path and remove last part (KaraFan)
+	Gdrive = os.getcwd().replace("KaraFan","").rstrip(os.path.sep)
+
+	options['Gdrive'] = Gdrive
+	options['CONSOLE'] = None
+	options['PREVIEWS'] = False
+
 	if options['use_config'] == True:
 		
-		# We are on a PC : Get the current path and remove last part (KaraFan)
-		Gdrive = os.getcwd().replace("KaraFan","").rstrip(os.path.sep)
-
 		config = App.settings.Load(Gdrive, False)
 		
 		options['output']			= config['PATHS']['output']
 		options['output_format']	= config['PROCESS']['output_format']
-		options['preset_genre']		= config['PROCESS']['preset_genre']
+#		options['preset_genre']		= config['PROCESS']['preset_genre']
+		options['model_instrum']	= config['PROCESS']['model_instrum']
+		options['model_vocals']		= config['PROCESS']['model_vocals']
 		options['bigshifts_MDX']	= int(config['OPTIONS']['bigshifts_MDX'])
 		options['overlap_MDX']		= float(config['OPTIONS']['overlap_MDX'])
 #		options['overlap_MDXv3']	= int(config['OPTIONS']['overlap_MDXv3'])
@@ -966,8 +996,5 @@ if __name__ == '__main__':
 	elif options['output'] is None:
 		print("Error !! You must specify an output folder !")
 		sys.exit(0)
-
-	options['CONSOLE'] = None
-	options['PREVIEWS'] = False
 
 	Run(options)

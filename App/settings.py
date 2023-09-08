@@ -21,7 +21,9 @@ def Load(Gdrive, isColab):
 		},
 		'PROCESS': {
 			'output_format': "FLAC",
-			'preset_genre': "Pop Rock",
+#			'preset_genre': "Pop Rock",
+			'model_instrum': "Instrum HQ 3",
+			'model_vocals': "Kim Vocal 2",
 		},
 		'OPTIONS': {
 			'bigshifts_MDX': 12,

@@ -65,7 +65,7 @@ def Install(Gdrive, isColab, Fresh_install):
 					Version = Git_version;  New_Version = True
 					
 					if isColab:
-						print('NOW, you have to go in Colab menu, "Runtime > Restart runtime and Run all" to use the new version of "KaraFan" !\n')
+						print('NOW, you have to go AGAIN in Colab menu, "Runtime > Restart and Run all" to use the new version of "KaraFan" !\n')
 						sys.exit(0)
 
 				except subprocess.CalledProcessError as e:

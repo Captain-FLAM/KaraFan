@@ -17,7 +17,7 @@ def Run(Gdrive, isColab, Fresh_install):
 	import App.settings, App.inference
 
 	width  = '670px'
-	height = '650px'
+	height = '620px'
 
 	# Set the font size when running on your PC
 	font = '14px'
@@ -30,6 +30,7 @@ def Run(Gdrive, isColab, Fresh_install):
 
 	font_input = {'font_size': font}
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
+	checkbox_layout = {'width': '50px', 'max_width': '50px' }
 	max_width = str(int(width.replace('px','')) - 18) + 'px'  # = border + Left and Right "panel_layout" padding
 	console_max_height = str(int(height.replace('px','')) - 18) + 'px'
 
@@ -94,15 +95,15 @@ def Run(Gdrive, isColab, Fresh_install):
 	overlap_MDX		= widgets.FloatSlider(float(config['OPTIONS']['overlap_MDX']), min=0, max=0.95, step=0.05, style=font_input)
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
-	use_SRS			= widgets.Checkbox((config['OPTIONS']['use_SRS'].lower() == "true"), indent=False, style=font_input)
-	large_gpu		= widgets.Checkbox((config['OPTIONS']['large_gpu'].lower() == "true"), indent=False, style=font_input)
+	use_SRS			= widgets.Checkbox((config['OPTIONS']['use_SRS'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	large_gpu		= widgets.Checkbox((config['OPTIONS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	# BONUS
-	TEST_MODE		= widgets.Checkbox((config['BONUS']['TEST_MODE'].lower() == "true"), indent=False, style=font_input)
-	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, style=font_input)
-	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, style=font_input, layout={'width':'40px'})
-	PREVIEWS		= widgets.Checkbox((config['BONUS']['PREVIEWS'].lower() == "true"), indent=False, style=font_input)
-	Btn_Del_Vocals	= widgets.Button(description='Vocals', button_style='danger', layout={'width':'80px', 'margin':'0 0 0 10px'})
-	Btn_Del_Music	= widgets.Button(description='Music',  button_style='danger', layout={'width':'80px', 'margin':'0 0 0 10px'})
+	TEST_MODE		= widgets.Checkbox((config['BONUS']['TEST_MODE'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
+	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
+	PREVIEWS		= widgets.Checkbox((config['BONUS']['PREVIEWS'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	Btn_Del_Vocals	= widgets.Button(description='Vocals', button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
+	Btn_Del_Music	= widgets.Button(description='Music',  button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
 	#
 	HELP			= widgets.HTML('<div id="HELP"></div>')
 	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'15px 0 15px 0'})
@@ -140,18 +141,13 @@ def Run(Gdrive, isColab, Fresh_install):
 					widgets.HBox([ Label('Overlap MDX', 302), overlap_MDX ]),
 #					widgets.HBox([ Label('Overlap MDX v3', 303), overlap_MDXv3 ]),
 					widgets.HBox([ Label("Chunk Size", 304), chunk_size ]),
-					widgets.HBox([ Label("Use « SRS »", 305), use_SRS ]),
-					widgets.HBox([ Label('Large GPU', 306), large_gpu ]),
+					widgets.HBox([ Label("Use « SRS »", 305), use_SRS, Label('Large GPU', 306), large_gpu ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("TEST Mode (1 Pass)", 401), TEST_MODE ]),
-					widgets.HBox([ Label("DEBUG", 402), DEBUG ]),
-					widgets.HBox([ Label("GOD Mode", 403),
-						GOD_MODE,
-						Label("DEL & Re-process ▶️", 404),
-						Btn_Del_Vocals, Btn_Del_Music ]),
-					widgets.HBox([ Label("Show Previews", 405), PREVIEWS ]),
+					widgets.HBox([ Label("DEBUG", 401), DEBUG, Label("TEST Mode", 402), TEST_MODE ]),
+					widgets.HBox([ Label("GOD Mode", 403), GOD_MODE, Label("Show Previews", 404), PREVIEWS ]),
+					widgets.HBox([ Label("RE-Process ▶️▶️", 405), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
 				]),
 				separator,
 				widgets.HBox([Btn_Start], layout={'width':'100%', 'justify_content':'center'}),
@@ -418,18 +414,18 @@ help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside th
 help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
 help_index[2][1] = "Choose your prefered audio format to save audio files.";\
 help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
-help_index[2][3] = "MDX A.I models : Choose the best pair to your audio file.<br>Instrumental is ONLY used to help Vocals processing, so better to focus more on Vocals...<br><b>WARNING</b> : Actually, I only FINE-TUNED « Kim Vocal 2 » and « Inst HQ 3 » (best for ROCK).";\
+help_index[2][3] = "MDX A.I models : Choose the best pair to your audio file.<br>Instrumental is ONLY used to help Vocals processing, so better to focus more on Vocals...<br><b>WARNING</b> : Actually, I only FINE-TUNED « <b>Kim Vocal 2</b> » and « <b>Inst HQ 3</b> » (best for ROCK).";\
 help_index[3][1] = "Set MDX « BigShifts » trick value. (default : 12)<br><br>Set it to = 1 to disable that feature.";\
 help_index[3][2] = "Overlap of splited audio for heavy models. (default : 0.0)<br><br>Closer to 1.0 - slower.";\
 help_index[3][3] = "MDX version 3 overlap. (default : 8)";\
 help_index[3][4] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
-help_index[3][5] = "Use « SRS » vocal 2nd pass : can be useful for high vocals (Soprano by e.g)<br>AND high frequencies cut-off generated by A.I. models<br>See more explanations on the GitHub page ...";\
+help_index[3][5] = "Use « SRS » vocal 2nd pass : can be useful for high vocals (Soprano by e.g)<br><b>AND</b> high frequencies cut-off generated by A.I. models<br>See more explanations on the GitHub page ...";\
 help_index[3][6] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
-help_index[4][1] = "For testing <b>only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
-help_index[4][2] = "IF checked, it will save all intermediate audio files to compare with the final result.";\
-help_index[4][3] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to delete MANUALLY each file that you want to re-process !";\
-help_index[4][4] = "Delete audio files that you want to re-process.<br>Available with <b>ONE file</b> at a time and <b>DEBUG</b> & <b>GOD MODE</b> activated.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
-help_index[4][5] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
+help_index[4][1] = "IF checked, it will save all intermediate audio files to compare with the final result.";\
+help_index[4][2] = "For <b>testing only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
+help_index[4][3] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !";\
+help_index[4][4] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
+help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
 function show_help(index) {\
 	document.getElementById("HELP").innerHTML = "<div>"+ help_index[parseInt(index / 100)][index % 10] +"</div>";\
 }\

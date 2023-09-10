@@ -11,6 +11,7 @@
 
 
 import os, gc, io, sys, csv, base64, argparse, requests
+import regex as re
 import numpy as np
 import onnxruntime as ort
 import torch, torch.nn as nn
@@ -359,16 +360,17 @@ class MusicSeparationModel:
 		self.model_vocals['dim_T_set']     = int(self.model_vocals['dim_T_set'])
 
 		# Download Models
-		remote_url = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/'
+		remote_url	= 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/'
+		remove		= re.compile(r"^(UVR-MDX-NET-|UVR_MDXNET_|\d_)*")
 		
-		filename = self.model_instrum['Repo_FileName'].replace("UVR-MDX-NET-","").replace("UVR_MDXNET_","")
+		filename = re.sub(remove, "", self.model_instrum['Repo_FileName'])
 		self.model_path_onnx1 = os.path.join(self.Project, "Models", filename)
 		if not os.path.isfile(self.model_path_onnx1):
 			if not Download_Model(self.model_instrum['Name'], remote_url + self.model_instrum['Repo_FileName'], self.model_path_onnx1, self.CONSOLE):
 				print("Download of model for Instrumentals FAILED !!")
 				sys.exit(1)
 
-		filename = self.model_vocals['Repo_FileName'].replace("UVR-MDX-NET-","").replace("UVR_MDXNET_","")
+		filename = re.sub(remove, "", self.model_vocals['Repo_FileName'])
 		self.model_path_onnx2 = os.path.join(self.Project, "Models", filename)
 		if not os.path.isfile(self.model_path_onnx2):
 			if not Download_Model(self.model_vocals['Name'], remote_url + self.model_vocals['Repo_FileName'], self.model_path_onnx2, self.CONSOLE):
@@ -527,7 +529,7 @@ class MusicSeparationModel:
 
 		# ONLY 1 Pass, for testing purposes
 		if self.TEST_MODE:
-			print("► "+ text +" (1 Pass)")
+			print(text +" (1 Pass)")
 			if not SRS:
 				source = demix_full(
 					audio,
@@ -540,25 +542,25 @@ class MusicSeparationModel:
 				)[0], 4, 5)
 		else:
 			if not SRS:
-				print("► "+ text +" (Pass 1)")
+				print(text +" (Pass 1)")
 				source = 0.5 * -demix_full(
 					-audio,
 					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
 				)[0]
 
-				print("► "+ text +" (Pass 2)")
+				print(text +" (Pass 2)")
 				source += 0.5 * demix_full(
 					audio,
 					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
 				)[0]
 			else:
-				print("► "+ text +" (Pass 1)")
+				print(text +" (Pass 1)")
 				source = 0.5 * Change_sample_rate( -demix_full(
 					Change_sample_rate( -audio, 5, 4),
 					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
 				)[0], 4, 5)
 
-				print("► "+ text +" (Pass 2)")
+				print(text +" (Pass 2)")
 				source += 0.5 * Change_sample_rate( demix_full(
 					Change_sample_rate( audio, 5, 4),
 					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
@@ -638,8 +640,10 @@ class MusicSeparationModel:
 					providers = self.providers,
 					provider_options = [{"device_id": 0}],
 				)
+			
+			text = "► Processing Music"
 
-			instrum = self.Extract_with_Model("Processing Music", normalized, 'instrum', bigshifts_divisor = 2)
+			instrum = self.Extract_with_Model(text, normalized, 'instrum', bigshifts_divisor = 2)
 			
 			# Volume Compensation
 			instrum = instrum * self.model_instrum['Compensation']
@@ -697,7 +701,10 @@ class MusicSeparationModel:
 			vocals = self.Check_Already_Processed("4_F")
 
 		if vocals is None:
-			vocals = self.Extract_with_Model("Processing Vocals", vocals_substracted, 'vocals')
+			text = "► Processing Vocals"
+			if self.use_SRS: text += " without SRS"
+			
+			vocals = self.Extract_with_Model(text, vocals_substracted, 'vocals')
 
 			# Volume Compensation
 			vocals = vocals * self.model_vocals['Compensation']
@@ -712,7 +719,9 @@ class MusicSeparationModel:
 			vocals_SRS = self.Check_Already_Processed("4_B")  # Vocals with SRS
 
 			if vocals_SRS is None:
-				vocals_SRS = self.Extract_with_Model("Processing Vocals with Fullband SRS", vocals_substracted, 'vocals', bigshifts_divisor = 5, SRS = True)
+				text = "► Processing Vocals with Fullband SRS"
+
+				vocals_SRS = self.Extract_with_Model(text, vocals_substracted, 'vocals', bigshifts_divisor = 5, SRS = True)
 
 				# Volume Compensation
 				vocals_SRS = vocals_SRS * self.model_vocals['Compensation']
@@ -739,6 +748,8 @@ class MusicSeparationModel:
 			vocals_final = self.Check_Already_Processed("4_F")
 		
 		if vocals_final is None:
+			print("► Save Vocals final !")
+
 			vocals_final = vocals
 
 			# Apply silence filter
@@ -746,13 +757,11 @@ class MusicSeparationModel:
 			
 			self.Save_Audio("4_F", vocals_final)
 
-			print("► Vocals final saved !")	
-
 		# Save Music
 		instrum_final = self.Check_Already_Processed("5_F")
 
 		if instrum_final is None:
-			print("► Substract Vocals from Original audio to get real Music")
+			print("► Save Music final !")
 
 			instrum_final = normalized - vocals_final
 
@@ -761,7 +770,6 @@ class MusicSeparationModel:
 
 			self.Save_Audio("5_F", instrum_final)
 
-			print("► Music final saved !")
 		
 		# TESTS - Example
 		# vocals_final = vocals_final / self.model_vocals['Compensation']
@@ -776,14 +784,13 @@ class MusicSeparationModel:
 		bleeding = self.Check_Already_Processed("6")
 
 		if bleeding is None:
-			print("► Substract Music '1st extract' from Music 'final' to get bleedings")
+			print("► Save Bleedings Vocals/Other in Music !")
 
 			# Don't apply silence filter here !!
 			bleeding = instrum_final - instrum
 
 			self.Save_Audio("6", bleeding)
 
-			print("► Bleeding Vocals/Other in Music saved !")
 
 		# TESTS - Example
 		# instrum = instrum / self.model_instrum['Compensation']  # Volume Compensation

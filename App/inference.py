@@ -33,13 +33,15 @@ import App.settings
 from App.tfc_tdf_v3 import TFC_TDF_net
 
 class Conv_TDF_net_trim_model(nn.Module):
-	def __init__(self, device, target_name, L, n_fft, hop=1024):
+
+	def __init__(self, device, target_name, L, model_params, hop=1024):
 
 		super(Conv_TDF_net_trim_model, self).__init__()
 		
 		self.dim_c = 4
-		self.dim_f, self.dim_t = 3072, 256
-		self.n_fft = n_fft
+		self.dim_f = model_params['dim_F_set']
+		self.dim_t = 2 ** model_params['dim_T_set']
+		self.n_fft = model_params['N_FFT_scale']
 		self.hop = hop
 		self.n_bins = self.n_fft // 2 + 1
 		self.chunk_size = hop * (self.dim_t - 1)
@@ -89,15 +91,15 @@ class Conv_TDF_net_trim_model(nn.Module):
 		x = self.final_conv(x)
 		return x
 
-def get_models(device, FFT, primary_stem = 'vocals'):
+def get_models(device, model_params, primary_stem = 'vocals'):
 	# ??? NOT so simple ... ???
 	# FFT = 7680  --> Narrow Band
 	# FFT = 6144  --> FULL Band
 	model = Conv_TDF_net_trim_model(
-		device = device,
-		target_name = primary_stem,  # I suppose you can use '*' to get both vocals and instrum, with the new MDX23C model ...
-		L = 11,
-		n_fft = int(FFT)
+		device,
+		primary_stem,  # I suppose you can use '*' to get both vocals and instrum, with the new MDX23C model ...
+		11,
+		model_params
 	)
 	return [model]
 
@@ -290,6 +292,7 @@ class MusicSeparationModel:
 		self.large_gpu		= options['large_gpu']
 
 		self.DEBUG		= options['DEBUG']
+		self.TEST_MODE	= options['TEST_MODE']
 		self.GOD_MODE	= options['GOD_MODE']
 		self.PREVIEWS	= options['PREVIEWS']
 			
@@ -341,10 +344,19 @@ class MusicSeparationModel:
 			print("Parameters for this Vocals model not found in the CSV !")
 			sys.exit(1)
 		
-		# IMPORTANT : Volume Compensations specific for each model !
+		# IMPORTANT : Volume Compensations specific for each model AND each song (different re-mastering(s) in Studio) !!!
 
-		self.COMPENSATION_Instrum = float(self.model_instrum['Compensation'])
-		self.COMPENSATION_Vocals  = float(self.model_vocals['Compensation'])
+		self.model_instrum['Compensation'] = float(self.model_instrum['Compensation'])
+		self.model_instrum['Band_Cut_OFF'] = int(self.model_instrum['Band_Cut_OFF'])  # TODO : Use it for SRS
+		self.model_instrum['N_FFT_scale']  = int(self.model_instrum['N_FFT_scale'])
+		self.model_instrum['dim_F_set']    = int(self.model_instrum['dim_F_set'])
+		self.model_instrum['dim_T_set']    = int(self.model_instrum['dim_T_set'])
+
+		self.model_vocals['Compensation']  = float(self.model_vocals['Compensation'])
+		self.model_vocals['Band_Cut_OFF']  = int(self.model_vocals['Band_Cut_OFF'])  # TODO : Use it for SRS
+		self.model_vocals['N_FFT_scale']   = int(self.model_vocals['N_FFT_scale'])
+		self.model_vocals['dim_F_set']     = int(self.model_vocals['dim_F_set'])
+		self.model_vocals['dim_T_set']     = int(self.model_vocals['dim_T_set'])
 
 		# Download Models
 		remote_url = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/'
@@ -367,8 +379,8 @@ class MusicSeparationModel:
 		if self.large_gpu:
 			print("Large GPU mode is enabled : Loading models now...")
 
-			self.mdx_model1 = get_models(self.device, self.model_instrum['N_FFT_scale'], primary_stem = 'instrum')
-			self.mdx_model2 = get_models(self.device, self.model_vocals['N_FFT_scale'],  primary_stem = 'vocals')
+			self.mdx_model1 = get_models(self.device, self.model_instrum, primary_stem = 'instrum')
+			self.mdx_model2 = get_models(self.device, self.model_vocals,  primary_stem = 'vocals')
 
 			self.infer_session1 = ort.InferenceSession(
 				self.model_path_onnx1,
@@ -421,9 +433,9 @@ class MusicSeparationModel:
 		"""
 		if GOD MODE :
 			- Check if audio file is already processed, and if so, load it.
-			- Return AUDIO loaded, or FALSE if not found.
+			- Return AUDIO loaded, or NONE if not found.
 		Else :
-			- Return FALSE.
+			- Return NONE.
 		"""
 		filename = self.AudioFiles[file_key]
 		if self.DEBUG:
@@ -443,7 +455,7 @@ class MusicSeparationModel:
 
 			return audio
 		
-		return False
+		return None
 	
 	def Save_Audio(self, file_key, audio):
 		"""
@@ -510,55 +522,48 @@ class MusicSeparationModel:
 		else:
 			model = self.mdx_model1;  infer = self.infer_session1
 
-		if not SRS:
-			print("► "+ text +" (Pass 1)")
-			source = 0.5 * -demix_full(
-				-audio,
-				self.device,
-				self.chunk_size,
-				model,
-				infer,
-				overlap = self.overlap_MDX,
-				bigshifts = self.bigshifts_MDX // bigshifts_divisor,
-				CONSOLE = self.CONSOLE
-			)[0]
+		bigshift = self.bigshifts_MDX
+		if bigshifts_divisor > 1: bigshift = bigshift // bigshifts_divisor 
 
-			print("► "+ text +" (Pass 2)")
-			source += 0.5 * demix_full(
-				audio,
-				self.device,
-				self.chunk_size,
-				model,
-				infer,
-				overlap = self.overlap_MDX,
-				bigshifts = self.bigshifts_MDX // bigshifts_divisor,
-				CONSOLE = self.CONSOLE
-			)[0]
+		# ONLY 1 Pass, for testing purposes
+		if self.TEST_MODE:
+			print("► "+ text +" (1 Pass)")
+			if not SRS:
+				source = demix_full(
+					audio,
+					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
+				)[0]
+			else:
+				source = Change_sample_rate( demix_full(
+					Change_sample_rate( audio, 5, 4),
+					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
+				)[0], 4, 5)
 		else:
-			print("► "+ text +" (Pass 1)")
-			source = 0.5 * change_sr(-demix_full(
-				change_sr(-audio, 5, 4),
-				self.device,
-				self.chunk_size,
-				model,
-				infer,
-				overlap = self.overlap_MDX,
-				bigshifts = self.bigshifts_MDX // bigshifts_divisor,
-				CONSOLE = self.CONSOLE
-			)[0], 4, 5)
+			if not SRS:
+				print("► "+ text +" (Pass 1)")
+				source = 0.5 * -demix_full(
+					-audio,
+					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
+				)[0]
 
-			print("► "+ text +" (Pass 2)")
-			source += 0.5 * change_sr(demix_full(
-				change_sr(audio, 5, 4),
-				self.device,
-				self.chunk_size,
-				model,
-				infer,
-				overlap = self.overlap_MDX,
-				bigshifts = self.bigshifts_MDX // bigshifts_divisor,
-				CONSOLE = self.CONSOLE
-			)[0], 4, 5)
+				print("► "+ text +" (Pass 2)")
+				source += 0.5 * demix_full(
+					audio,
+					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
+				)[0]
+			else:
+				print("► "+ text +" (Pass 1)")
+				source = 0.5 * Change_sample_rate( -demix_full(
+					Change_sample_rate( -audio, 5, 4),
+					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
+				)[0], 4, 5)
 
+				print("► "+ text +" (Pass 2)")
+				source += 0.5 * Change_sample_rate( demix_full(
+					Change_sample_rate( audio, 5, 4),
+					self.device, self.chunk_size, model, infer, overlap=self.overlap_MDX, bigshifts=bigshift, CONSOLE = self.CONSOLE
+				)[0], 4, 5)
+		
 		return source
 	
 
@@ -577,7 +582,8 @@ class MusicSeparationModel:
 		self.song_output_path = os.path.join(self.output, name)
 		if not os.path.exists(self.song_output_path): os.makedirs(self.song_output_path)
 		
-		original_audio, self.sample_rate = librosa.load(file, mono=False, sr=44100)
+		# TODO : sr = None --> uses the native sampling rate (if 48 Khz or 96 Khz), maybe not good for MDX models ??
+		original_audio, self.sample_rate = librosa.load(file, mono=False, sr = 44100)  # Resample to 44.1 Khz
 		
 		# Convert mono to stereo (if needed)
 		if len(original_audio.shape) == 1:
@@ -587,6 +593,10 @@ class MusicSeparationModel:
 
 		format = '.wav'
 		if self.output_format in ['FLAC', 'MP3']:  format = '.' + self.output_format.lower()
+		
+		# In case of changes, don't forget to update the function in GUI !!
+		# - on_Del_Vocals_clicked()
+		# - on_Del_Music_clicked()
 		
 		self.AudioFiles = {
 			"1"		: "NORMALIZED" + format,
@@ -601,7 +611,7 @@ class MusicSeparationModel:
 		
 		normalized = self.Check_Already_Processed("1")
 
-		if normalized is False:
+		if normalized is None:
 			print("► Normalizing audio")
 			normalized = Normalize(original_audio)
 
@@ -612,17 +622,17 @@ class MusicSeparationModel:
 
 		# sources3 = demix_full_mdx23c(normalized, self.device, self.overlap_MDXv3)
 		# vocals3 = (match_array_shapes(sources3['Vocals'], normalized) \
-		# 		+ lp_filter(14700, normalized - match_array_shapes(sources3['Instrumental'], normalized), 44100)) / 2
+		# 		+ Lowpass_filter(14700, normalized - match_array_shapes(sources3['Instrumental'], normalized), 44100)) / 2
 		
 		# if self.DEBUG:
 		#	self.Save_Audio("Vocals_MDX23C", vocals3)
 
 		instrum = self.Check_Already_Processed("2")
 		
-		if instrum is False:
+		if instrum is None:
 			if not self.large_gpu:
 				print("(Large GPU mode is disabled : Loading Instrumental model now...)")
-				self.mdx_model1 = get_models(self.device, self.model_instrum['N_FFT_scale'], primary_stem = 'instrum')
+				self.mdx_model1 = get_models(self.device, self.model_instrum, primary_stem = 'instrum')
 				self.infer_session1 = ort.InferenceSession(
 					self.model_path_onnx1,
 					providers = self.providers,
@@ -632,7 +642,7 @@ class MusicSeparationModel:
 			instrum = self.Extract_with_Model("Processing Music", normalized, 'instrum', bigshifts_divisor = 2)
 			
 			# Volume Compensation
-			instrum = instrum * self.COMPENSATION_Instrum
+			instrum = instrum * self.model_instrum['Compensation']
 			
 			# Apply silence filter
 			# instrum = Silent(instrum, self.sample_rate)
@@ -647,7 +657,7 @@ class MusicSeparationModel:
 
 		vocals_substracted = self.Check_Already_Processed("3")
 		
-		if vocals_substracted is False:
+		if vocals_substracted is None:
 			print("► Substract Music from Original audio")
 
 			vocals_substracted = normalized - instrum
@@ -658,7 +668,7 @@ class MusicSeparationModel:
 			if self.DEBUG:  self.Save_Audio("3", vocals_substracted)
 		
 		# TESTS - Example
-		# instrum = instrum / self.COMPENSATION_Instrum
+		# instrum = instrum / self.model_instrum['Compensation']
 		# self.Save_Audio("Sub - 1" + format, normalized - (instrum * 1.0235))
 		# self.Save_Audio("Sub - 2" + format, normalized - (instrum * 1.0240))
 		# self.Save_Audio("Sub - 3" + format, normalized - (instrum * 1.0245))
@@ -674,26 +684,23 @@ class MusicSeparationModel:
 				load_model = True
 			if load_model:
 				print("(Large GPU mode is disabled : Loading Vocals model now...)")
-				self.mdx_model2 = get_models(self.device, self.model_vocals['N_FFT_scale'], primary_stem = 'vocals')
+				self.mdx_model2 = get_models(self.device, self.model_vocals, primary_stem = 'vocals')
 				self.infer_session2 = ort.InferenceSession(
 					self.model_path_onnx2,
 					providers = self.providers,
 					provider_options = [{"device_id": 0}],
 				)
 		
-		vocals = False  # IMPORTANT !!
-		
 		if self.use_SRS:
 			vocals = self.Check_Already_Processed("4_A")  # Vocals without SRS (Narrow Band)
-		elif self.GOD_MODE:
-			# ... and not use SRS, so just check if "Vocals" is already processed
-			vocals = self.Check_Already_Processed("4_F", just_check=True)
+		else:
+			vocals = self.Check_Already_Processed("4_F")
 
-		if vocals is False:
+		if vocals is None:
 			vocals = self.Extract_with_Model("Processing Vocals", vocals_substracted, 'vocals')
 
 			# Volume Compensation
-			vocals = vocals * self.COMPENSATION_Vocals
+			vocals = vocals * self.model_vocals['Compensation']
 
 			if self.DEBUG:
 				if self.use_SRS:
@@ -704,11 +711,11 @@ class MusicSeparationModel:
 		if self.use_SRS:
 			vocals_SRS = self.Check_Already_Processed("4_B")  # Vocals with SRS
 
-			if vocals_SRS is False:
+			if vocals_SRS is None:
 				vocals_SRS = self.Extract_with_Model("Processing Vocals with Fullband SRS", vocals_substracted, 'vocals', bigshifts_divisor = 5, SRS = True)
 
 				# Volume Compensation
-				vocals_SRS = vocals_SRS * self.COMPENSATION_Vocals
+				vocals_SRS = vocals_SRS * self.model_vocals['Compensation']
 
 				vocals_SRS = match_array_shapes(vocals_SRS, vocals)
 
@@ -716,19 +723,22 @@ class MusicSeparationModel:
 
 			# *3/4 = Dynamic SRS personal taste of "Jarredou", to avoid too much SRS noise
 			# He also told me that 12 Khz cut-off was setted for MDX23C model, but 14 Khz is better for other MDX models
-			# old formula :  vocals = lr_filter(vocals.T, 12000, 'lowpass') + lr_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
+			# old formula :  vocals = Linkwitz_Riley_filter(vocals.T, 12000, 'lowpass') + Linkwitz_Riley_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
 
-			vocals = lr_filter(vocals.T, 14000, 'lowpass') + lr_filter(vocals_SRS.T, 14000, 'highpass')
+			vocals = Linkwitz_Riley_filter(vocals.T, 14000, 'lowpass', self.sample_rate) + Linkwitz_Riley_filter(vocals_SRS.T, 14000, 'highpass', self.sample_rate)
 			vocals = vocals.T
 		
 		# Free GPU memory
 		if not self.large_gpu and load_model:
 			del self.infer_session2; del self.mdx_model2; gc.collect()
 
-		# Save Vocals Mix
-		vocals_final = self.Check_Already_Processed("4_F")
+		# Save Vocals
+		vocals_final = None # IMPORTANT !!
+
+		if self.use_SRS:
+			vocals_final = self.Check_Already_Processed("4_F")
 		
-		if vocals_final is False:
+		if vocals_final is None:
 			vocals_final = vocals
 
 			# Apply silence filter
@@ -738,10 +748,10 @@ class MusicSeparationModel:
 
 			print("► Vocals final saved !")	
 
-		# Save Instrumental Mix
+		# Save Music
 		instrum_final = self.Check_Already_Processed("5_F")
 
-		if instrum_final is False:
+		if instrum_final is None:
 			print("► Substract Vocals from Original audio to get real Music")
 
 			instrum_final = normalized - vocals_final
@@ -754,7 +764,7 @@ class MusicSeparationModel:
 			print("► Music final saved !")
 		
 		# TESTS - Example
-		# vocals_final = vocals_final / self.COMPENSATION_Vocals
+		# vocals_final = vocals_final / self.model_vocals['Compensation']
 		# instrum_final_1 = normalized - (vocals_final * 1.0082)
 		# instrum_final_2 = normalized - (vocals_final * 1.0085)
 		# instrum_final_3 = normalized - (vocals_final * 1.0088)
@@ -762,10 +772,10 @@ class MusicSeparationModel:
 		# self.Save_Audio("Music - Test 2" + format, instrum_final_2)
 		# self.Save_Audio("Music - Test 3" + format, instrum_final_3)
 
-		# Save Bleeding Vocals/Other in Instrumental Mix
+		# Save Bleeding Vocals/Other in Music
 		bleeding = self.Check_Already_Processed("6")
 
-		if bleeding is False:
+		if bleeding is None:
 			print("► Substract Music '1st extract' from Music 'final' to get bleedings")
 
 			# Don't apply silence filter here !!
@@ -776,7 +786,7 @@ class MusicSeparationModel:
 			print("► Bleeding Vocals/Other in Music saved !")
 
 		# TESTS - Example
-		# instrum = instrum / self.COMPENSATION_Instrum  # Volume Compensation
+		# instrum = instrum / self.model_instrum['Compensation']  # Volume Compensation
 		# bleeding_1 = instrum_final_1 - instrum
 		# bleeding_2 = instrum_final_2 - instrum
 		# bleeding_3 = instrum_final_3 - instrum
@@ -880,16 +890,16 @@ def Silent(audio, sample_rate, threshold_db = -50):
 	return audio
 
 # Linkwitz-Riley filter
-def lr_filter(audio, cutoff, filter_type, order=6, sr=44100):
+def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=4):
 	audio = audio.T
-	nyquist = 0.5 * sr
+	nyquist = 0.5 * sample_rate
 	normal_cutoff = cutoff / nyquist
 	b, a = signal.butter(order//2, normal_cutoff, btype=filter_type, analog=False)
 	filtered_audio = signal.filtfilt(b, a, audio)
 	return filtered_audio.T
 
 # SRS
-def change_sr(data, up, down):
+def Change_sample_rate(data, up, down):
 	data = data.T
 	# print(f"SRS input audio shape: {data.shape}")
 	new_data = resample_poly(data, up, down)
@@ -897,7 +907,7 @@ def change_sr(data, up, down):
 	return new_data.T
 
 # Lowpass filter
-def lp_filter(cutoff, data, sample_rate):
+def Lowpass_filter(cutoff, data, sample_rate):
 	b = signal.firwin(1001, cutoff, fs=sample_rate)
 	filtered_data = signal.filtfilt(b, [1.0], data)
 	return filtered_data
@@ -994,6 +1004,7 @@ if __name__ == '__main__':
 	m.add_argument('--chunk_size', type=int, help='Chunk size for ONNX models. Set lower to reduce GPU memory consumption OR if you have GPU memory errors !. Default: 500000', default=500000)
 	m.add_argument('--use_SRS', action='store_true', help='Use "SRS" vocal 2nd pass : can be useful for high vocals (Soprano by e.g)', default=False)
 	m.add_argument('--large_gpu', action='store_true', help='It will store all models on GPU for faster processing of multiple audio files. Requires more GB of free GPU memory.', default=False)
+	m.add_argument('--TEST_MODE', action='store_true', help='For testing only : Extract with A.I models with 1 pass instead of 2 passes.\nThe quality will be badder (due to low noise added by MDX models) !', default=False)
 	m.add_argument('--DEBUG', action='store_true', help='This option will save all intermediate audio files to compare with the final result.', default=False)
 	m.add_argument('--GOD_MODE', action='store_true', help='Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,\nNO NEED to process it again and again !!\nYou\'ll be warned : You have to delete each file that you want to re-process MANUALLY !', default=False)
 	
@@ -1002,30 +1013,21 @@ if __name__ == '__main__':
 	# We are on a PC : Get the current path and remove last part (KaraFan)
 	Gdrive = os.getcwd().replace("KaraFan","").rstrip(os.path.sep)
 
-	options['Gdrive'] = Gdrive
-	options['CONSOLE'] = None
-	options['PREVIEWS'] = False
-
 	if options['use_config'] == True:
 		
+		cmd_input = options['input']
+
 		config = App.settings.Load(Gdrive, False)
-		
-		options['output']			= config['PATHS']['output']
-		options['output_format']	= config['PROCESS']['output_format']
-#		options['preset_genre']		= config['PROCESS']['preset_genre']
-		options['model_instrum']	= config['PROCESS']['model_instrum']
-		options['model_vocals']		= config['PROCESS']['model_vocals']
-		options['bigshifts_MDX']	= int(config['OPTIONS']['bigshifts_MDX'])
-		options['overlap_MDX']		= float(config['OPTIONS']['overlap_MDX'])
-#		options['overlap_MDXv3']	= int(config['OPTIONS']['overlap_MDXv3'])
-		options['chunk_size']		= int(config['OPTIONS']['chunk_size'])
-		options['use_SRS']			= (config['OPTIONS']['use_SRS'].lower() == "true")
-		options['large_gpu']		= (config['OPTIONS']['large_gpu'].lower() == "true")
-		options['DEBUG']			= (config['BONUS']['DEBUG'].lower() == "true")
-		options['GOD_MODE']			= (config['BONUS']['GOD_MODE'].lower() == "true")
+		options = App.settings.Convert_to_Options(config)
+
+		options['input'] = cmd_input
 	
 	elif options['output'] is None:
 		print("Error !! You must specify an output folder !")
 		sys.exit(0)
+
+	options['Gdrive'] = Gdrive
+	options['CONSOLE'] = None
+	options['PREVIEWS'] = False
 
 	Run(options)

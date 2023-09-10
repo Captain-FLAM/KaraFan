@@ -1,11 +1,14 @@
 # 🎵 KaraFan  [![](https://img.shields.io/github/stars/Captain-FLAM/KaraFan?color=ff0080&style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/stargazers) [![](https://img.shields.io/github/license/Captain-FLAM/KaraFan?style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/blob/master/LICENSE)
 
-The BEST music separation model with help of **A.I** ... to my ears ! 👂👂
+The BEST music separation model with help of **A.I.** ... to my ears ! 👂👂
 
 As you've guessed, it was made specially for Karaoke (▶️ focus on musical part).  
-This project is **open to all goodwill**.
+This project is **open to all goodwill**.  
+The Discord community, Chat-GPT & GitHub Copilot made this project possible.
 
 [![KaraFan](images/KaraFan_mini.png)](images/KaraFan.png)
+
+![](images/GitHub-Copilot.png) &nbsp;&nbsp;I'm in love with Copilot ! 😍
 
 ## 💲 DONATE
 
@@ -98,10 +101,11 @@ I also added a few tricks to improve the quality of the results.
 
 | Date | Version | Description |
 | ---- | ------- | ----------- |
-| 2023-09-08 | 1.2 | Possibility to choose any MDX A.I models for Instrum & Vocals<br>New download system for Models (stay in GUI) |
-| 2023-09-06 | 1.1 | - Bugs Fixed with the returns of Discord's people<br />- One can choose the ouput directory |
+| 2023-09-09 | 1.3 | Correct "Linkwitz-Riley" filter (better **SRS**)<br>New download system for Models (stay in GUI)<br>Add TEST MODE (process with only 1 pass)<br>Add "Delete" buttons (works with ONE file and DEBUG & GOD_MODE activated) |
+| 2023-09-08 | 1.2 | Possibility to choose any **MDX A.I. models** for Instrum & Vocals<br>New download system for Models (stay in GUI)<br>Saving MP3 with fucking Cut-OFF @ 16 Khz solved ! |
+| 2023-09-06 | 1.1 | Bugs Fixed with the returns of Discord's people<br>One can choose the ouput directory<br>KaraFan have **Automagic Updates** system ! |
 | 2023-09-05 | 1.0 | First version[ dropped on Discord](https://discord.com/channels/708579735583588363/887455924845944873/1148718029857890324) (buggy) |
-| 2023-09-03 | 0.8 | Post the first R.T.F.R.M. (Read The Fucking "READ ME") on GitHub |
+| 2023-09-03 | 0.8 | Post the first **R.T.F.R.M.** (Read The Fucking "READ ME") on GitHub |
 | 2023-08-19 | 0.5 | - Inform people on Discord that I'm working on a it...<br />« KaraFan » was born ! 🎉🎉🎉 |
 | 2023-08-03 | 0.1 | I started to dig infos on Discord to find the best models & process to use<br />(follow this link if you wanna [read all the story](https://discord.com/channels/708579735583588363/887455924845944873/1136629816246935654) since the beginning ...) |
 | 2023-07-12 | 0.0 | I found & tried the wonderful Facebook Demucs models, and the idea started to grow in my mind ... |
@@ -121,12 +125,15 @@ I also added a few tricks to improve the quality of the results.
 and ...  
 With the choice of Models in new **version 1.2** :
 1. Choose a very hard song that you've failed to separate before and that you know by heart.
+2. Activate **DEBUG** and **GOD MODE** options
 2. Try all the Vocals models one by one, and compare the results with Audacity.  
 	(with **RMS Contrast Analyse of dB levels** and **Linear Spectrogram** views)
+	(and don't forget to check the **bleedings** with DEBUG mode)
 3. Choose the best model for **Vocals** first
 4. Then, you can eventually affinate the choice of the best model for **Instrum**  
-	(and **re-process** Vocals again)  
-	(and don't forget to check the **bleedings** with DEBUG mode)
+	And **re-process** Vocals again :
+	- Delete the "4_F" & "5_F" & "6" files in your song "Results" folder
+	- Click on « Start » button again
 
 .
 
@@ -188,13 +195,15 @@ Install.bat
 - Linux / Mac :  
   Go to the [PyTorch website](https://pytorch.org/get-started/locally/) to pick the installation command that fits your system.
 
-5️⃣ Run the Notebook ... That's it ! 😎
+5️⃣ Install **Git** if you want to benefit from the **Automagic Updates** system.
+
+6️⃣ Run the Notebook ... That's it ! 😎
 
 ### ✅ on Your PC with a command line in a shell :
 
-Follow the steps 2️⃣ , 3️⃣ , 4️⃣ as for Visual Studio Code.
+Follow the steps 2️⃣ , 3️⃣ , 4️⃣ , 5️⃣ as for Visual Studio Code.
 
-5️⃣ Go inside the folder « KaraFan » and execute the following command to install all the required Python packages :
+6️⃣ Go inside the folder « KaraFan » and execute the following command to install all the required Python packages :
 
 ```bash
 py -3.10 -m App.setup
@@ -202,7 +211,7 @@ or
 python -m App.setup
 ```
 
-(this command **works also to update** the project with Git on Windows, Linux & Mac)
+(this command **works also to automagic update** the project with Git on Windows, Linux & Mac)
 
 **Examples of usage :**
 
@@ -233,7 +242,7 @@ After installation, you'll find new folders at the root of your Google Drive wit
 | / KaraFan / App    | This is the main Application                              |
 | / KaraFan / Models | Where all the models are stored                           |
 | / Music            | Here you can put your audio files (or choose another one) |
-| / Results          | Here you will find your extracted audio files (or choose another one) |
+| / Results          | Here you will find your extracted audio files (or another one) |
 
 .
 
@@ -250,10 +259,10 @@ For now, I use only these 2 MDX models : « **Int HQ 3** » & « **Kim Vocal 2**
 | Step | Filename |
 | ---- | -------- |
 | 1 - Normalization of Original audio | 1 - NORMALIZED.flac |
-| 2 - Instrumental Extraction from Normalized | 2 - Music_extract.flac |
+| 2 - Instrumental Extraction (with A.I.) from Normalized | 2 - Music_extract.flac |
 | 3 - Volume Compensation for Instrumental | *(internal)* |
-| 4 - Subtraction of Instrumental from Normalized | 3 - Audio_sub_Music.flac |
-| 5 -**Final** Vocal Extraction from cleaned "Audio_sub_Music" | 4_F - Vocals.flac |
+| 4 - Subtraction of Instrumental from Normalized (remove Music) | 3 - Audio_sub_Music.flac |
+| 5 -**Final** Vocal Extraction (with A.I.) from "Audio_sub_Music" | 4_F - Vocals.flac |
 | 6 - Volume Compensation for Vocals | *(internal)* |
 | 7 -**Final** Subtraction of Vocals from Normalized | 5_F - Music.flac |
 | 8 - Bleeding Vocals/Other in final "Music" | 6 - Bleeding_in_Music.flac |
@@ -405,8 +414,9 @@ My beloved Patrons & Donators :
 My brain is overheating ! 😵
 
 - [X] Add more Models (but NOT with fine-tuned volume compensation for each !)
-- [ ] Add a « STOP » button to kill Colab background processes that consume your credits !!
 - [ ] Add a TEST option to quickly do only 1 pass on audio files for testing purposes.
+- [ ] Add a « STOP » button to kill Colab background processes that consume your credits !!
+- [ ] Get weak voices with A.I. models with a pre-amplification of low parts of the spectrum.
 - [ ] Automatic fine-tuning of volume compensation for each song (am I Crazy ??).
 - [ ] Separate Choirs from Vocals (very hard challenge !)
 - [ ] etc ... etc ... etc ...  
@@ -441,7 +451,7 @@ Thousands Thanks to all of you ! **I love you !** ❤️
 
 # 📜 LICENSE
 
-### &copy; Captain FLAM - 2023 - M.I.T license
+### &copy; Captain FLAM & Jarredou - 2023 - M.I.T license
 
 That means you can do whatever you want with this code, but **YOU HAVE TO** mention my name and the fact that I'm the original author of this code, and mention the names of all the people who have contributed to this project.
 

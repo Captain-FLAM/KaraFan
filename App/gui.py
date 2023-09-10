@@ -97,9 +97,12 @@ def Run(Gdrive, isColab, Fresh_install):
 	use_SRS			= widgets.Checkbox((config['OPTIONS']['use_SRS'].lower() == "true"), indent=False, style=font_input)
 	large_gpu		= widgets.Checkbox((config['OPTIONS']['large_gpu'].lower() == "true"), indent=False, style=font_input)
 	# BONUS
+	TEST_MODE		= widgets.Checkbox((config['BONUS']['TEST_MODE'].lower() == "true"), indent=False, style=font_input)
 	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, style=font_input)
-	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, style=font_input)
+	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, style=font_input, layout={'width':'40px'})
 	PREVIEWS		= widgets.Checkbox((config['BONUS']['PREVIEWS'].lower() == "true"), indent=False, style=font_input)
+	Btn_Del_Vocals	= widgets.Button(description='Vocals', button_style='danger', layout={'width':'80px', 'margin':'0 0 0 10px'})
+	Btn_Del_Music	= widgets.Button(description='Music',  button_style='danger', layout={'width':'80px', 'margin':'0 0 0 10px'})
 	#
 	HELP			= widgets.HTML('<div id="HELP"></div>')
 	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'15px 0 15px 0'})
@@ -127,7 +130,9 @@ def Run(Gdrive, isColab, Fresh_install):
 				widgets.VBox([
 					widgets.HBox([ Label("Output Format", 201), output_format ]),
 #					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
-					widgets.HBox([ Label("MDX Models", 203), model_instrum, widgets.HTML('<span style="font-size:20px"> 🎵 &nbsp;</span>'), model_vocals, widgets.HTML('<span style="font-size:20px"> 💋</span>') ]),
+					widgets.HBox([ Label("MDX Models", 203),
+		   				model_instrum, widgets.HTML('<span style="font-size:20px"> 🎵 &nbsp;</span>'),
+						model_vocals, widgets.HTML('<span style="font-size:20px"> 💋</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
@@ -140,9 +145,13 @@ def Run(Gdrive, isColab, Fresh_install):
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("DEBUG", 401), DEBUG ]),
-					widgets.HBox([ Label("GOD Mode", 402), GOD_MODE ]),
-					widgets.HBox([ Label("Show Previews", 403), PREVIEWS ]),
+					widgets.HBox([ Label("TEST Mode (1 Pass)", 401), TEST_MODE ]),
+					widgets.HBox([ Label("DEBUG", 402), DEBUG ]),
+					widgets.HBox([ Label("GOD Mode", 403),
+						GOD_MODE,
+						Label("DEL & Re-process ▶️", 404),
+						Btn_Del_Vocals, Btn_Del_Music ]),
+					widgets.HBox([ Label("Show Previews", 405), PREVIEWS ]),
 				]),
 				separator,
 				widgets.HBox([Btn_Start], layout={'width':'100%', 'justify_content':'center'}),
@@ -214,6 +223,7 @@ def Run(Gdrive, isColab, Fresh_install):
 			'large_gpu': large_gpu.value,
 		}
 		config['BONUS'] = {
+			'TEST_MODE': TEST_MODE.value,
 			'DEBUG': DEBUG.value,
 			'GOD_MODE': GOD_MODE.value,
 			'PREVIEWS': PREVIEWS.value,
@@ -227,25 +237,11 @@ def Run(Gdrive, isColab, Fresh_install):
 
 		real_input  = os.path.join(Gdrive, input_path.value)
 		
-		options = {
-			'Gdrive': Gdrive,
-			'CONSOLE': CONSOLE,
-			'output': output_path.value,
-			'output_format': output_format.value,
-#			'preset_genre': preset_genre.value,
-			'model_instrum': model_instrum.value,
-			'model_vocals': model_vocals.value,
-			'bigshifts_MDX': bigshifts_MDX.value,
-			'overlap_MDX': overlap_MDX.value,
-#			'overlap_MDXv3': overlap_MDXv3.value,
-			'chunk_size': chunk_size.value,
-			'use_SRS': use_SRS.value,
-			'large_gpu': large_gpu.value,
-			'DEBUG': DEBUG.value,
-			'GOD_MODE': GOD_MODE.value,
-			'PREVIEWS': PREVIEWS.value,
-		}
+		options = App.settings.Convert_to_Options(config)
 
+		options['Gdrive'] = Gdrive
+		options['CONSOLE'] = CONSOLE
+		
 		options['input'] = []
 
 		if os.path.isfile(real_input):
@@ -273,9 +269,47 @@ def Run(Gdrive, isColab, Fresh_install):
 		os.makedirs(os.path.join(Gdrive, output_path.value), exist_ok=True)
 		Btn_Create_output.layout.display = 'none'
 	
+	# Delete all vocals files extracted from THIS song
+	def on_Del_Vocals_clicked(b):
+
+		# Get the folder based on input audio file's name
+		name = os.path.splitext(os.path.basename(input_path.value))[0]
+
+		deleted = ""		
+		for file_path in sorted(glob.glob(os.path.join(Gdrive, output_path.value, name, "*.*")))[:]:
+			filename = os.path.basename(file_path)
+			if filename.startswith("4") or filename.startswith("5") or filename.startswith("6"):
+				os.remove(file_path);  deleted += filename + ", "
+		
+		if deleted != "":
+			deleted = deleted[:-2]  # Remove last ", "
+			HELP.value = '<div id="HELP">Files deleted : '+ deleted +'</div>'
+		else:
+			HELP.value = '<div id="HELP"><div style="color: #f00">No files to delete !</div></div>'
+
+	# Delete all music files extracted from THIS song
+	def on_Del_Music_clicked(b):
+
+		# Get the folder based on input audio file's name
+		name = os.path.splitext(os.path.basename(input_path.value))[0]
+		
+		deleted = ""
+		for file_path in sorted(glob.glob(os.path.join(Gdrive, output_path.value, name, "*.*")))[:]:
+			filename = os.path.basename(file_path)
+			if filename.startswith("2") or filename.startswith("3") or filename.startswith("4") or filename.startswith("5") or filename.startswith("6"):
+				os.remove(file_path);  deleted += filename + ", "
+		
+		if deleted != "":
+			deleted = deleted[:-2]  # Remove last ", "
+			HELP.value = '<div id="HELP">Files deleted : '+ deleted +'</div>'
+		else:
+			HELP.value = '<div id="HELP"><div style="color: #f00">No files to delete !</div></div>'
+
 	# Link Buttons to functions
 	Btn_Create_input.on_click(on_Create_input_clicked)
 	Btn_Create_output.on_click(on_Create_output_clicked)
+	Btn_Del_Vocals.on_click(on_Del_Vocals_clicked)
+	Btn_Del_Music.on_click(on_Del_Music_clicked)
 	Btn_Start.on_click(on_Start_clicked)
 	Btn_SysInfo.on_click(on_SysInfo_clicked)
 
@@ -290,51 +324,74 @@ def Run(Gdrive, isColab, Fresh_install):
 		# DO NOT USE os.path.normpath() :
 		# it will remove the last separator in real-time --> impossible to type it in the input field !
 		path = change['new']
-		path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
+		
+		if path != "":
+			path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
 
-		if path.find(Gdrive) != -1:
-			path = path.replace(Gdrive, "")  # Remove Gdrive path from "input"
-		
-		# BUG signaled by Jarredou : remove the first separator
-		if path[0] == os.path.sep:
-			path = path[1:]
-		
-		if path != input_path.value:  input_path.value = path
-		
+			if path.find(Gdrive) != -1:
+				path = path.replace(Gdrive, "")  # Remove Gdrive path from "input"
+			
+			# BUG signaled by Jarredou : remove the first separator
+			if path[0] == os.path.sep:
+				path = path[1:]
+			
+			if path != input_path.value:  input_path.value = path
+			
 		path	= os.path.join(Gdrive, path)
 		is_dir	= os.path.isdir(path)
 		is_file	= os.path.isfile(path)
 		
+		if path != "":
+			input_warning.layout.display = 'block' if input_path.value != "" and is_dir else 'none'
+			Btn_Create_input.layout.display = 'inline' if not is_file and not is_dir else 'none'
+		else:
+			Btn_Create_input.layout.display = 'none'
+			input_warning.layout.display = 'none'
+
+		on_GOD_MODE_change(change)
+
 		name = "[ NAME of FILES ]"
 		if is_file:
 			name = os.path.splitext(os.path.basename(path))[0]
-		
+
 		output_info.value = f'<div class="path-info">{Gdrive}{os.path.sep}{output_path.value} {os.path.sep} {name} {os.path.sep}</div>'
 		
-		input_warning.layout.display = 'block' if input_path.value != "" and is_dir else 'none'
-		Btn_Create_input.layout.display = 'inline' if not is_file and not is_dir else 'none'
+	def on_GOD_MODE_change(change):
+		path = os.path.join(Gdrive, input_path.value)
+		disable = not (os.path.isfile(path) and DEBUG.value and GOD_MODE.value)
+		Btn_Del_Vocals.disabled = disable
+		Btn_Del_Music.disabled  = disable
+
+	def on_DEBUG_change(change):
+		on_GOD_MODE_change(change)
 
 	def on_output_change(change):
 		if HELP.value.find("ERROR") != -1:
 			HELP.value = '<div id="HELP"></div>'  # Clear HELP
 			
 		path = change['new']
-		path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
 
-		if path.find(Gdrive) != -1:
-			path = path.replace(Gdrive, "")  # Remove Gdrive path from "output"
+		if path != "":
+			path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
 
-		# BUG signaled by Jarredou : remove the first separator
-		if path[0] == os.path.sep:
-			path = path[1:]
-		
-		if path != output_path.value:  output_path.value = path
+			if path.find(Gdrive) != -1:
+				path = path.replace(Gdrive, "")  # Remove Gdrive path from "output"
 
-		Btn_Create_output.layout.display = 'inline' if not os.path.isdir(os.path.join(Gdrive, path)) else 'none'
+			# BUG signaled by Jarredou : remove the first separator
+			if path[0] == os.path.sep:
+				path = path[1:]
+			
+			if path != output_path.value:  output_path.value = path
+
+			Btn_Create_output.layout.display = 'inline' if not os.path.isdir(os.path.join(Gdrive, path)) else 'none'
+		else:
+			Btn_Create_output.layout.display = 'none'
 
 	# Link Events to functions
 	input_path.observe(on_input_change, names='value')
 	output_path.observe(on_output_change, names='value')
+	DEBUG.observe(on_DEBUG_change, names='value')
+	GOD_MODE.observe(on_GOD_MODE_change, names='value')
 
 	#*************
 	#**  FINAL  **
@@ -362,15 +419,17 @@ help_index[1][2] = "« Output folder » will be created based on the file\'s nam
 help_index[2][1] = "Choose your prefered audio format to save audio files.";\
 help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
 help_index[2][3] = "MDX A.I models : Choose the best pair to your audio file.<br>Instrumental is ONLY used to help Vocals processing, so better to focus more on Vocals...<br><b>WARNING</b> : Actually, I only FINE-TUNED « Kim Vocal 2 » and « Inst HQ 3 » (best for ROCK).";\
-help_index[3][1] = "Set MDX « BigShifts » trick value. (default : 11)<br><br>Set it to = 1 to disable that feature.";\
+help_index[3][1] = "Set MDX « BigShifts » trick value. (default : 12)<br><br>Set it to = 1 to disable that feature.";\
 help_index[3][2] = "Overlap of splited audio for heavy models. (default : 0.0)<br><br>Closer to 1.0 - slower.";\
 help_index[3][3] = "MDX version 3 overlap. (default : 8)";\
 help_index[3][4] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
-help_index[3][5] = "Use « SRS » vocal 2nd pass : can be useful for high vocals (Soprano by e.g)";\
+help_index[3][5] = "Use « SRS » vocal 2nd pass : can be useful for high vocals (Soprano by e.g)<br>AND high frequencies cut-off generated by A.I. models<br>See more explanations on the GitHub page ...";\
 help_index[3][6] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
-help_index[4][1] = "IF checked, it will save all intermediate audio files to compare with the final result.";\
-help_index[4][2] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to delete MANUALLY each file that you want to re-process !";\
-help_index[4][3] = "Shows an audio player for each saved file. For impatients people ! <b>;-)</b><br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
+help_index[4][1] = "For testing <b>only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
+help_index[4][2] = "IF checked, it will save all intermediate audio files to compare with the final result.";\
+help_index[4][3] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to delete MANUALLY each file that you want to re-process !";\
+help_index[4][4] = "Delete audio files that you want to re-process.<br>Available with <b>ONE file</b> at a time and <b>DEBUG</b> & <b>GOD MODE</b> activated.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
+help_index[4][5] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
 function show_help(index) {\
 	document.getElementById("HELP").innerHTML = "<div>"+ help_index[parseInt(index / 100)][index % 10] +"</div>";\
 }\

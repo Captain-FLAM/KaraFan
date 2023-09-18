@@ -1,0 +1,21 @@
+
+# Audio      : soundfile, librosa, pydub
+# GUI        : configparse, ipywidgets, tqdm
+# Inference  : numpy, scipy, ml_collections, onnxruntime-gpu
+
+# Needed for both PC and Colab (missing packages)
+
+# NOTE : PyTorch_CUDA is already installed on Colab !
+
+configparse
+
+pydub
+
+onnxruntime-gpu
+
+# ONLY for MDX23C models
+# ml_collections
+# yaml
+
+# MP3 Tags   : mutagen (for future use)
+# mutagen

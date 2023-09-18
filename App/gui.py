@@ -1,23 +1,20 @@
+#!python3.10
 
 #   MIT License - Copyright (c) 2023 Captain FLAM
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, sys, re, csv, glob, json, subprocess
+import os, csv, glob
 
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
-def Run(Gdrive, isColab, Fresh_install):
+def Run(Gdrive, Project, isColab):
 
-	# 1st : Install all required packages
-	import App.setup
-	Version = App.setup.Install(Gdrive, isColab, Fresh_install)
-
-	import App.settings, App.inference
+	import App.settings, App.inference, App.sys_info
 
 	width  = '670px'
-	height = '620px'
+	height = '720px'
 
 	# Set the font size when running on your PC
 	font = '14px'
@@ -51,23 +48,29 @@ def Run(Gdrive, isColab, Fresh_install):
 .player { margin-bottom: 5px }\
 .player > div { min-width: 200px; display: inline-block; font: normal '+ font +' monospace }\
 .player > audio { vertical-align: middle }\
-</style>'
-	))
+</style>'))
 	
 	def Label(text, index):
 		return widgets.HTML(f'<div class="option-label" onmouseenter="show_help({index})">{text}</div>')
 	
+	# Get local version
+	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
+		Version = version_file.readline().replace("# Version", "").strip()
+
 	# Get config values
 	config = App.settings.Load(Gdrive, isColab)
 
 	# Fill Models dropdowns
-	instrum = []; vocals = []
-	with open(os.path.join(Gdrive, "KaraFan", "Models", "_PARAMETERS_.csv")) as csvfile:
+	vocals = ["(None)"]; instru = ["(None)"]; filters = ["(None)"]
+	with open(os.path.join(Project, "App", "Models_DATA.csv")) as csvfile:
 		reader = csv.DictReader(csvfile)
 		for row in reader:
 			# ignore "Other" stems
-			if row['Stem'] == "Instrumental":	instrum.append(row['Name'])
-			elif row['Stem'] == "Vocals":		vocals.append(row['Name'])
+			# TODO : if row['Use'] != "":
+			if row['Stem'] == "Instrumental":
+				instru.append(row['Name']);  filters.append(row['Name'])  # Append "Instrumental" to FILTERS !
+			elif row['Stem'] == "Vocals":
+				vocals.append(row['Name']);  filters.append(row['Name'])  # Append ALSO "Vocals" to FILTERS !
 
 	# KaraFan Title
 	display(HTML('<div style="font-size: 24px; font-weight: bold; margin: 15px 0">KaraFan - version '+ Version +'</div>'))
@@ -83,20 +86,25 @@ def Run(Gdrive, isColab, Fresh_install):
 	output_path		= widgets.Text(config['PATHS']['output'], continuous_update=True, style=font_input)
 	output_info		= widgets.HTML()
 	Btn_Create_input  = widgets.Button(description='➕', tooltip="Create the input folder",  button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
-	Btn_Create_output = widgets.Button(description='➕', tooltip="Create the output folder",  button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
+	Btn_Create_output = widgets.Button(description='➕', tooltip="Create the output folder", button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
 	# PROCESS
 	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'200px'}, style=font_input)
 	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
-	# preset_models	= widgets.HTML('<div style="font-size: '+ font_small + '; margin-left: 12px">♒ Vocals : « Kim Vocal 2 », Instrum : « Inst HQ 3 »</div>')
-	model_instrum	= widgets.Dropdown(value = config['PROCESS']['model_instrum'], options = instrum, layout = {'width':'200px'}, style=font_input)
-	model_vocals	= widgets.Dropdown(value = config['PROCESS']['model_vocals'],  options = vocals,  layout = {'width':'200px'}, style=font_input)
+	vocals_1		= widgets.Dropdown(options = vocals,  layout = {'width':'200px'}, style=font_input)
+	vocals_2		= widgets.Dropdown(options = vocals,  layout = {'width':'200px'}, style=font_input)
+	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	# OPTIONS
-	bigshifts_MDX	= widgets.IntSlider(int(config['OPTIONS']['bigshifts_MDX']), min=1, max=41, step=1, style=font_input)
-	overlap_MDX		= widgets.FloatSlider(float(config['OPTIONS']['overlap_MDX']), min=0, max=0.95, step=0.05, style=font_input)
+	normalize		= widgets.Checkbox((config['OPTIONS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	large_gpu		= widgets.Checkbox((config['OPTIONS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	shifts_vocals	= widgets.IntSlider(int(config['OPTIONS']['shifts_vocals']), min=1, max=24, step=1, style=font_input)
+	shifts_instru	= widgets.IntSlider(int(config['OPTIONS']['shifts_instru']), min=1, max=24, step=1, style=font_input)
+	shifts_filter	= widgets.IntSlider(int(config['OPTIONS']['shifts_filter']), min=1, max=12, step=1, style=font_input)
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
-	use_SRS			= widgets.Checkbox((config['OPTIONS']['use_SRS'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
-	large_gpu		= widgets.Checkbox((config['OPTIONS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	# BONUS
 	TEST_MODE		= widgets.Checkbox((config['BONUS']['TEST_MODE'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
@@ -109,7 +117,8 @@ def Run(Gdrive, isColab, Fresh_install):
 	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'15px 0 15px 0'})
 
 	# TAB 2
-	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'auto scroll'})
+	Status			= widgets.Image(format='png', width=16, height=16, layout={'border': 'none', 'width':'16px', 'height':'16px', 'margin':'7px 0 0 0'})
+	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
 	
 	# TAB 3
 	sys_info		= widgets.HTML()
@@ -131,23 +140,25 @@ def Run(Gdrive, isColab, Fresh_install):
 				widgets.VBox([
 					widgets.HBox([ Label("Output Format", 201), output_format ]),
 #					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
-					widgets.HBox([ Label("MDX Models", 203),
-		   				model_instrum, widgets.HTML('<span style="font-size:20px"> 🎵 &nbsp;</span>'),
-						model_vocals, widgets.HTML('<span style="font-size:20px"> 💋</span>') ]),
+					widgets.HBox([ Label("MDX Vocals", 203), vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Label("MDX Instrumental", 204), instru_1, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("MDX Filters", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("", 205), filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label('BigShifts MDX', 301), bigshifts_MDX ]),
-					widgets.HBox([ Label('Overlap MDX', 302), overlap_MDX ]),
-#					widgets.HBox([ Label('Overlap MDX v3', 303), overlap_MDXv3 ]),
-					widgets.HBox([ Label("Chunk Size", 304), chunk_size ]),
-					widgets.HBox([ Label("Use « SRS »", 305), use_SRS, Label('Large GPU', 306), large_gpu ]),
+					widgets.HBox([ Label("Normalize input", 301), normalize, Label('Large GPU', 302), large_gpu ]),
+					widgets.HBox([ Label("BigShifts Vocals", 303),  shifts_vocals ]),
+					widgets.HBox([ Label("BigShifts Instrum", 303), shifts_instru ]),
+					widgets.HBox([ Label("BigShifts Filters", 303), shifts_filter ]),
+#					widgets.HBox([ Label("Overlap MDX v3", 304), overlap_MDXv3 ]),
+					widgets.HBox([ Label("Chunk Size", 305), chunk_size ]),
 				]),
 				separator,
 				widgets.VBox([
 					widgets.HBox([ Label("DEBUG", 401), DEBUG, Label("TEST Mode", 402), TEST_MODE ]),
 					widgets.HBox([ Label("GOD Mode", 403), GOD_MODE, Label("Show Previews", 404), PREVIEWS ]),
-					widgets.HBox([ Label("RE-Process ▶️▶️", 405), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
+########					widgets.HBox([ Label("RE-Process ▶️▶️", 405), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
 				]),
 				separator,
 				widgets.HBox([Btn_Start], layout={'width':'100%', 'justify_content':'center'}),
@@ -156,6 +167,7 @@ def Run(Gdrive, isColab, Fresh_install):
 		widgets.VBox(
 			layout = panel_layout,
 			children = [
+				widgets.HBox([ widgets.HTML('<span>Status : &nbsp;</span>'), Status ]),
 				CONSOLE
 			]),
 		widgets.VBox(
@@ -165,6 +177,28 @@ def Run(Gdrive, isColab, Fresh_install):
 				sys_info
 			]),
 	]
+	display(HTML('\
+<script type="application/javascript">\
+var help_index = []; help_index[1] = []; help_index[2] = []; help_index[3] = []; help_index[4] = [];\
+help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside this folder will be separated by a Batch processing.<br>- Else, only the selected audio file will be processed.";\
+help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
+help_index[2][1] = "Choose your prefered audio format to save audio files.";\
+help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
+help_index[2][3] = "<b>A.I</b> models : Make an Ensemble of extraction with selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
+help_index[2][4] = "<b>A.I</b> models : Extract the instrumental part for repairing at the end of process.<br><br>Best model : « <b>Inst HQ 3</b> »";\
+help_index[2][5] = "<b>A.I</b> models : Pass Vocals trough different filters to remove <b>Bleedings</b> of instruments.<br><br>You have to test various models to find the best combination for your song !";\
+help_index[3][1] = "Normalize input audio files to avoid clipping and get better results.<br><br>Uncheck it for <b>SDR</b> testings !!";\
+help_index[3][2] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
+help_index[3][3] = "Set MDX « BigShifts » trick value. (default : 12 , filters : 2)<br><br>Set it to = 1 to disable that feature.";\
+help_index[3][4] = "MDX version 3 overlap. (default : 8)";\
+help_index[3][5] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
+help_index[4][1] = "IF checked, it will save all intermediate audio files to compare in your <b>Audacity</b>.";\
+help_index[4][2] = "For <b>testing only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
+help_index[4][3] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !";\
+help_index[4][4] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
+help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
+</script>'))
+
 	# Bug in VS Code : titles NEEDS to be set AFTER children
 	tab.titles = titles
 	tab.selected_index = 0
@@ -207,15 +241,21 @@ def Run(Gdrive, isColab, Fresh_install):
 		config['PROCESS'] = {
 			'output_format': output_format.value,
 #			'preset_genre': preset_genre.value,
-			'model_instrum': model_instrum.value,
-			'model_vocals': model_vocals.value,
+			'vocals_1': vocals_1.value,
+			'vocals_2': vocals_2.value,
+			'instru_1': instru_1.value,
+			'filter_1': filter_1.value,
+			'filter_2': filter_2.value,
+			'filter_3': filter_3.value,
+			'filter_4': filter_4.value,
 		}
 		config['OPTIONS'] = {
-			'bigshifts_MDX': bigshifts_MDX.value,
-			'overlap_MDX': overlap_MDX.value,
+			'shifts_vocals': shifts_vocals.value,
+			'shifts_instru': shifts_instru.value,
+			'shifts_filter': shifts_filter.value,
 #			'overlap_MDXv3': overlap_MDXv3.value,
 			'chunk_size': chunk_size.value,
-			'use_SRS': use_SRS.value,
+			'normalize': normalize.value,
 			'large_gpu': large_gpu.value,
 		}
 		config['BONUS'] = {
@@ -229,16 +269,19 @@ def Run(Gdrive, isColab, Fresh_install):
 		tab.selected_index = 1
 		
 		# Again the same bug for "tab titles" on Colab !!
-		display(HTML('<script type="application/javascript">show_titles();</script>'))
+		if isColab:
+			display(HTML('<script type="application/javascript">show_titles();</script>'))
 
-		real_input  = os.path.join(Gdrive, input_path.value)
-		
 		options = App.settings.Convert_to_Options(config)
 
 		options['Gdrive'] = Gdrive
+		options['Project'] = Project
 		options['CONSOLE'] = CONSOLE
+		options['Status']  = Status
 		
 		options['input'] = []
+
+		real_input  = os.path.join(Gdrive, input_path.value)
 
 		if os.path.isfile(real_input):
 			options['input'].append(real_input)
@@ -246,24 +289,34 @@ def Run(Gdrive, isColab, Fresh_install):
 			# Get all audio files inside the folder (NOT recursive !)
 			for file_path in sorted(glob.glob(os.path.join(real_input, "*.*")))[:]:
 				if os.path.isfile(file_path):
-					options['input'].append(file_path)
+					ext = os.path.splitext(file_path)[1].lower()
+					if ext == ".mp3" or ext == ".wav" or ext == ".flac":
+						options['input'].append(file_path)
 		
 		# Start processing
-		CONSOLE.clear_output();  App.inference.Run(options)
+		CONSOLE.clear_output();  App.inference.Process(options)
+
+		# Refresh Google Drive files cache
+#		if isColab:
+#			from google.colab import drive
+#			drive.flush_and_unmount(stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
+#			drive.mount("/content/Gdrive", stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
 
 
 	def on_SysInfo_clicked(b):
 		font_size = '13px' if isColab == True else '12px'
 		Btn_SysInfo.layout = {'display':'none'}
-		sys_info.value = Get_SysInfos(font_size)
+		sys_info.value = App.sys_info.Get(font_size)
 
 	def on_Create_input_clicked(b):
 		os.makedirs(os.path.join(Gdrive, input_path.value), exist_ok=True)
 		Btn_Create_input.layout.display = 'none'
-	
+		on_input_change({'new': input_path.value})
+
 	def on_Create_output_clicked(b):
 		os.makedirs(os.path.join(Gdrive, output_path.value), exist_ok=True)
 		Btn_Create_output.layout.display = 'none'
+		on_output_change({'new': output_path.value})
 	
 	# Delete all vocals files extracted from THIS song
 	def on_Del_Vocals_clicked(b):
@@ -404,28 +457,8 @@ function show_titles() {\
 	document.getElementById("tab-key-1").getElementsByClassName("lm-TabBar-tabLabel")[0].innerHTML = "'+ titles[1] +'";\
 	document.getElementById("tab-key-2").getElementsByClassName("lm-TabBar-tabLabel")[0].innerHTML = "'+ titles[2] +'";\
 }'
-
 	# Add HELP
-# Set it to True to reuse the already processed audio files when in Development mode
 	javascript += '\
-var help_index = [];\
-help_index[1] = []; help_index[2] = []; help_index[3] = []; help_index[4] = [];\
-help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside this folder will be separated by a Batch processing.<br>- Else, only the selected audio file will be processed.";\
-help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
-help_index[2][1] = "Choose your prefered audio format to save audio files.";\
-help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
-help_index[2][3] = "MDX A.I models : Choose the best pair to your audio file.<br>Instrumental is ONLY used to help Vocals processing, so better to focus more on Vocals...<br><b>WARNING</b> : Actually, I only FINE-TUNED « <b>Kim Vocal 2</b> » and « <b>Inst HQ 3</b> » (best for ROCK).";\
-help_index[3][1] = "Set MDX « BigShifts » trick value. (default : 12)<br><br>Set it to = 1 to disable that feature.";\
-help_index[3][2] = "Overlap of splited audio for heavy models. (default : 0.0)<br><br>Closer to 1.0 - slower.";\
-help_index[3][3] = "MDX version 3 overlap. (default : 8)";\
-help_index[3][4] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
-help_index[3][5] = "Use « SRS » vocal 2nd pass : can be useful for high vocals (Soprano by e.g)<br><b>AND</b> high frequencies cut-off generated by A.I. models<br>See more explanations on the GitHub page ...";\
-help_index[3][6] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
-help_index[4][1] = "IF checked, it will save all intermediate audio files to compare with the final result.";\
-help_index[4][2] = "For <b>testing only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
-help_index[4][3] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !";\
-help_index[4][4] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
-help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
 function show_help(index) {\
 	document.getElementById("HELP").innerHTML = "<div>"+ help_index[parseInt(index / 100)][index % 10] +"</div>";\
 }\
@@ -450,107 +483,19 @@ function show_help(index) {\
 	
 	display(HTML(javascript))
 
-	# Update input_info and output_info after loading
+	# Update controls after loading
+
 	on_input_change({'new': input_path.value})
 	on_output_change({'new': output_path.value})
 
+	# Load Status Led icons
+	with open(os.path.join(Project, "images", "Led_Grey.png"), 'rb') as file:
+		Status.value = file.read()
 
-def Get_SysInfos(font_size):
-
-	import platform, psutil
-
-	system = platform.system()
-
-	html  = '<pre style="font: bold '+ font_size +' monospace; line-height: 1.4">'
-	html += "****  System Informations  ****<br><br>"
-
-	# Get the total virtual memory size (in bytes)
-	total_virtual_memory = psutil.virtual_memory().total
-	unit_index = 0
-	units = ['B', 'KB', 'MB', 'GB', 'TB']
-
-	# Convert size into larger units until size is less than 1024
-	while total_virtual_memory >= 1024:
-		total_virtual_memory /= 1024
-		unit_index += 1
-
-	html += "Python : "+ re.sub(r'\(.*?\)\s*', '', sys.version) +"<br>"
-	html += f"OS : {system} { platform.release() }<br>"
-	html += f"RAM : {total_virtual_memory:.2f} {units[unit_index]}<br>"
-	html += f"Current directory : { os.getcwd() }<br><br>"
-
-	html += "****    CPU Informations    ****<br><br>"
-	match system:
-		case 'Windows':  # use 'wmic'
-			try:
-				cpu_info = subprocess.check_output(['wmic', 'cpu', 'get', 'Caption,MaxClockSpeed,NumberOfCores,NumberOfLogicalProcessors', '/FORMAT:CSV']).decode('utf-8')
-				cpu_info = cpu_info.split('\n')[-2].strip()  # catch the last line
-				# Split values
-				cpu_info = cpu_info.split(',')
-				html += f"CPU : {cpu_info[1]}<br>"
-				html += f"Cores : {cpu_info[3]}<br>"
-				html += f"Threads : {cpu_info[4]}<br>"
-				html += f"MaxClock Speed : {cpu_info[2]} MHz"
-			except FileNotFoundError:
-				html += "--> Can't get CPU infos : 'wmic' tool is not available on this platform."
-
-		case 'Linux':  # use 'lscpu'
-			try:
-				cpu_info = subprocess.check_output(['lscpu', '-J']).decode('utf-8')
-				cpu_info = json.loads(cpu_info)
-				if 'lscpu' in cpu_info:
-					sockets = cores = threads = 1
-					for item in cpu_info["lscpu"]:
-						if 'field' in item and 'data' in item:
-							data = item['data']
-							match item['field']:
-								case "Architecture:":		html += f"Arch : {data}<br>"
-								case "Model name:":			html += f"CPU : {data}<br>"
-								case "CPU max MHz:":		html += f"MaxClock Speed : {int(data)} MHz<br>"
-								case "Socket(s):":			sockets = int(data)
-								case "Core(s) per socket:":	cores   = int(data)
-								case "Thread(s) per core:":	threads = int(data)
-					
-					html += f"Cores : {cores * sockets}<br>"
-					html += f"Threads : {threads * cores * sockets}"
-
-			except FileNotFoundError:
-				html += "--> Can't get CPU infos : 'lscpu' tool is not available on this platform."
-
-		case 'Darwin':  # For macOS, use 'sysctl'
-			try:
-				## TODO : decode CPU infos on macOS
-				html += "CPU : " + subprocess.check_output(['sysctl', 'machdep.cpu']).decode('utf-8')
-			except FileNotFoundError:
-				html += "--> Can't get CPU infos : 'sysctl' tool is not available on this platform."
-
-		case _:
-			# For other platforms, display a generic message
-			html += "--> CPU informations are not available for this platform."
-
-	html += "<br><br>****   GPU Informations    ****<br><br>"
-	try:
-		# Nvidia details information
-		gpu_info = subprocess.check_output('nvidia-smi').decode('utf-8')
-		
-		html += '<div style="line-height: 1; ">'+ gpu_info +'</div><br>'
-
-		if gpu_info.find('failed') >= 0:
-			html += "GPU runtime is disabled. You can only use your CPU with available RAM."
-		elif gpu_info.find('Tesla T4') >= 0:
-			html += "You got a Tesla T4 GPU. (speeds are around  10-25 it/s)"
-		elif gpu_info.find('Tesla P4') >= 0:
-			html += "You got a Tesla P4 GPU. (speeds are around  8-22 it/s)"
-		elif gpu_info.find('Tesla K80') >= 0:
-			html += "You got a Tesla K80 GPU. (This is the most common and slowest gpu, speeds are around 2-10 it/s)"
-		elif gpu_info.find('Tesla P100') >= 0:
-			html += "You got a Tesla P100 GPU. (This is the FASTEST gpu, speeds are around  15-42 it/s)"
-		else:
-			html += "You got an unknown GPU !!"
-	
-	except FileNotFoundError:
-		html += "--> Can't get GPU infos : 'nvidia-smi' tool is not available on this platform."
-
-	html += "</pre>"
-	
-	return html
+	if config['PROCESS']['vocals_1'] in vocals:		vocals_1.value = config['PROCESS']['vocals_1']
+	if config['PROCESS']['vocals_2'] in vocals:		vocals_2.value = config['PROCESS']['vocals_2']
+	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
+	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
+	if config['PROCESS']['filter_2'] in filters:	filter_2.value = config['PROCESS']['filter_2']
+	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
+	if config['PROCESS']['filter_4'] in filters:	filter_4.value = config['PROCESS']['filter_4']

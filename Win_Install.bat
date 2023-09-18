@@ -8,14 +8,10 @@ echo ` else ...
 echo ` Say 'NO' to uninstall answer !
 echo.
 
-IF EXIST C:\Windows\py.exe (
-    echo **  Using PY launcher
-    py -3.10 -m pip -V
-    py -3.10 -m pip uninstall torch
-    py -3.10 -m pip install torch --index-url https://download.pytorch.org/whl/cu118
-) ELSE (
-    echo **  Using PIP
-    pip3.10 -V
-    pip3.10 uninstall torch
-    pip3.10 install torch --index-url https://download.pytorch.org/whl/cu118
-)
+pip3.10 uninstall torch
+pip3.10 install torch --index-url https://download.pytorch.org/whl/cu118
+
+pip3.10 install -r requirements.txt
+pip3.10 install -r requirements_PC.txt
+
+pause

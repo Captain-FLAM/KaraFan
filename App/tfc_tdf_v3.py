@@ -1,3 +1,4 @@
+#!python3.10
 
 #   MIT License - Copyright (c) 2023 - ZFTurbo & Jarredou
 #

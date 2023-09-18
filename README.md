@@ -19,7 +19,7 @@ If you want to encourage me to give more time to improve this project :
 
 [![](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20Coffee%20for%20Morning&emoji=:☕&slug=Captain_FLAM&button_colour=c69d8a&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=FFDD00)](https://www.buymeacoffee.com/Captain_FLAM) &nbsp;
 [![](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20Beer%20for%20the%20Night&emoji=🍺&slug=Captain_FLAM&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/Captain_FLAM)  
-[![](https://img.buymeacoffee.com/button-api/?text=Become%20my%20Best%20Friend%20....%20&emoji=❤️&slug=Captain_FLAM&button_colour=f4007a&font_colour=ffffff&font_family=Arial&outline_colour=ffffff&coffee_colour=FFDD00)](https://www.buymeacoffee.com/Captain_FLAM/membership) &nbsp;
+[![](https://img.buymeacoffee.com/button-api/?text=Become%20my%20Best%20Friend%20....%20&emoji=😘&slug=Captain_FLAM&button_colour=f4007a&font_colour=ffffff&font_family=Arial&outline_colour=ffffff&coffee_colour=FFDD00)](https://www.buymeacoffee.com/Captain_FLAM/membership) &nbsp;
 [![](https://img.buymeacoffee.com/button-api/?text=I%20also%20have%20a%20Dreams%20List%20%3F&emoji=🎁&slug=Captain_FLAM&button_colour=ddd0ca&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=FFDD00)](https://www.buymeacoffee.com/Captain_FLAM/wishlist)
 
 You can become one of my patrons :
@@ -35,21 +35,29 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 
 # 📖 Table of Contents
 
-- [🎰 Success Story](#-success-story)
-- [🔥 Introduction](#-introduction)
-- [💤 An Old Dream](#-an-old-dream)
-- [🧒 Biography](#-biography)
-- [📆 History](#-history)
-- [📈 Changes Log](#-changes-log)
-- [🧻 in the WIKI now](#-in-the-wiki-now)
-- [📂 Structure](#-structure)
-- [🦄 Near Future](#-near-future)
-- [😍 Wall of Fame](#-wall-of-fame)
-- [📝 Todo List](#-todo-list)
-- [💗 Special Thanks To...](#-special-thanks-to)
-- [📜 LICENSE](#-license)
+- 🎰 [Success Story](#-success-story)
+- 🔥 [Introduction](#-introduction)
+- 💤 [An Old Dream](#-an-old-dream)
+- 🧒 [Biography](#-biography)
+- 📆 [History](#-history)
+- 📈 [Changes Log](#-changes-log)
+- 🦄 [Near Future](#-near-future)
+- 😍 [Wall of Fame](#-wall-of-fame)
+- 📝 [Todo List](#-todo-list)
+- 💗 [Special Thanks To...](#-special-thanks-to)
+- 📜 [LICENSE](#-license)
 
-.
+# 🧻 in the WIKI now
+
+- 🚀 [INSTALL](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-INSTALL)
+- 🎵 [How To Update ?](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B5-How-To-Update)
+- 🤡 [My Advices](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A4%A1-My-Advices)
+- 🥣 [My Magic « Recipe »](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A5%A3-My-Magic-%C2%AB-Recipe-%C2%BB)
+- 💡 [Technical Details](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%92%A1-Technical-Details)
+
+So for now, in addition to being obliged to **R.T.F.R.M** (Read The Fucking READ ME), you have to **R.T.F.W** (Read The Fucking WIKI) !! 😛
+
+~
 
 ---
 
@@ -110,7 +118,8 @@ Since the year 2000, I have been coding in PHP, MySQL, JavaScript, jQuery, HTML,
 
 And today in Python. ❤️
 
-----
+~
+
 ----
 
 # 📆 HISTORY
@@ -130,6 +139,7 @@ I also added a few tricks to improve the quality of the results.
 
 | Date | Version | Description |
 | ---- | ------- | ----------- |
+| 2023-09-15 | 1.4 | Totally Rewamped INSTALLATION |
 | 2023-09-09 | 1.3 | Correct "Linkwitz-Riley" filter (better **SRS**)<br>New download system for Models (stay in GUI)<br>Add TEST MODE (process with only 1 pass)<br>Add "Delete" buttons (works with ONE file and DEBUG & GOD_MODE activated) |
 | 2023-09-08 | 1.2 | Possibility to choose any **MDX A.I. models** for Instrum & Vocals<br>New download system for Models (stay in GUI)<br>Saving MP3 with fucking Cut-OFF @ 16 Khz solved ! |
 | 2023-09-06 | 1.1 | Bugs Fixed with the returns of Discord's people<br>One can choose the ouput directory<br>KaraFan have **Automagic Updates** system ! |
@@ -139,40 +149,8 @@ I also added a few tricks to improve the quality of the results.
 | 2023-08-03 | 0.1 | I started to dig infos on Discord to find the best models & process to use<br />(follow this link if you wanna [read all the story](https://discord.com/channels/708579735583588363/887455924845944873/1136629816246935654) since the beginning ...) |
 | 2023-07-12 | 0.0 | I found & tried the wonderful Facebook Demucs models, and the idea started to grow in my mind ... |
 
-.
+~
 
-----
-----
-
-# 🧻 in the WIKI now
-
-- 🎵 **How To Update ?**
-- 🤡 **My Advices**
-- 🚀 **INSTALL**
-- 🥣 **My Magic « Recipe »**
-- 💡 **Technical Details**
-
-### Moved into [the WIKI ... Click to Read ALL !!](https://github.com/Captain-FLAM/KaraFan/wiki)
-
-So for now, in addition to being obliged to **R.T.F.R.M** (Read This Fucking READ ME), you have to **R.T.F.W** (Read The Fucking WIKI) !! 😛
-
-.
-
-# 📂 STRUCTURE
-
-After installation, you'll find new folders at the root of your Google Drive with the following structure :
-
-| Folder             | Function                                                  |
-| ------------------ | --------------------------------------------------------- |
-| / KaraFan          | (the root)                                                |
-| / KaraFan / App    | This is the main Application                              |
-| / KaraFan / Models | Where all the models are stored                           |
-| / Music            | Here you can put your audio files (or choose another one) |
-| / Results          | Here you will find your extracted audio files (or another one) |
-
-.
-
-----
 ----
 
 # 🦄 NEAR FUTURE
@@ -194,7 +172,7 @@ you can make a donation or become one of my patrons :
   I'm dreaming of a **RTX 4090** ... and I'm NOT a gamer !  
   ... and if you are too generous, Me can buy an **Nvidia A100 40GB** !! 😍
 
-.
+~
 
 ---
 
@@ -205,7 +183,7 @@ My beloved Patrons & Donators :
 
 - ### Your name here !!
 
-.
+~
 
 ---
 
@@ -213,15 +191,15 @@ My beloved Patrons & Donators :
 
 My brain is overheating ! 😵
 
-- [X] Add more Models (but NOT with fine-tuned volume compensation for each !)
-- [ ] Add a TEST option to quickly do only 1 pass on audio files for testing purposes.
+- [X] Add more MDX Models.
+- [X] Add a TEST option to quickly do only 1 pass on audio files for testing purposes.
 - [ ] Add a « STOP » button to kill Colab background processes that consume your credits !!
 - [ ] Get weak voices with A.I. models with a pre-amplification of low parts of the spectrum.
 - [ ] Automatic fine-tuning of volume compensation for each song (am I Crazy ??).
 - [ ] Separate Choirs from Vocals (very hard challenge !)
 - [ ] etc ... etc ... etc ...  
 
-.
+~
 
 ---
 
@@ -245,7 +223,6 @@ We are all standing on the shoulders of giants !
 
 Thousands Thanks to all of you ! **I love you !** ❤️
 
----
 ---
 
 # 📜 LICENSE

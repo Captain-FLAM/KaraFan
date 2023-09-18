@@ -1,49 +1,63 @@
+#!python3.10
 
 #   MIT License - Copyright (c) 2023 Captain FLAM
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, sys, requests, subprocess
+import os, subprocess, requests
 
-def Install(Gdrive, isColab, Fresh_install):
+def Check_dependencies(isColab):
+
+	# Dependencies already installed ?
+	print("Installing dependencies... This will take few minutes...", end='')
+	try:
+		subprocess.run(["pip", "install", "-r", "requirements.txt"], text=True, capture_output=True, check=True)
+		if not isColab:
+			subprocess.run(["pip", "install", "-r", "requirements_PC.txt"], text=True, capture_output=True, check=True)
+		
+		print("\rInstallation done !                                     ") # Clean line
 	
-	#****************************************************************************************************
+	except subprocess.CalledProcessError as e:
+		print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout + "\n")
+		exit(1)
 
-	Repo_url    = "https://github.com/Captain-FLAM/KaraFan"
+def Install(Gdrive, Project, isColab, DEV_MODE=False):
+	
+	Repository  = "https://github.com/Captain-FLAM/KaraFan"
 	Version_url = "https://raw.githubusercontent.com/Captain-FLAM/KaraFan/master/App/__init__.py"
 
-	# Needed for both PC and Colab (missing packages)
-	Requirements = ["pip", "install", "pydub", "configparse", "ml_collections", "onnxruntime-gpu"]
-
-	# Needed only for PC (already installed on Colab)
-	if not isColab:
-		Requirements += ["soundfile", "librosa", "ipywidgets", "numpy", "scipy", "tqdm"]
-
-	# Audio		: soundfile, librosa, pydub
-	# GUI		: configparse, ipywidgets
-	# Inference	: numpy, scipy, tqdm, ml_collections, onnxruntime-gpu
-	# MP3 Tags	: mutagen (for future use)
-	
-	# Note : on PC, We need to install PyTorch_CUDA, not torch ! (already installed on Colab)
-
-	#****************************************************************************************************
-
-	Version = ""; Git_version = "";  New_Version = False
+	Version = ""; Git_version = ""
 
 	if not os.path.exists(Gdrive):
 		print("ERROR : Google Drive path is not valid !\n")
-		sys.exit(1)
+		exit(1)
 	
-	os.chdir(Gdrive)
-	Project_path = os.path.join(Gdrive, "KaraFan")
-
 	# Get local version
-	with open(os.path.join(Project_path, "App", "__init__.py"), "r") as version_file:
+	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
 		Version = version_file.readline().replace("# Version", "").strip()
 
+	if isColab:
+		Check_dependencies(True)
+
+		# Temporary fix for old KF version < 1.4
+		# Delete everything except Config files & Models folder
+		old_version = os.path.join(Gdrive, "KaraFan")
+		if os.path.exists(old_version):
+			for file in os.listdir(old_version):
+				if file != "Config_Colab.ini" and file != "Config_PC.ini" and file != "Models":
+					subprocess.run(["rm", "-rf", os.path.join(old_version, file)], text=True, capture_output=True, check=True)
+			if os.path.exists(os.path.join(old_version, "Models", "_PARAMETERS_.csv")):
+				os.remove(os.path.join(old_version, "Models", "_PARAMETERS_.csv"))
+			# Rename the folder
+			os.rename(old_version, os.path.join(Gdrive, "KaraFan_user"))
+	
+	# Create missing folders
+	folder = os.path.join(Gdrive, "KaraFan_user")
+	os.makedirs(folder, exist_ok=True)
+	os.makedirs(os.path.join(folder, "Models"), exist_ok=True)
+
 	# Auto-Magic update !
-	if not Fresh_install:
-		
+	if not DEV_MODE:
 		try:
 			response = requests.get(Version_url)
 			if response.status_code == requests.codes.ok:
@@ -57,49 +71,39 @@ def Install(Gdrive, isColab, Fresh_install):
 
 		if Version and Git_version:
 			if Git_version > Version:
-				print(f'Updating "KaraFan" project to version {Git_version} ...')
-				# os.chdir(Project_path)
-				try:
-					subprocess.run(["git", "-C", Project_path, "pull"], text=True, capture_output=True, check=True)
+				print(f'A new version of "KaraFan" is available : {Git_version} !')
 
-					Version = Git_version;  New_Version = True
-					
-					if isColab:
-						print('NOW, you have to go AGAIN in Colab menu, "Runtime > Restart and Run all" to use the new version of "KaraFan" !\n')
-						sys.exit(0)
+				warning = 'You have to download the new version manually from :\n'
+				warning += Repository
+				warning +='\n... and extract it in your KaraFan folder.\n'
 
-				except subprocess.CalledProcessError as e:
-					if e.returncode == 127:
-						print('WARNING : Git is not installed on your system !')
-						print('... and there is a new version of "KaraFan" available !')
-						print('You have to download it manually from :')
-						print(Repo_url)
-						print('... and extract it in your Google Drive folder.')
-					else:
-						print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
-						sys.exit(1)
+				if os.path.exists(os.path.join(Project, ".git")):
+					try:
+						subprocess.run(["git", "-C", Project, "pull"], text=True, capture_output=True, check=True)
+
+						if isColab:
+							print('\n\nFOR NOW : you have to go AGAIN in Colab menu, "Runtime > Restart and Run all" to use the new version of "KaraFan" !\n\n')
+						else:
+							Check_dependencies(False)
+							print('\n\nFOR NOW : you have to "Restart" the notebook to use the new version of "KaraFan" !\n\n')
+
+						exit(0)
+						
+					except subprocess.CalledProcessError as e:
+						if e.returncode == 127:
+							print('WARNING : "Git" is not installed on your system !\n' + warning)
+						else:
+							print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
+							exit(1)
+				else:
+					print(warning)
 			else:
 				print('"KaraFan" is up to date.')
 
-	# Dependencies already installed ?
-	if isColab or New_Version:
-		try:
-			import onnxruntime
-		except:
-			print("Installing dependencies... This will take few minutes...", end='')
-			try:
-				subprocess.run(Requirements, text=True, capture_output=True, check=True)
-				print("\rInstallation done !                                     ") # Clean line
-			
-			except subprocess.CalledProcessError as e:
-				print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout + "\n")
-				sys.exit(1)
-
-	return Version
-
 if __name__ == '__main__':
 
-	# We are on a PC : Get the current path and remove last part (KaraFan)
-	Gdrive = os.getcwd().replace("KaraFan","").rstrip(os.path.sep)
+	# We are on PC
+	Project = os.getcwd()  # Get the current path
+	Gdrive  = os.path.dirname(Project)  # Get parent directory
 
-	Install(Gdrive, False, False)
+	Install(Gdrive, Project, False)

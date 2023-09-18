@@ -1,0 +1,20 @@
+
+# Audio      : soundfile, librosa, pydub
+# GUI        : configparse, ipywidgets, tqdm
+# Inference  : numpy, scipy, ml_collections, onnxruntime-gpu
+
+# Needed only for PC (already installed on Colab)
+
+# NOTE : on PC, You need to install PyTorch_CUDA, not torch !
+
+ipywidgets
+tqdm
+
+soundfile
+librosa
+
+numpy
+scipy
+
+regex
+requests

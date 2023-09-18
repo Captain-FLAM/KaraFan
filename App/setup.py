@@ -36,6 +36,9 @@ def Install(Gdrive, Project, isColab, DEV_MODE=False):
 	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
 		Version = version_file.readline().replace("# Version", "").strip()
 
+	# For pip install
+	os.chdir(Project)
+
 	if isColab:
 		Check_dependencies(True)
 

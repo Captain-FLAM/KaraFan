@@ -303,8 +303,8 @@ class MusicSeparationModel:
 		self.AudioFiles_Mandatory = [1, 2, 5, 6]  # Vocal & Music Extract, Vocal & Music FINAL
 		
 		# Load Status Led icons
-		with open(os.path.join(options['Project'], "images", "Led_Grey.png"), 'rb') as file:
-			self.Led_Grey = file.read()
+		with open(os.path.join(options['Project'], "images", "Led_Orange.png"), 'rb') as file:
+			self.Led_Orange = file.read()
 		with open(os.path.join(options['Project'], "images", "Led_Green.png"), 'rb') as file:
 			self.Led_Green = file.read()
 
@@ -404,7 +404,7 @@ class MusicSeparationModel:
 	# --------
 
 	def Update_Status(self):
-		self.Status.value = self.Led_Green if self.Status_ON else self.Led_Grey
+		self.Status.value = self.Led_Green if self.Status_ON else self.Led_Orange
 		self.Status_ON = not self.Status_ON
 
 	def Load_MDX(self, model):
@@ -647,14 +647,14 @@ class MusicSeparationModel:
 			else:
 				print(text +" -> SRS (Pass 1)")
 				self.Update_Status()
-				source = 0.5 * Change_sample_rate( -demix_full(
+				source_SRS = 0.5 * Change_sample_rate( -demix_full(
 					Change_sample_rate( -audio, 5, 4),
 					self.device, self.chunk_size, mdx_model, inference, bigshifts, CONSOLE = self.CONSOLE
 				)[0], 4, 5)
 
 				print(text +" -> SRS (Pass 2)")
 				self.Update_Status()
-				source += 0.5 * Change_sample_rate( demix_full(
+				source_SRS += 0.5 * Change_sample_rate( demix_full(
 					Change_sample_rate( audio, 5, 4),
 					self.device, self.chunk_size, mdx_model, inference, bigshifts, CONSOLE = self.CONSOLE
 				)[0], 4, 5)

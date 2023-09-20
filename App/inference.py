@@ -506,7 +506,7 @@ class MusicSeparationModel:
 		# The "song_output_path" contains the NAME of the song to compare within the "Multi-Song" folder
 		# That's all !!
 		if self.Options['DEV_MODE']:
-			
+
 			print("----------------------------------------")
 			App.compare.SDR(self.song_output_path, self.Options['Gdrive'])
 		
@@ -891,12 +891,12 @@ def Download_Model(model, models_path, CONSOLE = None):
 
 
 # Linkwitz-Riley filter
-def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=8):
+def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=4):
 	if cutoff  < 0:  cutoff = 0
 	if cutoff >= 22000:  cutoff = 22000 # Hz
 	nyquist = 0.5 * sample_rate
 	normal_cutoff = cutoff / nyquist
-	b, a = signal.butter(order, normal_cutoff, btype=filter_type, analog=False)
+	b, a = signal.butter(order // 2, normal_cutoff, btype=filter_type, analog=False, output='sos')
 	filtered_audio = signal.filtfilt(b, a, audio)
 	return filtered_audio.T
 

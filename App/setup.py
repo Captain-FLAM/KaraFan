@@ -47,10 +47,16 @@ def Install(Gdrive, Project, isColab, DEV_MODE=False):
 		old_version = os.path.join(Gdrive, "KaraFan")
 		if os.path.exists(old_version):
 			for file in os.listdir(old_version):
-				if file != "Config_Colab.ini" and file != "Config_PC.ini" and file != "Models":
-					subprocess.run(["rm", "-rf", os.path.join(old_version, file)], text=True, capture_output=True, check=True)
-			if os.path.exists(os.path.join(old_version, "Models", "_PARAMETERS_.csv")):
-				os.remove(os.path.join(old_version, "Models", "_PARAMETERS_.csv"))
+				if os.path.isfile(os.path.join(old_version, file)):
+					if file != "Config_Colab.ini" and file != "Config_PC.ini":
+						os.remove(os.path.join(old_version, file))
+				elif os.path.isdir(os.path.join(old_version, file)):
+					if file == "Models":
+						if os.path.exists(os.path.join(old_version, "Models", "_PARAMETERS_.csv")):
+							os.remove(os.path.join(old_version, "Models", "_PARAMETERS_.csv"))
+					else:
+						os.rmdir(os.path.join(old_version, file))
+
 			# Rename the folder
 			os.rename(old_version, os.path.join(Gdrive, "KaraFan_user"))
 	

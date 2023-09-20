@@ -7,7 +7,7 @@ This project is **open to all goodwill**.
 
 The Discord community, Chat-GPT & GitHub Copilot ...  and my human intelligence made this project possible.
 
-[![KaraFan](images/KaraFan_mini.png)](images/KaraFan.png)
+![KaraFan](images/KaraFan_3.0.jpg)
 
 KaraFan works with **Google Colab** or if you have a decent GPU, on **Your PC** with Visual Studio Code or with a command line in a shell !!
 

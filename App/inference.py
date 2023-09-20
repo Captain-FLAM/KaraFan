@@ -34,7 +34,7 @@ import contextlib
 from tqdm.auto import tqdm  # Auto : Progress Bar in GUI with ipywidgets
 from tqdm.contrib import DummyTqdmFile
 
-import App.settings, App.utils
+import App.settings, App.audio_utils, App.compare
 
 # from App.tfc_tdf_v3 import TFC_TDF_net
 
@@ -235,53 +235,9 @@ def demix_base(mix, device, models, infer_session):
 
 		except Exception as e:
 			print("\n\nError in demix_base() with Torch : ", e)
-			exit(1)
+			Exit_Notebook()
 	
 	return np.array(sources)
-
-def demix_full(mix, device, chunk_size, use_model, infer_session, bigshifts, CONSOLE = None):
-	
-	step = int(chunk_size)
-	mix_length = mix.shape[1] / 44100
-
-	if bigshifts < 1:  bigshifts = 1  # must not be <= 0 !
-	if bigshifts > int(mix_length):  bigshifts = int(mix_length - 1)
-	results = []
-	shifts  = [x for x in range(bigshifts)]
-	
-	with CONSOLE if CONSOLE else stdout_redirect_tqdm() as output:
-
-		# dynamic_ncols is mandatory for stdout_redirect_tqdm()
-		for shift in tqdm(shifts, file=output, ncols=40, unit="Big shift", mininterval=1.0, dynamic_ncols=True):
-			
-			shift_samples = int(shift * 44100)
-			# print(f"shift_samples = {shift_samples}")
-			
-			shifted_mix = np.concatenate((mix[:, -shift_samples:], mix[:, :-shift_samples]), axis=-1)
-			# print(f"shifted_mix shape = {shifted_mix.shape}")
-			result = np.zeros((1, 2, shifted_mix.shape[-1]), dtype=np.float32)
-			divider = np.zeros((1, 2, shifted_mix.shape[-1]), dtype=np.float32)
-
-			total = 0
-			for i in range(0, shifted_mix.shape[-1], step):
-				total += 1
-
-				start = i
-				end = min(i + chunk_size, shifted_mix.shape[-1])
-				mix_part = shifted_mix[:, start:end]
-				# print(f"mix_part shape = {mix_part.shape}")
-				sources = demix_base(mix_part, device, use_model, infer_session)
-				result[..., start:end] += sources
-				# print(f"result shape = {result.shape}")
-				divider[..., start:end] += 1
-			
-			result /= divider
-			# print(f"result shape = {result.shape}")
-			result = np.concatenate((result[..., shift_samples:], result[..., :shift_samples]), axis=-1)
-			results.append(result)
-		
-	results = np.mean(results, axis=0)
-	return results
 
 
 class MusicSeparationModel:
@@ -293,8 +249,8 @@ class MusicSeparationModel:
 		# - on_Del_Music_clicked()
 		self.AudioFiles = [
 			"NORMALIZED",
-			"Vocal extract",
 			"Music extract",
+			"Vocal extract",
 			"Ensemble Vocal",
 			"Bleedings in Vocal",
 			"Vocal FINAL",
@@ -303,10 +259,10 @@ class MusicSeparationModel:
 		self.AudioFiles_Mandatory = [1, 2, 5, 6]  # Vocal & Music Extract, Vocal & Music FINAL
 		
 		# Load Status Led icons
-		with open(os.path.join(options['Project'], "images", "Led_Orange.png"), 'rb') as file:
-			self.Led_Orange = file.read()
-		with open(os.path.join(options['Project'], "images", "Led_Green.png"), 'rb') as file:
-			self.Led_Green = file.read()
+		with open(os.path.join(options['Project'], "images", "Led_Yellow.png"), 'rb') as file:
+			self.Led_Yellow = file.read()
+		with open(os.path.join(options['Project'], "images", "Led_Red.png"), 'rb') as file:
+			self.Led_Red = file.read()
 
 		self.Status_ON = False
 		self.Options = options
@@ -371,9 +327,9 @@ class MusicSeparationModel:
 				if name == options['filter_1'] or name == options['filter_2'] or name == options['filter_3'] or name == options['filter_4']:
 					self.models['filters'].append(row)
 
-		if self.models['vocals'] == []:  print("You have not selected any model for Vocals !");  exit(1)
-		if self.models['instrum'] == []:  print("You have not selected any model for Instrumentals !");  exit(1)
-		if self.models['filters'] == []:  print("You have not selected any model for Filters !");  exit(1)
+		if self.models['vocals'] == []:  print("You have not selected any model for Vocals !");  Exit_Notebook()
+		if self.models['instrum'] == []:  print("You have not selected any model for Instrumentals !");  Exit_Notebook()
+		if self.models['filters'] == []:  print("You have not selected any model for Filters !");  Exit_Notebook()
 		
 		# Download Models to :
 		models_path	= os.path.join(options['Gdrive'], "KaraFan_user", "Models")
@@ -403,8 +359,182 @@ class MusicSeparationModel:
 				for model in self.models[stem]:  self.Load_MDX(model)
 	# --------
 
+	def SEPARATE(self, file):
+		"""
+		Implements the sound separation for a single sound file
+		"""
+		
+		name = os.path.splitext(os.path.basename(file))[0]
+		if self.CONSOLE:
+			print("Go with : <b>" + name + "</b>")
+		else:
+			print("Go with : " + name)
+
+		# Create a folder based on input audio file's name
+		self.song_output_path = os.path.join(self.output, name)
+		if not os.path.exists(self.song_output_path): os.makedirs(self.song_output_path)
+		
+		# TODO : sr = None --> uses the native sampling rate (if 48 Khz or 96 Khz), maybe not good for MDX models ??
+		original_audio, self.sample_rate = librosa.load(file, mono=False, sr = 44100)  # Resample to 44.1 Khz
+		
+		# Convert mono to stereo (if needed)
+		if len(original_audio.shape) == 1:
+			original_audio = np.stack([original_audio, original_audio], axis=0)
+
+		print(f"Input audio : {original_audio.shape} - Sample rate : {self.sample_rate}")
+		
+		#****  START PROCESSING  ****#
+
+		if self.normalize:
+			normalized = self.Check_Already_Processed(0)
+
+			if normalized is None:
+				print("► Normalizing audio")
+				normalized = App.audio_utils.Normalize(original_audio)
+
+				self.Save_Audio(0, normalized)
+		else:
+			normalized = original_audio
+		
+		# print("► Processing vocals with MDX23C model")
+
+		# sources3 = demix_full_mdx23c(normalized, self.device, self.overlap_MDXv3)
+		# vocals3 = (match_array_shapes(sources3['Vocals'], normalized) \
+		# 		+ Pass_filter('lowpass', 14700, normalized - match_array_shapes(sources3['Instrumental'], normalized), 44100)) / 2
+		
+		# if self.DEBUG:
+		#	self.Save_Audio("Vocal_MDX23C", vocals3)
+		
+		# Extract Music with MDX models
+		instrum_extract = []
+		for model in self.models['instrum']:
+			audio = self.Check_Already_Processed(1, model['Name'])
+			if audio is None:
+				audio = self.Extract_with_Model(EXTRACT_INSTRU, normalized, model)
+				
+				# DON'T Apply silence filter !!
+				audio = audio * model['Compensation']    # Volume Compensation
+				
+				self.Save_Audio(1, audio, model['Name'])
+			
+			instrum_extract.append(audio)
+			
+		# TODO : Make Ensemble Music ???
+
+		# Extract Vocals with MDX models
+		vocals_extract = []
+		for model in self.models['vocals']:
+			audio = self.Check_Already_Processed(2, model['Name'])
+			if audio is None:
+				audio = self.Extract_with_Model(EXTRACT_VOCALS, normalized, model)
+
+				audio = audio * model['Compensation']    # Volume Compensation
+				audio = App.audio_utils.Silent(audio, self.sample_rate)  # Apply silence filter
+
+				self.Save_Audio(2, audio, model['Name'])
+			
+			vocals_extract.append(audio)
+		
+		# Make Ensemble Vocals
+		print("► Make Ensemble Vocals")
+
+		vocals_ensemble = App.audio_utils.Make_Ensemble('Max Spec', vocals_extract)
+
+		# vocals_ensemble = App.utils.Silent(vocals_ensemble, self.sample_rate)  # Apply silence filter
+		
+		self.Save_Audio(3, vocals_ensemble)
+		
+		del vocals_extract;  gc.collect()
+		
+		# Pass Vocals through Music Filters
+		if len(self.models['filters']) > 0:
+			
+			filters = []
+			for model in self.models['filters']:
+				audio = self.Check_Already_Processed(4, model['Name'])
+				if audio is None:
+					audio = self.Extract_with_Model(FILTER_AUDIO, vocals_ensemble, model)
+
+					audio = audio * model['Compensation']    # Volume Compensation
+
+					# If model Stem is Vocals, substraction is needed !
+					if model['Stem'] != "Instrumental":  audio = vocals_ensemble - audio
+
+					# audio = App.audio_utils.Silent(audio, self.sample_rate, -45)  # Apply silence filter : -45 dB !
+
+					self.Save_Audio(4, audio, model['Name'])
+				
+				filters.append(audio)
+
+			# Make Ensemble Vocals
+			print("► Make Ensemble Filters")
+
+			filters_ensemble = App.audio_utils.Make_Ensemble('Max Spec', filters)
+
+			# filters_ensemble = App.utils.Silent(filters_ensemble, self.sample_rate)  # Apply silence filter
+			
+			#  Remove instrumental Bleedings
+			vocals_ensemble -= filters_ensemble
+			
+			del filters;  gc.collect()
+
+		# Save Vocals FINAL
+		print("► Save Vocals FINAL !")
+		self.Save_Audio(5, vocals_ensemble)
+		
+		# Repair Music
+		print("► Get Music by substracting Vocals from Original audio")
+		instrum_final = normalized - vocals_ensemble
+
+		print("► Repair Instrumental with first Music Extractions")
+		for audio in instrum_extract:
+			instrum_final = App.audio_utils.Make_Ensemble('Max Spec', [instrum_final, audio])
+		
+		del instrum_extract;  gc.collect()
+
+		# Apply silence filter : -61 dB !
+		instrum_final = App.audio_utils.Silent(instrum_final, self.sample_rate, threshold_db = -61)
+
+		# Save Music FINAL
+		print("► Save Music FINAL !")
+		self.Save_Audio(6, instrum_final)
+		
+		#**********************************
+		#****  TESTING for DEVELOPERS  ****
+		#**********************************
+		
+		# The "song_output_path" contains the NAME of the song to compare within the "Multi-Song" folder
+		# That's all !!
+		if self.Options['DEV_MODE']:
+			
+			print("----------------------------------------")
+			App.compare.SDR(self.song_output_path, self.Options['Gdrive'])
+		
+			# And to Re-process immediately a file :
+			#os.remove(os.path.join(self.song_output_path, "2 - Vocal extract - (Kim Vocal 2).flac"))
+			
+			# OR all files :
+			#for file in os.listdir(self.song_output_path):
+			#	os.remove(os.path.join(self.song_output_path, file))
+
+		# TESTS - Examples (with old version of KaraFan 1.0)
+		
+		# instrum = instrum / self.model_instrum['Compensation']
+		# self.Save_Audio("Sub - 1", normalized - (instrum * 1.0235))
+		# self.Save_Audio("Sub - 2", normalized - (instrum * 1.0240))
+		# self.Save_Audio("Sub - 3", normalized - (instrum * 1.0245))
+
+		# vocals_final = vocals_final / self.model_vocals['Compensation']
+		# instrum_final_1 = normalized - (vocals_final * 1.0082)
+		# instrum_final_2 = normalized - (vocals_final * 1.0085)
+		# instrum_final_3 = normalized - (vocals_final * 1.0088)
+		# self.Save_Audio("Music - Test 1", instrum_final_1)
+		# self.Save_Audio("Music - Test 2", instrum_final_2)
+		# self.Save_Audio("Music - Test 3", instrum_final_3)
+
+
 	def Update_Status(self):
-		self.Status.value = self.Led_Green if self.Status_ON else self.Led_Orange
+		self.Status.value = self.Led_Red if self.Status_ON else self.Led_Yellow
 		self.Status_ON = not self.Status_ON
 
 	def Load_MDX(self, model):
@@ -493,7 +623,7 @@ class MusicSeparationModel:
 			
 			if just_check:  return True
 			
-			print(filename + " --> Already processed (loading now...)")
+			print(filename + " --> Loading ...")
 			audio, _ = librosa.load(file, mono=False, sr=self.sample_rate)
 			
 			# Preview Audio file
@@ -591,17 +721,11 @@ class MusicSeparationModel:
 		name = model['Name']
 
 		if type == EXTRACT_VOCALS:
-			stem = "Vocals"
-			text = f'► Processing Vocals with "{name}"'
-			bigshifts = self.shifts_vocals
+			bigshifts = self.shifts_vocals;  text = f'► Extract Vocals with "{name}"'
 		elif type == EXTRACT_INSTRU:
-			stem = "Instrumental"
-			text = f'► Processing Music with "{name}"'
-			bigshifts = self.shifts_instru
+			bigshifts = self.shifts_instru;  text = f'► Extract Music with "{name}"'
 		elif type == FILTER_AUDIO:	
-			stem = "Instrumental"
-			text = f'► Filter Vocals with "{name}"'
-			bigshifts = self.shifts_filter
+			bigshifts = self.shifts_filter;  text = f'► Filter Vocals with "{name}"'
 		
 		if not self.large_gpu:
 			print(f'Large GPU is disabled : Loading model "{name}" now...')
@@ -613,58 +737,42 @@ class MusicSeparationModel:
 		# ONLY 1 Pass, for testing purposes
 		if self.TEST_MODE:
 			print(text)
-			self.Update_Status()
-			source = demix_full(
-				audio,
-				self.device, self.chunk_size, mdx_model, inference, bigshifts, CONSOLE = self.CONSOLE, Status = self.Running_Status
-			)[0]
+			source = self.demix_full(audio, mdx_model, inference, bigshifts)[0]
 		else:
 			print(text +" (Pass 1)")
-			self.Update_Status()
-			source = 0.5 * -demix_full(
-				-audio,
-				self.device, self.chunk_size, mdx_model, inference, bigshifts, CONSOLE = self.CONSOLE
-			)[0]
+			source = 0.5 * -self.demix_full(-audio, mdx_model, inference, bigshifts)[0]
 
 			print(text +" (Pass 2)")
-			self.Update_Status()
-			source += 0.5 * demix_full(
-				audio,
-				self.device, self.chunk_size, mdx_model, inference, bigshifts, CONSOLE = self.CONSOLE
-			)[0]
+			source += 0.5 * self.demix_full(audio, mdx_model, inference, bigshifts)[0]
 
 		# Automatic SRS
 		if model['Cut_OFF'] > 0:
+			
+			bigshifts = bigshifts // 4
+			if bigshifts < 1:  bigshifts = 1  # must not be <= 0 !
+
+			pitch = 6 if model['Cut_OFF'] < 17000 else 5
 
 			# ONLY 1 Pass, for testing purposes
 			if self.TEST_MODE:
 				print(text + " -> SRS")
-				self.Update_Status()
-				source_SRS = Change_sample_rate( demix_full(
-					Change_sample_rate( audio, 5, 4),
-					self.device, self.chunk_size, mdx_model, inference, bigshifts, CONSOLE = self.CONSOLE
-				)[0], 4, 5)
+				source_SRS = Change_sample_rate( self.demix_full(
+					Change_sample_rate( audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
 			else:
 				print(text +" -> SRS (Pass 1)")
-				self.Update_Status()
-				source_SRS = 0.5 * Change_sample_rate( -demix_full(
-					Change_sample_rate( -audio, 5, 4),
-					self.device, self.chunk_size, mdx_model, inference, bigshifts, CONSOLE = self.CONSOLE
-				)[0], 4, 5)
+				source_SRS = 0.5 * Change_sample_rate( -self.demix_full(
+					Change_sample_rate( -audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
 
 				print(text +" -> SRS (Pass 2)")
-				self.Update_Status()
-				source_SRS += 0.5 * Change_sample_rate( demix_full(
-					Change_sample_rate( audio, 5, 4),
-					self.device, self.chunk_size, mdx_model, inference, bigshifts, CONSOLE = self.CONSOLE
-				)[0], 4, 5)
+				source_SRS += 0.5 * Change_sample_rate( self.demix_full(
+					Change_sample_rate( audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
 
 			# old formula :  vocals = Linkwitz_Riley_filter(vocals.T, 12000, 'lowpass') + Linkwitz_Riley_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
 			# *3/4 = Dynamic SRS personal taste of "Jarredou", to avoid too much SRS noise
 			# He also told me that 12 Khz cut-off was setted for MDX23C model, but now I use the REAL cut-off of MDX models !
 
-			cutoff = model['Cut_OFF'] # - 2700
-			source = Linkwitz_Riley_filter(source, cutoff - 750, 'lowpass', self.sample_rate) + Linkwitz_Riley_filter(source_SRS, cutoff + 750, 'highpass', self.sample_rate)
+			cutoff = model['Cut_OFF'] - 2700
+			source = Linkwitz_Riley_filter(source, cutoff, 'lowpass', self.sample_rate) + Linkwitz_Riley_filter(source_SRS, cutoff, 'highpass', self.sample_rate)
 			source = source.T
 
 		if not self.large_gpu:  self.Kill_MDX(name)
@@ -695,152 +803,53 @@ class MusicSeparationModel:
 
 		return source
 	
-
-	def Separate_Music_File(self, file):
-		"""
-		Implements the sound separation for a single sound file
-		"""
+	def demix_full(self, mix, use_model, infer_session, bigshifts):
 		
-		name = os.path.splitext(os.path.basename(file))[0]
-		if self.CONSOLE:
-			print("Go with : <b>" + name + "</b>")
-		else:
-			print("Go with : " + name)
+		step = int(self.chunk_size)
+		mix_length = mix.shape[1] / 44100
 
-		# Create a folder based on input audio file's name
-		self.song_output_path = os.path.join(self.output, name)
-		if not os.path.exists(self.song_output_path): os.makedirs(self.song_output_path)
+		if bigshifts < 1:  bigshifts = 1  # must not be <= 0 !
+		if bigshifts > int(mix_length):  bigshifts = int(mix_length - 1)
+		results = []
+		shifts  = [x for x in range(bigshifts)]
 		
-		# TODO : sr = None --> uses the native sampling rate (if 48 Khz or 96 Khz), maybe not good for MDX models ??
-		original_audio, self.sample_rate = librosa.load(file, mono=False, sr = 44100)  # Resample to 44.1 Khz
-		
-		# Convert mono to stereo (if needed)
-		if len(original_audio.shape) == 1:
-			original_audio = np.stack([original_audio, original_audio], axis=0)
+		with self.CONSOLE if self.CONSOLE else stdout_redirect_tqdm() as output:
 
-		print(f"Input audio : {original_audio.shape} - Sample rate : {self.sample_rate}")
-		
-		if self.normalize:
-			normalized = self.Check_Already_Processed(0)
-
-			if normalized is None:
-				print("► Normalizing audio")
-				normalized = App.utils.Normalize(original_audio)
-
-				self.Save_Audio(0, normalized)
-		else:
-			normalized = original_audio
-		
-		# print("► Processing vocals with MDX23C model")
-
-		# sources3 = demix_full_mdx23c(normalized, self.device, self.overlap_MDXv3)
-		# vocals3 = (match_array_shapes(sources3['Vocals'], normalized) \
-		# 		+ Pass_filter('lowpass', 14700, normalized - match_array_shapes(sources3['Instrumental'], normalized), 44100)) / 2
-		
-		# if self.DEBUG:
-		#	self.Save_Audio("Vocal_MDX23C", vocals3)
-		
-		# Extract Vocals with MDX models
-		vocals_extract = []
-		for model in self.models['vocals']:
-			audio = self.Check_Already_Processed(1, model['Name'])
-			if audio is None:
-				audio = self.Extract_with_Model(EXTRACT_VOCALS, normalized, model)
-
-				audio = App.utils.Silent(audio, self.sample_rate)  # Apply silence filter
-				audio = audio * model['Compensation']    # Volume Compensation
-				self.Save_Audio(1, audio, model['Name'])
-			
-			vocals_extract.append(audio)
-			
-		# Extract Music with MDX models (for Repairing)
-		instrum_extract = []
-		for model in self.models['instrum']:
-			audio = self.Check_Already_Processed(2, model['Name'])
-			if audio is None:
-				audio = self.Extract_with_Model(EXTRACT_INSTRU, normalized, model)
+			# dynamic_ncols is mandatory for stdout_redirect_tqdm()
+			for shift in tqdm(shifts, file=output, ncols=40, unit="Big shift", mininterval=1.0, dynamic_ncols=True):
 				
-				# DON'T Apply silence filter !!
-				audio = audio * model['Compensation']    # Volume Compensation
-				self.Save_Audio(2, audio, model['Name'])
+				self.Update_Status()
+
+				shift_samples = int(shift * 44100)
+				# print(f"shift_samples = {shift_samples}")
+				
+				shifted_mix = np.concatenate((mix[:, -shift_samples:], mix[:, :-shift_samples]), axis=-1)
+				# print(f"shifted_mix shape = {shifted_mix.shape}")
+				result = np.zeros((1, 2, shifted_mix.shape[-1]), dtype=np.float32)
+				divider = np.zeros((1, 2, shifted_mix.shape[-1]), dtype=np.float32)
+
+				total = 0
+				for i in range(0, shifted_mix.shape[-1], step):
+					total += 1
+
+					start = i
+					end = min(i + self.chunk_size, shifted_mix.shape[-1])
+					mix_part = shifted_mix[:, start:end]
+					# print(f"mix_part shape = {mix_part.shape}")
+					sources = demix_base(mix_part, self.device, use_model, infer_session)
+					result[..., start:end] += sources
+					# print(f"result shape = {result.shape}")
+					divider[..., start:end] += 1
+				
+				result /= divider
+				# print(f"result shape = {result.shape}")
+				result = np.concatenate((result[..., shift_samples:], result[..., :shift_samples]), axis=-1)
+				results.append(result)
 			
-			instrum_extract.append(audio)
-			
-		# TODO : Make Ensemble Music ???
-
-		# Make Ensemble Vocals
-		vocals_ensemble = self.Check_Already_Processed(3)
-
-		if vocals_ensemble is None:
-			print("► Make Ensemble Vocals")
-
-			vocals_ensemble = App.utils.Make_Ensemble('Max Spec', vocals_extract)	
-			
-			# vocals_ensemble = App.utils.Silent(vocals_ensemble, self.sample_rate)  # Apply silence filter
-			
-			self.Save_Audio(3, vocals_ensemble)
-		
-		del vocals_extract;  gc.collect()
-
-		# Pass Vocals through Music Filters
-		filters = []
-		for model in self.models['filters']:
-			audio = self.Check_Already_Processed(4, model['Name'])
-			if audio is None:
-				audio = self.Extract_with_Model(FILTER_AUDIO, vocals_ensemble, model)
-
-				# If model Stem is Vocals, substraction is needed !
-				if model['Stem'] != "Instrumental":  audio = vocals_ensemble - audio
-
-				audio = App.utils.Silent(audio, self.sample_rate)  # Apply silence filter
-				audio = audio * model['Compensation']    # Volume Compensation
-
-				self.Save_Audio(4, audio, model['Name'])
-			
-			filters.append(audio)
-
-		#  Remove instrumental Bleedings
-		for filter in filters:  vocals_ensemble -= filter
-		
-		del filters;  gc.collect()
-
-		# Save Vocals FINAL
-		print("► Save Vocals FINAL !")
-		self.Save_Audio(5, vocals_ensemble)
-		
-		# Repair Music
-		print("► Get Music by substracting Vocals from Original audio")
-		instrum_final = normalized - vocals_ensemble
-
-		print("► Repair Instrumental with first Music Extractions")
-		for audio in instrum_extract:
-			instrum_final = App.utils.Make_Ensemble('Max Spec', [instrum_final, audio])
-		
-		del instrum_extract;  gc.collect()
-
-		# Apply silence filter : -61 dB !
-		instrum_final = App.utils.Silent(instrum_final, self.sample_rate, threshold_db = -61)
-
-		# Save Music FINAL
-		print("► Save Music FINAL !")
-		self.Save_Audio(6, instrum_final)
-		
-
-		# TESTS - Examples (with old version of KaraFan 1.0)
-		
-		# instrum = instrum / self.model_instrum['Compensation']
-		# self.Save_Audio("Sub - 1", normalized - (instrum * 1.0235))
-		# self.Save_Audio("Sub - 2", normalized - (instrum * 1.0240))
-		# self.Save_Audio("Sub - 3", normalized - (instrum * 1.0245))
-
-		# vocals_final = vocals_final / self.model_vocals['Compensation']
-		# instrum_final_1 = normalized - (vocals_final * 1.0082)
-		# instrum_final_2 = normalized - (vocals_final * 1.0085)
-		# instrum_final_3 = normalized - (vocals_final * 1.0088)
-		# self.Save_Audio("Music - Test 1", instrum_final_1)
-		# self.Save_Audio("Music - Test 2", instrum_final_2)
-		# self.Save_Audio("Music - Test 3", instrum_final_3)
-
+		results = np.mean(results, axis=0)
+		return results
+	
+	#----
 
 def Download_Model(model, models_path, CONSOLE = None):
 	
@@ -871,21 +880,23 @@ def Download_Model(model, models_path, CONSOLE = None):
 								file.write(data)
 			else:
 				print(f'Download of model "{name}" FAILED !!')
-				exit(1)
+				Exit_Notebook()
 		
 		except (requests.exceptions.RequestException, requests.exceptions.ChunkedEncodingError) as e:
 			print(f'Error during Downloading "{name}" !!\n\n{e}')
 			if os.path.exists(file_path):  os.remove(file_path)
-			exit(1)
+			Exit_Notebook()
 	
 	return file_path  # Path to this model
 
 
 # Linkwitz-Riley filter
-def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=4):
+def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=8):
+	if cutoff  < 0:  cutoff = 0
+	if cutoff >= 22000:  cutoff = 22000 # Hz
 	nyquist = 0.5 * sample_rate
 	normal_cutoff = cutoff / nyquist
-	b, a = signal.butter(order//2, normal_cutoff, btype=filter_type, analog=False)
+	b, a = signal.butter(order, normal_cutoff, btype=filter_type, analog=False)
 	filtered_audio = signal.filtfilt(b, a, audio)
 	return filtered_audio.T
 
@@ -947,6 +958,9 @@ def Process(options):
 	if 'CONSOLE' in options and not options['CONSOLE'] is None:
 		sys.stdout = CustomPrint(options['CONSOLE'])
 
+	if len(options['input']) == 0:
+		print('Error : You have NO file to process in your "input" folder !!');  return
+	
 	model = None
 	model = MusicSeparationModel(options)
 
@@ -957,7 +971,7 @@ def Process(options):
 			print('Error. No such file : {}. Please check path !'.format(file))
 			continue
 		
-		model.Separate_Music_File(file)
+		model.SEPARATE(file)
 	
 	# Free & Release GPU memory
 	if torch.cuda.is_available():
@@ -971,7 +985,12 @@ def Process(options):
 	print('Elapsed Time : {:02d}:{:02d} min.'.format(minutes, seconds))
 	
 	# Kill GPU !!! (especially on Laptop)
-	exit(0)
+	Exit_Notebook()
+
+
+def Exit_Notebook():
+	gc.collect()
+	os._exit(0)
 
 
 if __name__ == '__main__':

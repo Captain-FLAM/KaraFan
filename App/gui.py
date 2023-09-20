@@ -9,7 +9,7 @@ import os, csv, glob
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
-def Run(Gdrive, Project, isColab):
+def Run(Gdrive, Project, isColab, DEV_MODE=False):
 
 	import App.settings, App.inference, App.sys_info
 
@@ -90,9 +90,9 @@ def Run(Gdrive, Project, isColab):
 	# PROCESS
 	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'200px'}, style=font_input)
 	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
-	vocals_1		= widgets.Dropdown(options = vocals,  layout = {'width':'200px'}, style=font_input)
-	vocals_2		= widgets.Dropdown(options = vocals,  layout = {'width':'200px'}, style=font_input)
 	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
+	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
@@ -119,7 +119,8 @@ def Run(Gdrive, Project, isColab):
 	# TAB 2
 	Status			= widgets.Image(format='png', width=16, height=16, layout={'border': 'none', 'width':'16px', 'height':'16px', 'margin':'7px 0 0 0'})
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
-	
+	Progress_Bar	= widgets.IntProgress(description='&nbsp;&nbsp;0 %', value=0, min=0, max=10, orientation='horizontal', bar_style='info')  # style={'bar_color': 'maroon'})
+
 	# TAB 3
 	sys_info		= widgets.HTML()
 	Btn_SysInfo		= widgets.Button(description='Get System informations', button_style='primary', layout={'width':'200px'})
@@ -140,8 +141,8 @@ def Run(Gdrive, Project, isColab):
 				widgets.VBox([
 					widgets.HBox([ Label("Output Format", 201), output_format ]),
 #					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
-					widgets.HBox([ Label("MDX Vocals", 203), vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Label("MDX Instrumental", 204), instru_1, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("MDX Instrumental", 203), instru_1, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("MDX Vocals", 204), vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
 					widgets.HBox([ Label("MDX Filters", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 					widgets.HBox([ Label("", 205), filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
@@ -167,7 +168,7 @@ def Run(Gdrive, Project, isColab):
 		widgets.VBox(
 			layout = panel_layout,
 			children = [
-				widgets.HBox([ widgets.HTML('<span>Status : &nbsp;</span>'), Status ]),
+				widgets.HBox([ widgets.HTML('<span><b>Working Status : &nbsp;</b></span>'), Status ]),
 				CONSOLE
 			]),
 		widgets.VBox(
@@ -184,8 +185,8 @@ help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside th
 help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
 help_index[2][1] = "Choose your prefered audio format to save audio files.";\
 help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
-help_index[2][3] = "<b>A.I</b> models : Make an Ensemble of extraction with selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
-help_index[2][4] = "<b>A.I</b> models : Extract the instrumental part for repairing at the end of process.<br><br>Best model : « <b>Inst HQ 3</b> »";\
+help_index[2][3] = "<b>A.I</b> models : Extract the instrumental part for repairing at the end of process.<br><br>Best model : « <b>Inst HQ 3</b> »";\
+help_index[2][4] = "<b>A.I</b> models : Make an Ensemble of extraction with selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
 help_index[2][5] = "<b>A.I</b> models : Pass Vocals trough different filters to remove <b>Bleedings</b> of instruments.<br><br>You have to test various models to find the best combination for your song !";\
 help_index[3][1] = "Normalize input audio files to avoid clipping and get better results.<br><br>Uncheck it for <b>SDR</b> testings !!";\
 help_index[3][2] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
@@ -241,9 +242,9 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		config['PROCESS'] = {
 			'output_format': output_format.value,
 #			'preset_genre': preset_genre.value,
+			'instru_1': instru_1.value,
 			'vocals_1': vocals_1.value,
 			'vocals_2': vocals_2.value,
-			'instru_1': instru_1.value,
 			'filter_1': filter_1.value,
 			'filter_2': filter_2.value,
 			'filter_3': filter_3.value,
@@ -278,6 +279,8 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		options['Project'] = Project
 		options['CONSOLE'] = CONSOLE
 		options['Status']  = Status
+		options['Progress_Bar'] = Progress_Bar
+		options['DEV_MODE'] = DEV_MODE
 		
 		options['input'] = []
 
@@ -492,10 +495,13 @@ function show_help(index) {\
 	with open(os.path.join(Project, "images", "Led_Grey.png"), 'rb') as file:
 		Status.value = file.read()
 
+	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
 	if config['PROCESS']['vocals_1'] in vocals:		vocals_1.value = config['PROCESS']['vocals_1']
 	if config['PROCESS']['vocals_2'] in vocals:		vocals_2.value = config['PROCESS']['vocals_2']
-	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
 	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
 	if config['PROCESS']['filter_2'] in filters:	filter_2.value = config['PROCESS']['filter_2']
 	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
 	if config['PROCESS']['filter_4'] in filters:	filter_4.value = config['PROCESS']['filter_4']
+
+	# on_Start_clicked(None)
+	

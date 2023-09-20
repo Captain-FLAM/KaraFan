@@ -4,7 +4,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, subprocess, requests
+import os, gc, subprocess, requests
 
 def Check_dependencies(isColab):
 
@@ -19,7 +19,7 @@ def Check_dependencies(isColab):
 	
 	except subprocess.CalledProcessError as e:
 		print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout + "\n")
-		exit(1)
+		Exit_Notebook()
 
 def Install(Gdrive, Project, isColab, DEV_MODE=False):
 	
@@ -30,7 +30,7 @@ def Install(Gdrive, Project, isColab, DEV_MODE=False):
 
 	if not os.path.exists(Gdrive):
 		print("ERROR : Google Drive path is not valid !\n")
-		exit(1)
+		Exit_Notebook()
 	
 	# Get local version
 	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
@@ -90,18 +90,24 @@ def Install(Gdrive, Project, isColab, DEV_MODE=False):
 							Check_dependencies(False)
 							print('\n\nFOR NOW : you have to "Restart" the notebook to use the new version of "KaraFan" !\n\n')
 
-						exit(0)
+						Exit_Notebook()
 						
 					except subprocess.CalledProcessError as e:
 						if e.returncode == 127:
 							print('WARNING : "Git" is not installed on your system !\n' + warning)
 						else:
 							print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
-							exit(1)
+							Exit_Notebook()
 				else:
 					print(warning)
 			else:
 				print('"KaraFan" is up to date.')
+
+
+def Exit_Notebook():
+	gc.collect()
+	os._exit(0)
+
 
 if __name__ == '__main__':
 

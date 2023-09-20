@@ -4,7 +4,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import librosa, numpy as np
+import librosa, numpy as np, soundfile as sf
 
 MAX_SPEC = 'Max Spec'
 MIN_SPEC = 'Min Spec'
@@ -30,7 +30,7 @@ def Normalize(audio):
 
 	return audio.T
 
-def Silent(audio, sample_rate, threshold_db = -50):
+def Silent(audio_in, sample_rate, threshold_db = -50):
 	"""
 	Make silent the parts of audio where dynamic range (RMS) goes below threshold.
 	Don't misundertand : this function is NOT a noise reduction !
@@ -46,14 +46,27 @@ def Silent(audio, sample_rate, threshold_db = -50):
 	fade_out		= np.linspace(1.0, 0.0, fade_duration)
 	fade_in			= np.linspace(0.0, 1.0, fade_duration)
 
-	start = 0; end = 0; audio_length = audio.shape[1]
+	start = 0; end = 0; audio_length = audio_in.shape[1]
+	audio = audio_in.copy()
 
 	for i in range(0, audio_length, window_frame):
 		
 		# TODO : Maybe use S=audio (Spectrogram) instead of y=audio ??
 		RMS = np.max(librosa.amplitude_to_db(librosa.feature.rms(y=audio[:, i:(i + window_frame)], frame_length=window_frame, hop_length=window_frame)))
 		
-		if RMS > threshold_db:
+		if RMS < threshold_db:
+			end = i + window_frame
+			# Last part (in case of silence at the end)
+			if i == audio_length - window_frame:
+				if end - start > min_size:
+					# Fade out
+					if start > fade_duration:
+						audio[:, start:(start + fade_duration)] *= fade_out
+						start += fade_duration
+
+					# Clean in between
+					audio[:, start:end] = 0.0
+		else:
 			# Clean the "min_size" samples found
 			if end - start > min_size:
 
@@ -71,10 +84,9 @@ def Silent(audio, sample_rate, threshold_db = -50):
 				audio[:, start:end] = 0.0
 
 			start = i
-		else:
-			end = i + window_frame
 
 	return audio
+
 
 
 # - For the code below :
@@ -86,6 +98,9 @@ def Silent(audio, sample_rate, threshold_db = -50):
 
 def Make_Ensemble(algorithm, audio_input):
 
+	if len(audio_input) == 1:
+		return audio_input[0]
+	
 	waves = []
 	
 	if algorithm == AVERAGE:
@@ -124,26 +139,26 @@ def ensembling(a, specs):
 
 	return spec
 
-def spectrogram_to_wave_no_mp(spec, n_fft=2048, hop_length=1024):
-	wave = librosa.istft(spec, n_fft=n_fft, hop_length=hop_length)
+def spectrogram_to_wave_no_mp(spec):
+	wave = librosa.istft(spec, n_fft=4096, hop_length=1024)
 	
 	if wave.ndim == 1:  wave = np.asfortranarray([wave, wave])
 	return wave
 
 def wave_to_spectrogram_no_mp(wave):
-	spec = librosa.stft(wave, n_fft=2048, hop_length=1024)
+	spec = librosa.stft(wave, n_fft=4096, hop_length=1024)
 	
 	if spec.ndim == 1:  spec = np.asfortranarray([spec, spec])
 	return spec
 
 def to_shape(x, target_shape):
-    padding_list = []
-    for x_dim, target_dim in zip(x.shape, target_shape):
-        pad_value = (target_dim - x_dim)
-        pad_tuple = ((0, pad_value))
-        padding_list.append(pad_tuple)
-    
-    return np.pad(x, tuple(padding_list), mode='constant')
+	padding_list = []
+	for x_dim, target_dim in zip(x.shape, target_shape):
+		pad_value = (target_dim - x_dim)
+		pad_tuple = ((0, pad_value))
+		padding_list.append(pad_tuple)
+	
+	return np.pad(x, tuple(padding_list), mode='constant')
 
 def average_audio(audio_input):
 	

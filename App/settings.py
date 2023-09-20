@@ -15,12 +15,12 @@ defaults = {
 	'PROCESS': {
 		'output_format': "FLAC",
 #		'preset_genre': "Pop Rock",
+		'instru_1': "Instrum HQ 3",
 		'vocals_1': "Kim Vocal 2",
 		'vocals_2': "Voc FT",
-		'instru_1': "Instrum HQ 3",
-		'filter_1': "Voc FT",
-		'filter_2': "Instrum HQ 3",
-		'filter_3': "Instrum Main",
+		'filter_1': "Instrum HQ 3",
+		'filter_2': "Instrum Main",
+		'filter_3': "Vocal Main",
 		'filter_4': "Model 9662"
 	},
 	'OPTIONS': {
@@ -47,9 +47,9 @@ def Convert_to_Options(config):
 	options['output']			= config['PATHS']['output']
 	options['output_format']	= config['PROCESS']['output_format']
 #	options['preset_genre']		= config['PROCESS']['preset_genre']
+	options['instru_1']			= config['PROCESS']['instru_1']
 	options['vocals_1']			= config['PROCESS']['vocals_1']
 	options['vocals_2']			= config['PROCESS']['vocals_2']
-	options['instru_1']			= config['PROCESS']['instru_1']
 	options['filter_1']			= config['PROCESS']['filter_1']
 	options['filter_2']			= config['PROCESS']['filter_2']
 	options['filter_3']			= config['PROCESS']['filter_3']

@@ -21,8 +21,6 @@ import librosa, soundfile as sf
 from pydub import AudioSegment
 
 from time import time
-from scipy import signal
-from scipy.signal import resample_poly
 
 # ONLY for MDX23C models
 #  import yaml
@@ -31,8 +29,8 @@ from scipy.signal import resample_poly
 import ipywidgets as widgets
 from IPython.display import display, HTML
 import contextlib
-from tqdm.auto import tqdm  # Auto : Progress Bar in GUI with ipywidgets
-from tqdm.contrib import DummyTqdmFile
+# from tqdm.auto import tqdm  # Auto : Progress Bar in GUI with ipywidgets
+# from tqdm.contrib import DummyTqdmFile
 
 import App.settings, App.audio_utils, App.compare
 
@@ -268,6 +266,7 @@ class MusicSeparationModel:
 		self.Options = options
 		self.CONSOLE = options['CONSOLE']
 		self.Status  = options['Status']
+		self.Progress = options['Progress']
 
 		self.output = os.path.join(options['Gdrive'], options['output'])
 		
@@ -289,7 +288,7 @@ class MusicSeparationModel:
 		print("Use device -> " + self.device.upper())
 		
 		if self.device == 'cpu':
-			print("Warning ! CPU is used instead of GPU for processing. Can be very slow !!")
+			print('<div style="font-size:20px;font-weight:bold;color:#f00;background-color:#fff;">Warning ! CPU is used instead of GPU for processing.<br>Will be very slow !!</div>')
 		
 		if self.device == 'cpu':
 			self.chunk_size = 200000000
@@ -327,10 +326,6 @@ class MusicSeparationModel:
 				if name == options['filter_1'] or name == options['filter_2'] or name == options['filter_3'] or name == options['filter_4']:
 					self.models['filters'].append(row)
 
-		if self.models['vocals'] == []:  print("You have not selected any model for Vocals !");  Exit_Notebook()
-		if self.models['instrum'] == []:  print("You have not selected any model for Instrumentals !");  Exit_Notebook()
-		if self.models['filters'] == []:  print("You have not selected any model for Filters !");  Exit_Notebook()
-		
 		# Download Models to :
 		models_path	= os.path.join(options['Gdrive'], "KaraFan_user", "Models")
 
@@ -349,7 +344,7 @@ class MusicSeparationModel:
 				model['dim_F_set']		= int(model['dim_F_set'])
 				model['dim_T_set']		= int(model['dim_T_set'])
 				
-				model['PATH'] = Download_Model(model, models_path, self.CONSOLE)
+				model['PATH'] = Download_Model(model, models_path, self.CONSOLE, self.Progress)
 		
 		# Load Models
 		if self.large_gpu: 
@@ -357,7 +352,10 @@ class MusicSeparationModel:
 
 			for stem in self.models:
 				for model in self.models[stem]:  self.Load_MDX(model)
-	# --------
+	
+	# ******************************************************************
+	# ****    This is the MAGIC RECIPE , the heart of KaraFan !!    ****
+	# ******************************************************************
 
 	def SEPARATE(self, file):
 		"""
@@ -383,7 +381,7 @@ class MusicSeparationModel:
 
 		print(f"Input audio : {original_audio.shape} - Sample rate : {self.sample_rate}")
 		
-		#****  START PROCESSING  ****#
+		# ****  START PROCESSING  ****
 
 		if self.normalize:
 			normalized = self.Check_Already_Processed(0)
@@ -460,7 +458,7 @@ class MusicSeparationModel:
 					# If model Stem is Vocals, substraction is needed !
 					if model['Stem'] != "Instrumental":  audio = vocals_ensemble - audio
 
-					# audio = App.audio_utils.Silent(audio, self.sample_rate, -45)  # Apply silence filter : -45 dB !
+					audio = App.audio_utils.Silent(audio, self.sample_rate, -45)  # Apply silence filter : -45 dB !
 
 					self.Save_Audio(4, audio, model['Name'])
 				
@@ -471,8 +469,6 @@ class MusicSeparationModel:
 
 			filters_ensemble = App.audio_utils.Make_Ensemble('Max Spec', filters)
 
-			# filters_ensemble = App.utils.Silent(filters_ensemble, self.sample_rate)  # Apply silence filter
-			
 			#  Remove instrumental Bleedings
 			vocals_ensemble -= filters_ensemble
 			
@@ -480,6 +476,9 @@ class MusicSeparationModel:
 
 		# Save Vocals FINAL
 		print("► Save Vocals FINAL !")
+
+		vocals_ensemble = App.audio_utils.Pass_filter('highpass', 85, vocals_ensemble, self.sample_rate)
+
 		self.Save_Audio(5, vocals_ensemble)
 		
 		# Repair Music
@@ -488,9 +487,11 @@ class MusicSeparationModel:
 
 		print("► Repair Instrumental with first Music Extractions")
 		for audio in instrum_extract:
+			audio = App.audio_utils.Pass_filter('highpass', 30, audio, self.sample_rate)
 			instrum_final = App.audio_utils.Make_Ensemble('Max Spec', [instrum_final, audio])
 		
 		del instrum_extract;  gc.collect()
+
 
 		# Apply silence filter : -61 dB !
 		instrum_final = App.audio_utils.Silent(instrum_final, self.sample_rate, threshold_db = -61)
@@ -505,7 +506,7 @@ class MusicSeparationModel:
 		
 		# The "song_output_path" contains the NAME of the song to compare within the "Multi-Song" folder
 		# That's all !!
-		if self.Options['DEV_MODE']:
+		if name.startswith("SDR_"):
 
 			print("----------------------------------------")
 			App.compare.SDR(self.song_output_path, self.Options['Gdrive'])
@@ -756,23 +757,28 @@ class MusicSeparationModel:
 			# ONLY 1 Pass, for testing purposes
 			if self.TEST_MODE:
 				print(text + " -> SRS")
-				source_SRS = Change_sample_rate( self.demix_full(
-					Change_sample_rate( audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
+				source_SRS = App.audio_utils.Change_sample_rate( self.demix_full(
+					App.audio_utils.Change_sample_rate( audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
 			else:
 				print(text +" -> SRS (Pass 1)")
-				source_SRS = 0.5 * Change_sample_rate( -self.demix_full(
-					Change_sample_rate( -audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
+				source_SRS = 0.5 * App.audio_utils.Change_sample_rate( -self.demix_full(
+					App.audio_utils.Change_sample_rate( -audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
 
 				print(text +" -> SRS (Pass 2)")
-				source_SRS += 0.5 * Change_sample_rate( self.demix_full(
-					Change_sample_rate( audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
+				source_SRS += 0.5 * App.audio_utils.Change_sample_rate( self.demix_full(
+					App.audio_utils.Change_sample_rate( audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
 
 			# old formula :  vocals = Linkwitz_Riley_filter(vocals.T, 12000, 'lowpass') + Linkwitz_Riley_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
 			# *3/4 = Dynamic SRS personal taste of "Jarredou", to avoid too much SRS noise
 			# He also told me that 12 Khz cut-off was setted for MDX23C model, but now I use the REAL cut-off of MDX models !
 
 			cutoff = model['Cut_OFF'] - 2700
-			source = Linkwitz_Riley_filter(source, cutoff, 'lowpass', self.sample_rate) + Linkwitz_Riley_filter(source_SRS, cutoff, 'highpass', self.sample_rate)
+
+			# Check if source_SRS is not longer than source
+			source_SRS = App.audio_utils.match_array_shapes(source_SRS, source)
+
+			source = App.audio_utils.Linkwitz_Riley_filter(source, cutoff, 'lowpass', self.sample_rate, order = 4) \
+				   + App.audio_utils.Linkwitz_Riley_filter(source_SRS, cutoff, 'highpass', self.sample_rate, order = 4)
 			source = source.T
 
 		if not self.large_gpu:  self.Kill_MDX(name)
@@ -780,8 +786,8 @@ class MusicSeparationModel:
 		# TODO : Implement band Pass filter
 		#
 		# Band Cut OFF
-		# Vocals : high : 80-100 Hz, low :  Hz
-		# Music  : high : 30- 50 Hz, low : 18-20 KHz
+		# Vocals : high : 85 - 100 Hz, low : 20 KHz
+		# Music  : high : 30 -  50 Hz, low : 18-20 KHz
 		#
 		# Voix masculine :
 		#
@@ -813,45 +819,55 @@ class MusicSeparationModel:
 		results = []
 		shifts  = [x for x in range(bigshifts)]
 		
-		with self.CONSOLE if self.CONSOLE else stdout_redirect_tqdm() as output:
-
+		# Kept in case of Colab policy change for using GUI
+		# and we need back to old "stdout" redirection
+		#
+		# with self.CONSOLE if self.CONSOLE else stdout_redirect_tqdm() as output:
 			# dynamic_ncols is mandatory for stdout_redirect_tqdm()
-			for shift in tqdm(shifts, file=output, ncols=40, unit="Big shift", mininterval=1.0, dynamic_ncols=True):
-				
-				self.Update_Status()
+			# for shift in tqdm(shifts, file=output, ncols=40, unit="Big shift", mininterval=1.0, dynamic_ncols=True):
 
-				shift_samples = int(shift * 44100)
-				# print(f"shift_samples = {shift_samples}")
-				
-				shifted_mix = np.concatenate((mix[:, -shift_samples:], mix[:, :-shift_samples]), axis=-1)
-				# print(f"shifted_mix shape = {shifted_mix.shape}")
-				result = np.zeros((1, 2, shifted_mix.shape[-1]), dtype=np.float32)
-				divider = np.zeros((1, 2, shifted_mix.shape[-1]), dtype=np.float32)
+		# with self.CONSOLE if self.CONSOLE else stdout_redirect_tqdm() as output:
+		
+		self.Progress.reset(len(shifts), unit="Big shifts")
 
-				total = 0
-				for i in range(0, shifted_mix.shape[-1], step):
-					total += 1
+		for shift in shifts:
+			
+			self.Update_Status()
 
-					start = i
-					end = min(i + self.chunk_size, shifted_mix.shape[-1])
-					mix_part = shifted_mix[:, start:end]
-					# print(f"mix_part shape = {mix_part.shape}")
-					sources = demix_base(mix_part, self.device, use_model, infer_session)
-					result[..., start:end] += sources
-					# print(f"result shape = {result.shape}")
-					divider[..., start:end] += 1
-				
-				result /= divider
+			shift_samples = int(shift * 44100)
+			# print(f"shift_samples = {shift_samples}")
+			
+			shifted_mix = np.concatenate((mix[:, -shift_samples:], mix[:, :-shift_samples]), axis=-1)
+			# print(f"shifted_mix shape = {shifted_mix.shape}")
+			result = np.zeros((1, 2, shifted_mix.shape[-1]), dtype=np.float32)
+			divider = np.zeros((1, 2, shifted_mix.shape[-1]), dtype=np.float32)
+
+			total = 0
+			for i in range(0, shifted_mix.shape[-1], step):
+				total += 1
+
+				start = i
+				end = min(i + self.chunk_size, shifted_mix.shape[-1])
+				mix_part = shifted_mix[:, start:end]
+				# print(f"mix_part shape = {mix_part.shape}")
+				sources = demix_base(mix_part, self.device, use_model, infer_session)
+				result[..., start:end] += sources
 				# print(f"result shape = {result.shape}")
-				result = np.concatenate((result[..., shift_samples:], result[..., :shift_samples]), axis=-1)
-				results.append(result)
+				divider[..., start:end] += 1
+			
+			result /= divider
+			# print(f"result shape = {result.shape}")
+			result = np.concatenate((result[..., shift_samples:], result[..., :shift_samples]), axis=-1)
+			results.append(result)
+
+			self.Progress.update()
 			
 		results = np.mean(results, axis=0)
 		return results
 	
 	#----
 
-def Download_Model(model, models_path, CONSOLE = None):
+def Download_Model(model, models_path, CONSOLE = None, PROGRESS = None):
 	
 	name		= model['Name']
 	repo_file	= model['Repo_FileName']
@@ -867,17 +883,26 @@ def Download_Model(model, models_path, CONSOLE = None):
 			response.raise_for_status()  # Raise an exception in case of HTTP error code
 			
 			if response.status_code == 200:
-				total_size = int(response.headers.get('content-length', 0))
+				
+				total_size = int(response.headers.get('content-length', 0)) // 1048576  # MB
+				PROGRESS.reset(total_size, unit="MB")
+				
 				with open(file_path, 'wb') as file:
-					with CONSOLE if CONSOLE else stdout_redirect_tqdm() as output:
-						with tqdm(
-							file=output, total=total_size,
-							unit='B', unit_scale=True, unit_divisor=1024,
-							ncols=40, dynamic_ncols=True, mininterval=1.0
-						) as bar:
-							for data in response.iter_content(chunk_size=1024):
-								bar.update(len(data))
-								file.write(data)
+
+					# Kept in case of Colab policy change for using GUI
+					# and we need back to old "stdout" redirection
+					#
+					# with CONSOLE if CONSOLE else stdout_redirect_tqdm() as output:
+					#	with tqdm(
+					#		file=output, total=total_size,
+					#		unit='B', unit_scale=True, unit_divisor=1024,
+					#		ncols=40, dynamic_ncols=True, mininterval=1.0
+					#	) as bar:
+
+					for data in response.iter_content(chunk_size=1048576):
+						# bar.update(len(data))
+						PROGRESS.update()
+						file.write(data)
 			else:
 				print(f'Download of model "{name}" FAILED !!')
 				Exit_Notebook()
@@ -889,40 +914,6 @@ def Download_Model(model, models_path, CONSOLE = None):
 	
 	return file_path  # Path to this model
 
-
-# Linkwitz-Riley filter
-def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=4):
-	if cutoff  < 0:  cutoff = 0
-	if cutoff >= 22000:  cutoff = 22000 # Hz
-	nyquist = 0.5 * sample_rate
-	normal_cutoff = cutoff / nyquist
-	b, a = signal.butter(order // 2, normal_cutoff, btype=filter_type, analog=False) # , output='sos')
-	filtered_audio = signal.filtfilt(b, a, audio)
-	return filtered_audio.T
-
-# SRS
-def Change_sample_rate(data, up, down):
-	data = data.T
-	# print(f"SRS input audio shape: {data.shape}")
-	new_data = resample_poly(data, up, down)
-	# print(f"SRS output audio shape: {new_data.shape}")
-	return new_data.T
-
-# Lowpass filter
-def Pass_filter(type, cutoff, data, sample_rate):
-	b = signal.firwin(1001, cutoff, pass_zero=type, fs=sample_rate)
-	filtered_data = signal.filtfilt(b, [1.0], data)
-	return filtered_data
-
-# Match 2 audio Shapes
-def match_array_shapes(array_1:np.ndarray, array_2:np.ndarray):
-	if array_1.shape[1] > array_2.shape[1]:
-		array_1 = array_1[:,:array_2.shape[1]] 
-	elif array_1.shape[1] < array_2.shape[1]:
-		padding = array_2.shape[1] - array_1.shape[1]
-		array_1 = np.pad(array_1, ((0,0), (0,padding)), 'constant', constant_values=0)
-	return array_1
-    
 
 # Redirect "Print" to the console widgets (or stdout)
 class CustomPrint:
@@ -936,19 +927,22 @@ class CustomPrint:
 	def flush(self):
 		pass
 
+# Kept in case of Colab policy change for using GUI
+# and we need back to old "stdout" redirection
+#
 # Redirect "Print" with tqdm progress bar
-@contextlib.contextmanager
-def stdout_redirect_tqdm():
-    orig_out_err = sys.stdout, sys.stderr
-    try:
-        sys.stdout, sys.stderr = map(DummyTqdmFile, orig_out_err)
-        yield orig_out_err[0]
-    # Relay exceptions
-    except Exception as exc:
-        raise exc
-    # Always restore sys.stdout/err if necessary
-    finally:
-        sys.stdout, sys.stderr = orig_out_err
+# @contextlib.contextmanager
+# def stdout_redirect_tqdm():
+# 	orig_out_err = sys.stdout, sys.stderr
+# 	try:
+# 		sys.stdout, sys.stderr = map(DummyTqdmFile, orig_out_err)
+# 		yield orig_out_err[0]
+# 	# Relay exceptions
+# 	except Exception as exc:
+# 		raise exc
+# 	# Always restore sys.stdout/err if necessary
+# 	finally:
+# 		sys.stdout, sys.stderr = orig_out_err
 
 
 def Process(options):
@@ -984,10 +978,10 @@ def Process(options):
 	print('-> Processing DONE !')
 	print('Elapsed Time : {:02d}:{:02d} min.'.format(minutes, seconds))
 	
-	# Kill GPU !!! (especially on Laptop)
 	Exit_Notebook()
 
 
+# Kill GPU !!! (especially on Laptop)
 def Exit_Notebook():
 	gc.collect()
 	os._exit(0)

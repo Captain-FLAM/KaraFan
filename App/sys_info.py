@@ -75,7 +75,7 @@ def Get(font_size):
 			# For other platforms, display a generic message
 			html += "--> CPU informations are not available for this platform."
 
-	html += "<br><br>****   GPU Informations    ****<br><br>"
+	html += "<br><br>****    GPU Informations    ****<br><br>"
 	try:
 		# Nvidia details information
 		gpu_info = subprocess.check_output('nvidia-smi').decode('utf-8')

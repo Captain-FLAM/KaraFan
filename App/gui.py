@@ -11,7 +11,7 @@ from IPython.display import display, HTML
 
 def Run(Gdrive, Project, isColab, DEV_MODE=False):
 
-	import App.settings, App.inference, App.sys_info
+	import App.settings, App.inference, App.sys_info, App.progress
 
 	width  = '670px'
 	height = '720px'
@@ -29,7 +29,7 @@ def Run(Gdrive, Project, isColab, DEV_MODE=False):
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
 	checkbox_layout = {'width': '50px', 'max_width': '50px' }
 	max_width = str(int(width.replace('px','')) - 18) + 'px'  # = border + Left and Right "panel_layout" padding
-	console_max_height = str(int(height.replace('px','')) - 18) + 'px'
+	console_max_height = str(int(height.replace('px','')) - 43) + 'px'
 
 	# This CSS is the style for HTML elements for BOTH : PC and Colab
 	# BUG on Colab: "style={'font_size':'16px'}" as widgets param doesn't work !!
@@ -119,7 +119,11 @@ def Run(Gdrive, Project, isColab, DEV_MODE=False):
 	# TAB 2
 	Status			= widgets.Image(format='png', width=16, height=16, layout={'border': 'none', 'width':'16px', 'height':'16px', 'margin':'7px 0 0 0'})
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
-	Progress_Bar	= widgets.IntProgress(description='&nbsp;&nbsp;0 %', value=0, min=0, max=10, orientation='horizontal', bar_style='info')  # style={'bar_color': 'maroon'})
+	Progress_Bar	= widgets.IntProgress(value=0, min=0, max=10, orientation='horizontal', bar_style='info', layout={'width':'370px', 'height':'25px'})  # style={'bar_color': 'maroon'})
+	Progress_Text	= widgets.HTML(layout={'width':'300px', 'margin':'0 0 0 15px'})
+	
+	# Class for Progress Bar
+	Progress		= App.progress.Bar(Progress_Bar, Progress_Text)
 
 	# TAB 3
 	sys_info		= widgets.HTML()
@@ -143,7 +147,7 @@ def Run(Gdrive, Project, isColab, DEV_MODE=False):
 #					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
 					widgets.HBox([ Label("MDX Instrumental", 203), instru_1, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
 					widgets.HBox([ Label("MDX Vocals", 204), vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Label("MDX Filters", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("MDX Voc. Filters", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 					widgets.HBox([ Label("", 205), filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
 				separator,
@@ -169,7 +173,8 @@ def Run(Gdrive, Project, isColab, DEV_MODE=False):
 			layout = panel_layout,
 			children = [
 				widgets.HBox([ widgets.HTML('<span><b>Working Status : &nbsp;</b></span>'), Status ]),
-				CONSOLE
+				CONSOLE,
+				widgets.HBox([ Progress_Bar, Progress_Text ], layout={'width':'100%', 'height': '30px', 'margin':'10px 0 0 0'}),
 			]),
 		widgets.VBox(
 			layout = panel_layout,
@@ -226,6 +231,11 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			if not os.path.isdir(path):
 				msg += "Your Output is not a valid folder !<br>You MUST set it to an existing folder path.<br>"
 		
+		if instru_1.value == "(None)":
+			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
+		if vocals_1.value == "(None)" and vocals_2.value == "(None)":
+			msg += "You HAVE TO select at least one model for Vocals !<br>"
+
 		if msg != "":
 			msg = "ERROR !!<br>"+ msg
 			HELP.value = '<div id="HELP"><div style="color: #f00">'+ msg +'</div></div>'
@@ -279,7 +289,7 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		options['Project'] = Project
 		options['CONSOLE'] = CONSOLE
 		options['Status']  = Status
-		options['Progress_Bar'] = Progress_Bar
+		options['Progress'] = Progress
 		options['DEV_MODE'] = DEV_MODE
 		
 		options['input'] = []

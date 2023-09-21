@@ -4,7 +4,10 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import librosa, numpy as np, soundfile as sf
+import librosa, numpy as np
+
+from scipy import signal
+from scipy.signal import resample_poly
 
 MAX_SPEC = 'Max Spec'
 MIN_SPEC = 'Min Spec'
@@ -86,6 +89,65 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 			start = i
 
 	return audio
+
+
+# - For the code below :
+#
+#   MIT License - Copyright (c) 2023 Jarredou
+
+# Linkwitz-Riley filter
+#
+# Avec cutoff = 17.4khz & -80dB d'atténuation:
+#
+# ordre =  4 => filtre target freq = 10500hz
+# ordre =  6 => filtre target freq = 13200hz
+# ordre =  8 => filtre target freq = 14300hz
+# ordre = 10 => filtre target freq = 15000hz
+# ordre = 12 => filtre target freq = 15500hz
+# ordre = 14 => filtre target freq = 15800hz
+# ordre = 16 => filtre target freq = 16100hz
+#
+# Avec cutoff = 17.4khz & -60dB d'atténuation:
+#
+# ordre =  4 => filtre target freq = 12500hz
+# ordre =  6 => filtre target freq = 14400hz
+# ordre =  8 => filtre target freq = 15200hz
+# ordre = 10 => filtre target freq = 15700hz
+# ordre = 12 => filtre target freq = 16000hz
+# ordre = 14 => filtre target freq = 16200hz
+# ordre = 16 => filtre target freq = 16400hz
+
+def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=4):
+	if cutoff  < 0:  cutoff = 0
+	if cutoff >= 22000:  cutoff = 22000 # Hz
+	nyquist = 0.5 * sample_rate
+	normal_cutoff = cutoff / nyquist
+	b, a = signal.butter(order // 2, normal_cutoff, btype=filter_type, analog=False) # , output='sos')
+	filtered_audio = signal.filtfilt(b, a, audio)
+	return filtered_audio.T
+
+# SRS
+def Change_sample_rate(data, up, down):
+	data = data.T
+	# print(f"SRS input audio shape: {data.shape}")
+	new_data = resample_poly(data, up, down)
+	# print(f"SRS output audio shape: {new_data.shape}")
+	return new_data.T
+
+# Lowpass filter
+def Pass_filter(type, cutoff, data, sample_rate):
+	b = signal.firwin(1001, cutoff, pass_zero=type, fs=sample_rate)
+	filtered_data = signal.filtfilt(b, [1.0], data)
+	return filtered_data
+
+# Match 2 audio Shapes
+def match_array_shapes(array_1:np.ndarray, array_2:np.ndarray):
+	if array_1.shape[1] > array_2.shape[1]:
+		array_1 = array_1[:,:array_2.shape[1]] 
+	elif array_1.shape[1] < array_2.shape[1]:
+		padding = array_2.shape[1] - array_1.shape[1]
+		array_1 = np.pad(array_1, ((0,0), (0,padding)), 'constant', constant_values=0)
+	return array_1
 
 
 

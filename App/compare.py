@@ -5,9 +5,7 @@
 #
 #   https://github.com/ZFTurbo/Audio-separation-models-checker
 
-import os, glob
-import librosa, soundfile as sf
-import numpy as np
+import os, glob, datetime, librosa, soundfile as sf, numpy as np
 
 """
 SDR - Source to distortion ratio   
@@ -27,7 +25,7 @@ def calculate(references, estimates):
 
 def SDR(song_output_path, Gdrive):
 
-	song_name = os.path.basename(song_output_path)
+	song_name = os.path.basename(song_output_path).replace("SDR_", "")
 	
 	MultiSong_path = os.path.join(Gdrive, "KaraFan_user", "Multi_Song", song_name)
 
@@ -38,14 +36,14 @@ def SDR(song_output_path, Gdrive):
 
 	if len(Extracted_files) == 0:  print('Check output folder. Cant find any files !');  return
 
-	scores = {"instrum": [], "vocals": []}  # The stems we want to process
+	Scores  = {"instrum": [], "vocals": []}  # The stems we want to process
+	Results = ""
 
 	for extract in Extracted_files:
 
 		# Skip Bleedings
 		if "Bleedings" in extract: continue
 
-		# If the file contains "Vocals", check the vocals
 		if "Vocal" in extract:		type = "vocals"
 		elif "Music" in extract:	type = "instrum"
 		else:
@@ -63,16 +61,27 @@ def SDR(song_output_path, Gdrive):
 
 		song_score = calculate(references, estimates)[0]
 
-		print('► ' + os.path.splitext(os.path.basename(extract))[0] + ' - SDR : <b>{:.6f}</b>'.format(song_score))
+		file_name = os.path.splitext(os.path.basename(extract))[0]
+		pad = 40 - len(file_name)
 
-		scores[type].append(song_score)
+		print('• '+ file_name + ("&nbsp;" * pad) + 'SDR : <b>{:.6f}</b>'.format(song_score))
 
-	for type in scores:
-		if len(scores[type]) > 0:
-			print('Average SDR {} : <b>{:.6f}</b>'.format(type, np.array(scores[type]).mean()))
-		else:
-			print('Average SDR {} : ---'.format(type))
+		Results += file_name + (" " * pad) + 'SDR : {:.6f}'.format(song_score) + '\n'
 
+		Scores[type].append(song_score)
+
+	# TODO : Use for batch SDR with multiple songs
+	# for type in Scores:
+	# 	if len(Scores[type]) > 0:
+	# 		print('Average SDR {} : <b>{:.6f}</b>'.format(type, np.array(Scores[type]).mean()))
+	# 	else:
+	# 		print('Average SDR {} : ---'.format(type))
+
+	# Write results on disk
+	if Results != "":
+		with open(os.path.join(song_output_path, "SDR_Results.txt"), 'a', encoding='utf-8') as file:
+			file.write(f"\n► {datetime.datetime.now().strftime('%Y-%m-%d ~ %H:%M:%S')} - {song_name}\n\n")
+			file.write(Results)
 
 
 #   MIT License - Copyright (c) 2023 Captain FLAM

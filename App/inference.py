@@ -828,7 +828,7 @@ class MusicSeparationModel:
 
 		# with self.CONSOLE if self.CONSOLE else stdout_redirect_tqdm() as output:
 		
-		self.Progress.reset(len(shifts), unit="Big shifts")
+		self.Progress.reset(len(shifts), unit="Big shift")
 
 		for shift in shifts:
 			

@@ -896,7 +896,7 @@ def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=4):
 	if cutoff >= 22000:  cutoff = 22000 # Hz
 	nyquist = 0.5 * sample_rate
 	normal_cutoff = cutoff / nyquist
-	b, a = signal.butter(order // 2, normal_cutoff, btype=filter_type, analog=False, output='sos')
+	b, a = signal.butter(order // 2, normal_cutoff, btype=filter_type, analog=False) # , output='sos')
 	filtered_audio = signal.filtfilt(b, a, audio)
 	return filtered_audio.T
 

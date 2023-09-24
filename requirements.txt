@@ -1,5 +1,5 @@
 
-# Audio      : soundfile, librosa, pydub, pylibrb
+# Audio      : soundfile, librosa, pydub, samplerate2
 # GUI        : configparse, ipywidgets, tqdm
 # Inference  : numpy, scipy, ml_collections, onnxruntime-gpu
 
@@ -10,8 +10,7 @@
 configparse
 
 pydub
-# Rubber Band
-pylibrb
+samplerate2
 
 onnxruntime-gpu
 

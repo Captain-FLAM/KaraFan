@@ -4,7 +4,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, gc, subprocess, requests
+import os, gc, subprocess, requests, shutil
 
 def Check_dependencies(isColab):
 
@@ -68,7 +68,7 @@ def Install(params):
 					elif file == "Multi_Song":
 						continue
 					else:
-						os.rmdir(item)
+						shutil.rmtree(item, ignore_errors=True)
 	
 	# Create missing folders
 	folder = os.path.join(Gdrive, "KaraFan_user")

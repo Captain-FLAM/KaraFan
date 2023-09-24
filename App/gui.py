@@ -540,8 +540,8 @@ function show_help(index) {\
 
 	# For DEBUG : auto-start processing on execution
 
-	file = os.path.join(Gdrive, "Music\\SDR_song_017\\2 - Vocal extract - (Voc FT).flac")
-	if os.path.isfile(file):  os.remove(file)
+	# file = os.path.join(Gdrive, "Music\\SDR_song_017\\2 - Vocal extract - (Voc FT).flac")
+	# if os.path.isfile(file):  os.remove(file)
 	
 	#on_Start_clicked(None)
 	

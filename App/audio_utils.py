@@ -1,13 +1,11 @@
 #!python3.10
 
-#   MIT License - Copyright (c) 2023 Captain FLAM
+#   MIT License - Copyright (c) 2023 Captain FLAM & Jarredou
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import librosa, numpy as np
-
+import librosa, samplerate2, numpy as np
 from scipy import signal
-from scipy.signal import resample_poly
 
 MAX_SPEC = 'Max Spec'
 MIN_SPEC = 'Min Spec'
@@ -90,11 +88,6 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 
 	return audio
 
-
-# - For the code below :
-#
-#   MIT License - Copyright (c) 2023 Jarredou
-
 # Linkwitz-Riley filter
 #
 # Avec cutoff = 17.4khz & -80dB d'atténuation:
@@ -109,45 +102,147 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 #
 # Avec cutoff = 17.4khz & -60dB d'atténuation:
 #
-# ordre =  4 => filtre target freq = 12500hz
+# ordre =  4 => filtre target freq = 12500hz (-4900)
 # ordre =  6 => filtre target freq = 14400hz
-# ordre =  8 => filtre target freq = 15200hz
+# ordre =  8 => filtre target freq = 15200hz (-2200)
 # ordre = 10 => filtre target freq = 15700hz
 # ordre = 12 => filtre target freq = 16000hz
 # ordre = 14 => filtre target freq = 16200hz
 # ordre = 16 => filtre target freq = 16400hz
 
-def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=4):
+def Linkwitz_Riley_filter(audio, cutoff, filter_type, sample_rate, order=8):
+	cutoff -= 2200
 	if cutoff  < 0:  cutoff = 0
 	if cutoff >= 22000:  cutoff = 22000 # Hz
 	nyquist = 0.5 * sample_rate
 	normal_cutoff = cutoff / nyquist
-	b, a = signal.butter(order // 2, normal_cutoff, btype=filter_type, analog=False) # , output='sos')
+	b, a = signal.butter(order // 2, normal_cutoff, btype=filter_type, analog=False) #, output='sos')
 	filtered_audio = signal.filtfilt(b, a, audio)
 	return filtered_audio.T
 
-# SRS
-def Change_sample_rate(data, up, down):
-	data = data.T
-	# print(f"SRS input audio shape: {data.shape}")
-	new_data = resample_poly(data, up, down)
-	# print(f"SRS output audio shape: {new_data.shape}")
-	return new_data.T
+# Band Pass filter
+#
+# Vocals -> lowest : 85 - 100 Hz, highest : 20 KHz
+# Music  -> lowest : 30 -  50 Hz, highest : 18-20 KHz
+#
+# Voix masculine :
+#
+# Minimale : 85 Hz
+# Fondamentale : 180 Hz
+# Maximale (y compris les harmoniques) : 14 kHz
+#
+# Voix féminine :
+#
+# Minimale : 165 Hz
+# Fondamentale : 255 Hz
+# Maximale (y compris les harmoniques) : 16 kHz
+#
+# Voix d'enfants :
+#
+# Minimale : 250 Hz
+# Fondamentale : 400 Hz
+# Maximale (y compris les harmoniques) : 20 kHz ou +
 
-# Lowpass filter
-def Pass_filter(type, cutoff, data, sample_rate):
+def Pass_filter(type, cutoff, audio, sample_rate):
+	if cutoff >= sample_rate / 2:
+		cutoff = (sample_rate / 2) - 1
+
 	b = signal.firwin(1001, cutoff, pass_zero=type, fs=sample_rate)
-	filtered_data = signal.filtfilt(b, [1.0], data)
+	filtered_data = signal.filtfilt(b, [1.0], audio)
 	return filtered_data
 
+# SRS : Sample Rate Scaling
+def Change_sample_rate(audio, way, current_cutoff, target_cutoff):
+
+	# This is mandatory, I don't know why, but without this,
+	# the sample rate DOWN doesn't fit the MDX model Band
+	# and produce noise in High Frequencies !! (??)
+	# @ 800 Hz -> there is less noise, but badder SDR ?!?!
+	# TODO : Test with 14600 Hz models cut-off
+	# 
+	target_cutoff += 900 # Hz
+
+	ratio = current_cutoff / target_cutoff if way == "DOWN" else target_cutoff / current_cutoff
+
+	resampler = samplerate2.Resampler('sinc_best', channels = 2)
+
+	pitched_audio = resampler.process(audio.T, ratio, end_of_input=True)
+	pitched_audio = pitched_audio.T
+
+	# print(f"SRS input audio shape: {audio.shape}")
+	# print(f"SRS output audio shape: {pitched_audio.shape}")
+	# print (f"ratio : {ratio}")
+
+	return pitched_audio
+
 # Match 2 audio Shapes
-def match_array_shapes(array_1:np.ndarray, array_2:np.ndarray):
-	if array_1.shape[1] > array_2.shape[1]:
-		array_1 = array_1[:,:array_2.shape[1]] 
-	elif array_1.shape[1] < array_2.shape[1]:
-		padding = array_2.shape[1] - array_1.shape[1]
+def match_array_shapes(array_1:np.ndarray, reference:np.ndarray):
+	if array_1.shape[1] > reference.shape[1]:
+		array_1 = array_1[:,:reference.shape[1]] 
+	elif array_1.shape[1] < reference.shape[1]:
+		padding = reference.shape[1] - array_1.shape[1]
 		array_1 = np.pad(array_1, ((0,0), (0,padding)), 'constant', constant_values=0)
 	return array_1
+
+# def Remove_High_freq_Noise(audio, threshold_freq):
+
+# 	# Calculer la transformée de Fourier
+# 	stft = librosa.stft(audio)
+	
+# 	# Calculer la somme des amplitudes pour chaque fréquence dans le spectre
+# 	amplitude_sum = np.sum(np.abs(stft), axis=0)
+
+# 	# Appliquer un masque pour supprimer les fréquences supérieures lorsque la somme des amplitudes est inférieure au seuil
+# 	stft[:, amplitude_sum > threshold_freq] = 0.0
+
+# 	# Reconstruire l'audio à partir du STFT modifié
+# 	audio_filtered = librosa.istft(stft)
+
+# 	return audio_filtered
+
+# def Match_Freq_CutOFF(self, audio1, audio2, sample_rate):
+# 	# This option matches the Primary stem frequency cut-off to the Secondary stem frequency cut-off
+# 	# (if the Primary stem frequency cut-off is lower than the Secondary stem frequency cut-off)
+
+# 	# Get the Primary stem frequency cut-off
+# 	freq_cut_off1 = Find_Cut_OFF(audio1, sample_rate)
+# 	freq_cut_off2 = Find_Cut_OFF(audio2, sample_rate)
+
+# 	# Match the Primary stem frequency cut-off to the Secondary stem frequency cut-off
+# 	if freq_cut_off1 < freq_cut_off2:
+# 		audio1 = Resize_Freq_CutOFF(audio1, freq_cut_off2, sample_rate)
+
+# 	return audio1
+
+# # Find the high cut-off frequency of the input audio
+# def Find_Cut_OFF(audio, sample_rate, threshold=0.01):
+
+# 	# Appliquer un filtre passe-bas pour réduire le bruit
+# 	cutoff_frequency = sample_rate / 2.0  # Fréquence de Nyquist (la moitié du taux d'échantillonnage)
+
+# 	# Définir l'ordre du filtre passe-bas
+# 	order = 6
+
+# 	# Calculer les coefficients du filtre passe-bas
+# 	b, a = signal.butter(order, cutoff_frequency - threshold, btype='low', analog=False, fs=sample_rate)
+
+# 	# Appliquer le filtre au signal audio
+# 	filtered_audio = signal.lfilter(b, a, audio, axis=0)
+
+# 	# Calculer la FFT du signal audio filtré
+# 	fft_result = np.fft.fft(filtered_audio, axis=0)
+
+# 	# Calculer les magnitudes du spectre de fréquence
+# 	magnitudes = np.abs(fft_result)
+
+# 	# Calculer les fréquences correspondant aux bins de la FFT
+# 	frequencies = np.fft.fftfreq(len(audio), 1.0 / sample_rate)
+
+# 	# Trouver la fréquence de coupure où la magnitude tombe en dessous du seuil
+# 	cut_off_frequencies = frequencies[np.where(magnitudes > threshold)]
+
+# 	# Trouver la fréquence de coupure maximale parmi toutes les valeurs
+# 	return int(max(cut_off_frequencies))
 
 
 

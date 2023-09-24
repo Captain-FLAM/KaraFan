@@ -5,13 +5,11 @@ The **BEST music separation** software with help of A.I. ... **to my ears** ! �
 As you've guessed, it was made specially for Karaoke (▶️ focus on musical part).  
 This project is **open to all goodwill**.  
 
-The Discord community, Chat-GPT & GitHub Copilot ...  and my human intelligence made this project possible.
+The Discord community, Chat-GPT & Copilot ...  and my human intelligence made this project possible.
 
 ![KaraFan](images/KaraFan_3.0.jpg)
 
-KaraFan works with **Google Colab** or if you have a decent GPU, on **Your PC** with Visual Studio Code or with a command line in a shell !!
-
-![](images/GitHub-Copilot.png) &nbsp;&nbsp;I'm in love with Copilot ! 😍
+KaraFan works with **Google Colab** or if you have a decent GPU, **on Your PC** !!
 
 ## 💲 DONATE
 

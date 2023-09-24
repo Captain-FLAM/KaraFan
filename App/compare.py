@@ -23,7 +23,7 @@ def calculate(references, estimates):
 	den += delta
 	return 10 * np.log10(num / den)
 
-def SDR(song_output_path, Gdrive):
+def SDR(song_output_path, output_format, Gdrive):
 
 	song_name = os.path.basename(song_output_path).replace("SDR_", "")
 	
@@ -32,7 +32,13 @@ def SDR(song_output_path, Gdrive):
 	if not os.path.exists(MultiSong_path):
 		return
 
-	Extracted_files = glob.glob(os.path.join(song_output_path, '*.flac'))
+	match output_format:
+		case 'PCM_16':	ext = '.wav'
+		case 'FLOAT':	ext = '.wav'
+		case "FLAC":	ext = '.flac'
+		case 'MP3':		ext = '.mp3'
+
+	Extracted_files = glob.glob(os.path.join(song_output_path, '*' + ext))
 
 	if len(Extracted_files) == 0:  print('Check output folder. Cant find any files !');  return
 
@@ -41,11 +47,13 @@ def SDR(song_output_path, Gdrive):
 
 	for extract in Extracted_files:
 
-		# Skip Bleedings
-		if "Bleedings" in extract: continue
+		file_name = os.path.basename(extract)
 
-		if "Vocal" in extract:		type = "vocals"
-		elif "Music" in extract:	type = "instrum"
+		# Skip Bleedings
+		if "Bleedings" in file_name:  continue
+
+		if "Vocal" in file_name:	type = "vocals"
+		elif "Music" in file_name:	type = "instrum"
 		else:
 			continue  # Skip Others
 
@@ -56,7 +64,7 @@ def SDR(song_output_path, Gdrive):
 		estimates  = np.expand_dims(estimate, axis=0)
 
 		if estimates.shape != references.shape:
-			print('Warning: Different length of FLAC files : {} != {}. Skip it !'.format(estimates.shape, references.shape))
+			print('Warning: Different length of files : {} != {}. Skip it !'.format(estimates.shape, references.shape))
 			continue
 
 		song_score = calculate(references, estimates)[0]
@@ -64,16 +72,16 @@ def SDR(song_output_path, Gdrive):
 		file_name = os.path.splitext(os.path.basename(extract))[0]
 		pad = 40 - len(file_name)
 
-		print('• '+ file_name + ("&nbsp;" * pad) + 'SDR : <b>{:.6f}</b>'.format(song_score))
+		Results += file_name + (" " * pad) + 'SDR : {:9.6f}'.format(song_score) + "\n"
 
-		Results += file_name + (" " * pad) + 'SDR : {:.6f}'.format(song_score) + '\n'
+		print('• ' + file_name + ("&nbsp;" * pad) + 'SDR : <b>{:9.6f}</b>'.format(song_score))
 
 		Scores[type].append(song_score)
 
 	# TODO : Use for batch SDR with multiple songs
 	# for type in Scores:
 	# 	if len(Scores[type]) > 0:
-	# 		print('Average SDR {} : <b>{:.6f}</b>'.format(type, np.array(Scores[type]).mean()))
+	# 		print('Average SDR {} : <b>{:9.6f}</b>'.format(type, np.array(Scores[type]).mean()))
 	# 	else:
 	# 		print('Average SDR {} : ---'.format(type))
 

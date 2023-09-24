@@ -16,6 +16,7 @@ defaults = {
 		'output_format': "FLAC",
 #		'preset_genre': "Pop Rock",
 		'instru_1': "Instrum HQ 3",
+		'instru_2': "Instrum Main",
 		'vocals_1': "Kim Vocal 2",
 		'vocals_2': "Voc FT",
 		'filter_1': "Instrum HQ 3",
@@ -48,6 +49,7 @@ def Convert_to_Options(config):
 	options['output_format']	= config['PROCESS']['output_format']
 #	options['preset_genre']		= config['PROCESS']['preset_genre']
 	options['instru_1']			= config['PROCESS']['instru_1']
+	options['instru_2']			= config['PROCESS']['instru_2']
 	options['vocals_1']			= config['PROCESS']['vocals_1']
 	options['vocals_2']			= config['PROCESS']['vocals_2']
 	options['filter_1']			= config['PROCESS']['filter_1']

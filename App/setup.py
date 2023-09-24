@@ -21,12 +21,17 @@ def Check_dependencies(isColab):
 		print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout + "\n")
 		Exit_Notebook()
 
-def Install(Gdrive, Project, isColab, DEV_MODE=False):
+def Install(params):
 	
 	Repository  = "https://github.com/Captain-FLAM/KaraFan"
 	Version_url = "https://raw.githubusercontent.com/Captain-FLAM/KaraFan/master/App/__init__.py"
 
 	Version = ""; Git_version = ""
+
+	Gdrive = params['Gdrive']
+	Project = params['Project']
+	isColab = params['isColab']
+	DEV_MODE = params['I_AM_A_DEVELOPER']
 
 	if not os.path.exists(Gdrive):
 		print("ERROR : Google Drive path is not valid !\n")
@@ -42,23 +47,28 @@ def Install(Gdrive, Project, isColab, DEV_MODE=False):
 	if isColab:
 		Check_dependencies(True)
 
-		# Temporary fix for old KF version < 1.4
-		# Delete everything except Config files & Models folder
-		old_version = os.path.join(Gdrive, "KaraFan")
-		if os.path.exists(old_version):
-			for file in os.listdir(old_version):
-				if os.path.isfile(os.path.join(old_version, file)):
-					if file != "Config_Colab.ini" and file != "Config_PC.ini":
-						os.remove(os.path.join(old_version, file))
-				elif os.path.isdir(os.path.join(old_version, file)):
-					if file == "Models":
-						if os.path.exists(os.path.join(old_version, "Models", "_PARAMETERS_.csv")):
-							os.remove(os.path.join(old_version, "Models", "_PARAMETERS_.csv"))
-					else:
-						os.rmdir(os.path.join(old_version, file))
+		# Temporary fix for old KF version < 3.1
 
-			# Rename the folder
-			os.rename(old_version, os.path.join(Gdrive, "KaraFan_user"))
+		# Rename the folder
+		if os.path.exists(os.path.join(Gdrive, "KaraFan")):
+			os.rename(os.path.join(Gdrive, "KaraFan"), os.path.join(Gdrive, "KaraFan_user"))
+
+		# Delete everything except Config files & Models folder
+		folder = os.path.join(Gdrive, "KaraFan_user")
+		if os.path.exists(folder):
+			for file in os.listdir(folder):
+				item = os.path.join(folder, file)
+				if os.path.isfile(item):
+					if file != "Config_Colab.ini" and file != "Config_PC.ini":
+						os.remove(item)
+				elif os.path.isdir(item):
+					if file == "Models":
+						if os.path.exists(os.path.join(item, "_PARAMETERS_.csv")):
+							os.remove(os.path.join(item, "_PARAMETERS_.csv"))
+					elif file == "Multi_Song":
+						continue
+					else:
+						os.rmdir(item)
 	
 	# Create missing folders
 	folder = os.path.join(Gdrive, "KaraFan_user")
@@ -121,4 +131,4 @@ if __name__ == '__main__':
 	Project = os.getcwd()  # Get the current path
 	Gdrive  = os.path.dirname(Project)  # Get parent directory
 
-	Install(Gdrive, Project, False)
+	Install({'Gdrive': Gdrive, 'Project': Project, 'isColab': False, 'I_AM_A_DEVELOPER': False})

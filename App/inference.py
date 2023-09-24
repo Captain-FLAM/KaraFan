@@ -16,11 +16,10 @@ import regex as re
 import numpy as np
 import onnxruntime as ort
 import torch, torch.nn as nn
+from time import time
 
 import librosa, soundfile as sf
 from pydub import AudioSegment
-
-from time import time
 
 # ONLY for MDX23C models
 #  import yaml
@@ -28,7 +27,7 @@ from time import time
 
 import ipywidgets as widgets
 from IPython.display import display, HTML
-import contextlib
+
 # from tqdm.auto import tqdm  # Auto : Progress Bar in GUI with ipywidgets
 # from tqdm.contrib import DummyTqdmFile
 
@@ -319,7 +318,7 @@ class MusicSeparationModel:
 				name = row['Name']
 				if name == options['vocals_1'] or name == options['vocals_2']:
 					self.models['vocals'].append(row)
-				elif name == options['instru_1']:
+				elif name == options['instru_1'] or name == options['instru_2']:
 					self.models['instrum'].append(row)
 				
 				# Special case for "Filters" : can be Vocal or Instrumental !
@@ -378,8 +377,13 @@ class MusicSeparationModel:
 		# Convert mono to stereo (if needed)
 		if len(original_audio.shape) == 1:
 			original_audio = np.stack([original_audio, original_audio], axis=0)
-
-		print(f"Input audio : {original_audio.shape} - Sample rate : {self.sample_rate}")
+		
+		# TODO : Get the cut-off frequency of the input audio
+		# self.original_cutoff = App.audio_utils.Find_Cut_OFF(original_audio, self.sample_rate)
+		self.original_cutoff = self.sample_rate // 2
+		
+		print(f"Input Audio : {original_audio.shape}")
+		print(f"Sample rate : {self.sample_rate} Hz - Audio Cut-OFF : {self.original_cutoff} Hz")
 		
 		# ****  START PROCESSING  ****
 
@@ -404,7 +408,7 @@ class MusicSeparationModel:
 		#	self.Save_Audio("Vocal_MDX23C", vocals3)
 		
 		# Extract Music with MDX models
-		instrum_extract = []
+		music_extract = []
 		for model in self.models['instrum']:
 			audio = self.Check_Already_Processed(1, model['Name'])
 			if audio is None:
@@ -415,9 +419,13 @@ class MusicSeparationModel:
 				
 				self.Save_Audio(1, audio, model['Name'])
 			
-			instrum_extract.append(audio)
+			music_extract.append(audio)
 			
-		# TODO : Make Ensemble Music ???
+		# Make Ensemble Music
+		print("► Make Ensemble Music")
+		music_ensemble = App.audio_utils.Make_Ensemble('Max Spec', music_extract)
+
+		del music_extract;  gc.collect()
 
 		# Extract Vocals with MDX models
 		vocals_extract = []
@@ -435,7 +443,6 @@ class MusicSeparationModel:
 		
 		# Make Ensemble Vocals
 		print("► Make Ensemble Vocals")
-
 		vocals_ensemble = App.audio_utils.Make_Ensemble('Max Spec', vocals_extract)
 
 		# vocals_ensemble = App.utils.Silent(vocals_ensemble, self.sample_rate)  # Apply silence filter
@@ -458,7 +465,8 @@ class MusicSeparationModel:
 					# If model Stem is Vocals, substraction is needed !
 					if model['Stem'] != "Instrumental":  audio = vocals_ensemble - audio
 
-					audio = App.audio_utils.Silent(audio, self.sample_rate, -45)  # Apply silence filter : -45 dB !
+					# audio = App.audio_utils.Silent(audio, self.sample_rate, -45)  # Apply silence filter : -45 dB !
+					audio = App.audio_utils.Pass_filter('highpass', 30, audio, self.sample_rate)
 
 					self.Save_Audio(4, audio, model['Name'])
 				
@@ -482,34 +490,32 @@ class MusicSeparationModel:
 		self.Save_Audio(5, vocals_ensemble)
 		
 		# Repair Music
-		print("► Get Music by substracting Vocals from Original audio")
-		instrum_final = normalized - vocals_ensemble
+		print("► Get Music by substracting Vocals")
+		music_final = normalized - vocals_ensemble
 
-		print("► Repair Instrumental with first Music Extractions")
-		for audio in instrum_extract:
-			audio = App.audio_utils.Pass_filter('highpass', 30, audio, self.sample_rate)
-			instrum_final = App.audio_utils.Make_Ensemble('Max Spec', [instrum_final, audio])
+		print("► Repair Music")
+		music_final = App.audio_utils.Make_Ensemble('Max Spec', [music_final, music_ensemble])
 		
-		del instrum_extract;  gc.collect()
-
+		# BAD IDEA !!
+#		music_final = App.audio_utils.Pass_filter('highpass', 30, music_final, self.sample_rate)
 
 		# Apply silence filter : -61 dB !
-		instrum_final = App.audio_utils.Silent(instrum_final, self.sample_rate, threshold_db = -61)
+		# music_final = App.audio_utils.Silent(music_final, self.sample_rate, threshold_db = -61)
 
 		# Save Music FINAL
 		print("► Save Music FINAL !")
-		self.Save_Audio(6, instrum_final)
-		
+		self.Save_Audio(6, music_final)
+
 		#**********************************
 		#****  TESTING for DEVELOPERS  ****
 		#**********************************
 		
-		# The "song_output_path" contains the NAME of the song to compare within the "Multi-Song" folder
+		# The "song_output_path" contains the NAME of the song to compare within the "Gdrive > KaraFan_user > Multi-Song" folder
 		# That's all !!
 		if name.startswith("SDR_"):
 
 			print("----------------------------------------")
-			App.compare.SDR(self.song_output_path, self.Options['Gdrive'])
+			App.compare.SDR(self.song_output_path, self.Options['output_format'], self.Options['Gdrive'])
 		
 			# And to Re-process immediately a file :
 			#os.remove(os.path.join(self.song_output_path, "2 - Vocal extract - (Kim Vocal 2).flac"))
@@ -692,20 +698,6 @@ class MusicSeparationModel:
 		# Preview Audio file
 		if self.PREVIEWS and self.CONSOLE:  self.Show_Preview(filename, audio)
 
-	def Match_Freq_CutOFF(self, audio1, audio2, sample_rate):
-		# This option matches the Primary stem frequency cut-off to the Secondary stem frequency cut-off
-		# (if the Primary stem frequency cut-off is lower than the Secondary stem frequency cut-off)
-	
-		# Get the Primary stem frequency cut-off
-		# freq_cut_off1 = Get_Freq_CutOFF(audio1, sample_rate)
-		# freq_cut_off2 = Get_Freq_CutOFF(audio2, sample_rate)
-
-		# # Match the Primary stem frequency cut-off to the Secondary stem frequency cut-off
-		# if freq_cut_off1 < freq_cut_off2:
-		# 	audio1 = Match_Freq_CutOFF(audio1, freq_cut_off2, sample_rate)
-
-		return audio1
-	
 	def Extract_with_Model(self, type, audio, model):
 		"""
 		Explication from "Jarredou" about the 2 passes :
@@ -729,7 +721,7 @@ class MusicSeparationModel:
 			bigshifts = self.shifts_filter;  text = f'► Filter Vocals with "{name}"'
 		
 		if not self.large_gpu:
-			print(f'Large GPU is disabled : Loading model "{name}" now...')
+			# print(f'Large GPU is disabled : Loading model "{name}" now...')
 			self.Load_MDX(model)
 		
 		mdx_model = self.MDX[name]['model']
@@ -744,68 +736,60 @@ class MusicSeparationModel:
 			source = 0.5 * -self.demix_full(-audio, mdx_model, inference, bigshifts)[0]
 
 			print(text +" (Pass 2)")
-			source += 0.5 * self.demix_full(audio, mdx_model, inference, bigshifts)[0]
+			source += 0.5 * self.demix_full( audio, mdx_model, inference, bigshifts)[0]
 
 		# Automatic SRS
 		if model['Cut_OFF'] > 0:
-			
+
 			bigshifts = bigshifts // 4
 			if bigshifts < 1:  bigshifts = 1  # must not be <= 0 !
 
-			pitch = 6 if model['Cut_OFF'] < 17000 else 5
+			audio = App.audio_utils.Change_sample_rate(audio, 'DOWN', self.original_cutoff, model['Cut_OFF'])
+			
+			# for DEBUG
+			# self.Save_Audio(("1" if type == EXTRACT_INSTRU else "2") + " - SRS REAL", audio)
+
+			# Limit audio to the same frequency cut-off than MDX model : To avoid SRS noise !!
+			# That helps a little bit !!
+			audio = App.audio_utils.Pass_filter('lowpass', model['Cut_OFF'], audio, self.sample_rate)
 
 			# ONLY 1 Pass, for testing purposes
 			if self.TEST_MODE:
 				print(text + " -> SRS")
-				source_SRS = App.audio_utils.Change_sample_rate( self.demix_full(
-					App.audio_utils.Change_sample_rate( audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
+				source_SRS = App.audio_utils.Change_sample_rate(
+					self.demix_full(audio, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'])
 			else:
 				print(text +" -> SRS (Pass 1)")
-				source_SRS = 0.5 * App.audio_utils.Change_sample_rate( -self.demix_full(
-					App.audio_utils.Change_sample_rate( -audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
+				source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
+					-self.demix_full(-audio, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'])
 
 				print(text +" -> SRS (Pass 2)")
-				source_SRS += 0.5 * App.audio_utils.Change_sample_rate( self.demix_full(
-					App.audio_utils.Change_sample_rate( audio, pitch, 4), mdx_model, inference, bigshifts)[0], 4, pitch)
+				source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
+					self.demix_full( audio, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'])
+
+			# Check if source_SRS is same size than source
+			source_SRS = App.audio_utils.match_array_shapes(source_SRS, source)
+
+			# That helps a little bit !
+			source_SRS = App.audio_utils.Pass_filter('lowpass', self.original_cutoff, source_SRS, self.sample_rate)
+
+			# TODO
+			# source = App.audio_utils.Remove_High_freq_Noise(source, model['Cut_OFF'])
 
 			# old formula :  vocals = Linkwitz_Riley_filter(vocals.T, 12000, 'lowpass') + Linkwitz_Riley_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
 			# *3/4 = Dynamic SRS personal taste of "Jarredou", to avoid too much SRS noise
 			# He also told me that 12 Khz cut-off was setted for MDX23C model, but now I use the REAL cut-off of MDX models !
 
-			cutoff = model['Cut_OFF'] - 2700
+			# source = App.audio_utils.Linkwitz_Riley_filter(source, model['Cut_OFF'], 'lowpass', self.sample_rate) \
+			# 	   + App.audio_utils.Linkwitz_Riley_filter(source_SRS, model['Cut_OFF'], 'highpass', self.sample_rate)
+			# source = source.T
 
-			# Check if source_SRS is not longer than source
-			source_SRS = App.audio_utils.match_array_shapes(source_SRS, source)
+			source = App.audio_utils.Make_Ensemble('Max Spec', [source, source_SRS])
 
-			source = App.audio_utils.Linkwitz_Riley_filter(source, cutoff, 'lowpass', self.sample_rate, order = 4) \
-				   + App.audio_utils.Linkwitz_Riley_filter(source_SRS, cutoff, 'highpass', self.sample_rate, order = 4)
-			source = source.T
+			# for DEBUG
+			# self.Save_Audio(("1" if type == EXTRACT_INSTRU else "2") + " - SRS", source_SRS)
 
 		if not self.large_gpu:  self.Kill_MDX(name)
-
-		# TODO : Implement band Pass filter
-		#
-		# Band Cut OFF
-		# Vocals : high : 85 - 100 Hz, low : 20 KHz
-		# Music  : high : 30 -  50 Hz, low : 18-20 KHz
-		#
-		# Voix masculine :
-		#
-		# Minimale : 85 Hz.
-		# Fondamentale : 180 Hz
-		# Maximale (y compris les harmoniques) : 14 kHz.
-		#
-		# Voix féminine :
-		#
-		# Minimale : 165 Hz.
-		# Fondamentale : 255 Hz
-		# Maximale (y compris les harmoniques) : 16 kHz.
-		#
-		# Voix d'enfants :
-		#
-		# Minimale : 250 Hz.
-		# Fondamentale : 400 Hz
-		# Maximale (y compris les harmoniques) : 20 kHz ou plus.
 
 		return source
 	
@@ -967,23 +951,28 @@ def Process(options):
 		
 		model.SEPARATE(file)
 	
-	# Free & Release GPU memory
-	if torch.cuda.is_available():
-		torch.cuda.empty_cache()
-		torch.cuda.ipc_collect()
-		
 	elapsed_time = time() - start_time
 	minutes = int(elapsed_time // 60)
 	seconds = int(elapsed_time % 60)
 	print('-> Processing DONE !')
 	print('Elapsed Time : {:02d}:{:02d} min.'.format(minutes, seconds))
 	
+	del model; del options; del file
+
 	Exit_Notebook()
 
 
-# Kill GPU !!! (especially on Laptop)
 def Exit_Notebook():
+
+	# Free & Release GPU memory
+	if torch.cuda.is_available():
+
+		torch.cuda.empty_cache()
+		torch.cuda.ipc_collect()
+
 	gc.collect()
+	
+	# Kill GPU !!! (especially on Laptop)
 	os._exit(0)
 
 

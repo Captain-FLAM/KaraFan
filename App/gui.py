@@ -9,9 +9,14 @@ import os, csv, glob
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
-def Run(Gdrive, Project, isColab, DEV_MODE=False):
+def Run(params):
 
 	import App.settings, App.inference, App.sys_info, App.progress
+
+	Gdrive = params['Gdrive']
+	Project = params['Project']
+	isColab = params['isColab']
+	DEV_MODE = params['I_AM_A_DEVELOPER']
 
 	width  = '670px'
 	height = '720px'
@@ -48,6 +53,7 @@ def Run(Gdrive, Project, isColab, DEV_MODE=False):
 .player { margin-bottom: 5px }\
 .player > div { min-width: 200px; display: inline-block; font: normal '+ font +' monospace }\
 .player > audio { vertical-align: middle }\
+.SDR { display: inline-block; line-height: 1 }\
 </style>'))
 	
 	def Label(text, index):
@@ -91,15 +97,18 @@ def Run(Gdrive, Project, isColab, DEV_MODE=False):
 	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'200px'}, style=font_input)
 	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
 	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 55px 0 40px'})
 	# OPTIONS
 	normalize		= widgets.Checkbox((config['OPTIONS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
-	large_gpu		= widgets.Checkbox((config['OPTIONS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
+	# large_gpu		= widgets.Checkbox((config['OPTIONS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	shifts_vocals	= widgets.IntSlider(int(config['OPTIONS']['shifts_vocals']), min=1, max=24, step=1, style=font_input)
 	shifts_instru	= widgets.IntSlider(int(config['OPTIONS']['shifts_instru']), min=1, max=24, step=1, style=font_input)
 	shifts_filter	= widgets.IntSlider(int(config['OPTIONS']['shifts_filter']), min=1, max=12, step=1, style=font_input)
@@ -145,14 +154,15 @@ def Run(Gdrive, Project, isColab, DEV_MODE=False):
 				widgets.VBox([
 					widgets.HBox([ Label("Output Format", 201), output_format ]),
 #					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
-					widgets.HBox([ Label("MDX Instrumental", 203), instru_1, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("MDX Instrumental", 203), instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
 					widgets.HBox([ Label("MDX Vocals", 204), vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
 					widgets.HBox([ Label("MDX Voc. Filters", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
-					widgets.HBox([ Label("", 205), filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Btn_Reset_MDX, filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("Normalize input", 301), normalize, Label('Large GPU', 302), large_gpu ]),
+					# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
+					widgets.HBox([ Label("Normalize input", 301), normalize]),  # , Label('Large GPU', 302), large_gpu ]),
 					widgets.HBox([ Label("BigShifts Vocals", 303),  shifts_vocals ]),
 					widgets.HBox([ Label("BigShifts Instrum", 303), shifts_instru ]),
 					widgets.HBox([ Label("BigShifts Filters", 303), shifts_filter ]),
@@ -190,8 +200,8 @@ help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside th
 help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
 help_index[2][1] = "Choose your prefered audio format to save audio files.";\
 help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
-help_index[2][3] = "<b>A.I</b> models : Extract the instrumental part for repairing at the end of process.<br><br>Best model : « <b>Inst HQ 3</b> »";\
-help_index[2][4] = "<b>A.I</b> models : Make an Ensemble of extraction with selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
+help_index[2][3] = "<b>A.I</b> models : Make an Ensemble of instrumental extractions for repairing at the end of process.<br><br>Best combination : « <b>Inst HQ 3</b> » and <b>test byt yourself</b> ! 😉";\
+help_index[2][4] = "<b>A.I</b> models : Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
 help_index[2][5] = "<b>A.I</b> models : Pass Vocals trough different filters to remove <b>Bleedings</b> of instruments.<br><br>You have to test various models to find the best combination for your song !";\
 help_index[3][1] = "Normalize input audio files to avoid clipping and get better results.<br><br>Uncheck it for <b>SDR</b> testings !!";\
 help_index[3][2] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
@@ -231,7 +241,7 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			if not os.path.isdir(path):
 				msg += "Your Output is not a valid folder !<br>You MUST set it to an existing folder path.<br>"
 		
-		if instru_1.value == "(None)":
+		if instru_1.value == "(None)" and instru_2.value == "(None)":
 			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
 		if vocals_1.value == "(None)" and vocals_2.value == "(None)":
 			msg += "You HAVE TO select at least one model for Vocals !<br>"
@@ -253,6 +263,7 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			'output_format': output_format.value,
 #			'preset_genre': preset_genre.value,
 			'instru_1': instru_1.value,
+			'instru_2': instru_2.value,
 			'vocals_1': vocals_1.value,
 			'vocals_2': vocals_2.value,
 			'filter_1': filter_1.value,
@@ -267,7 +278,9 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 #			'overlap_MDXv3': overlap_MDXv3.value,
 			'chunk_size': chunk_size.value,
 			'normalize': normalize.value,
-			'large_gpu': large_gpu.value,
+			# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
+			# 'large_gpu': large_gpu.value,
+			'large_gpu': False,
 		}
 		config['BONUS'] = {
 			'TEST_MODE': TEST_MODE.value,
@@ -315,6 +328,16 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 #			drive.flush_and_unmount(stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
 #			drive.mount("/content/Gdrive", stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
 
+
+	def on_Btn_Reset_MDX_clicked(b):
+		instru_1.value = App.settings.defaults['PROCESS']['instru_1']
+		instru_2.value = App.settings.defaults['PROCESS']['instru_2']
+		vocals_1.value = App.settings.defaults['PROCESS']['vocals_1']
+		vocals_2.value = App.settings.defaults['PROCESS']['vocals_2']
+		filter_1.value = App.settings.defaults['PROCESS']['filter_1']
+		filter_2.value = App.settings.defaults['PROCESS']['filter_2']
+		filter_3.value = App.settings.defaults['PROCESS']['filter_3']
+		filter_4.value = App.settings.defaults['PROCESS']['filter_4']
 
 	def on_SysInfo_clicked(b):
 		font_size = '13px' if isColab == True else '12px'
@@ -370,6 +393,7 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 	# Link Buttons to functions
 	Btn_Create_input.on_click(on_Create_input_clicked)
 	Btn_Create_output.on_click(on_Create_output_clicked)
+	Btn_Reset_MDX.on_click(on_Btn_Reset_MDX_clicked)
 	Btn_Del_Vocals.on_click(on_Del_Vocals_clicked)
 	Btn_Del_Music.on_click(on_Del_Music_clicked)
 	Btn_Start.on_click(on_Start_clicked)
@@ -506,6 +530,7 @@ function show_help(index) {\
 		Status.value = file.read()
 
 	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
+	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
 	if config['PROCESS']['vocals_1'] in vocals:		vocals_1.value = config['PROCESS']['vocals_1']
 	if config['PROCESS']['vocals_2'] in vocals:		vocals_2.value = config['PROCESS']['vocals_2']
 	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
@@ -513,5 +538,10 @@ function show_help(index) {\
 	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
 	if config['PROCESS']['filter_4'] in filters:	filter_4.value = config['PROCESS']['filter_4']
 
-	# on_Start_clicked(None)
+	# For DEBUG : auto-start processing on execution
+
+	file = os.path.join(Gdrive, "Music\\SDR_song_017\\2 - Vocal extract - (Voc FT).flac")
+	if os.path.isfile(file):  os.remove(file)
+	
+	#on_Start_clicked(None)
 	

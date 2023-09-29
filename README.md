@@ -33,8 +33,8 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 
 # 🚀 INSTALL
 
-- (https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-INSTALL)
-- 
+- on [**Google Colab**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-on-Colab)
+- on [**Your PC**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-on-PC)
 
 # 📖 Table of Contents
 
@@ -51,7 +51,6 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 
 # 🧻 in the WIKI now
 
-- 🎵 [How To Update ?](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B5-How-To-Update)
 - 🤡 [My Advices](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A4%A1-My-Advices)
 - 🥣 [My Magic « Recipe »](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A5%A3-My-Magic-%C2%AB-Recipe-%C2%BB)
 - 💡 [Technical Details](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%92%A1-Technical-Details)

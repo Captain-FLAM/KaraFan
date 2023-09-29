@@ -1,6 +1,6 @@
 #!python3.10
 
-#   MIT License - Copyright (c) 2023 Captain FLAM
+#   MIT License - Copyright (c) 2023 - Captain FLAM
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
@@ -19,7 +19,7 @@ def Check_dependencies(isColab):
 	
 	except subprocess.CalledProcessError as e:
 		print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout + "\n")
-		Exit_Notebook()
+		Exit_Notebook(isColab)
 
 def Install(params):
 	
@@ -35,7 +35,7 @@ def Install(params):
 
 	if not os.path.exists(Gdrive):
 		print("ERROR : Google Drive path is not valid !\n")
-		Exit_Notebook()
+		Exit_Notebook(isColab)
 	
 	# Get local version
 	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
@@ -106,23 +106,27 @@ def Install(params):
 							Check_dependencies(False)
 							print('\n\nFOR NOW : you have to "Restart" the notebook to use the new version of "KaraFan" !\n\n')
 
-						Exit_Notebook()
+						Exit_Notebook(isColab)
 						
 					except subprocess.CalledProcessError as e:
 						if e.returncode == 127:
 							print('WARNING : "Git" is not installed on your system !\n' + warning)
 						else:
 							print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
-							Exit_Notebook()
+							Exit_Notebook(isColab)
 				else:
 					print(warning)
 			else:
 				print('"KaraFan" is up to date.')
 
-
-def Exit_Notebook():
+def Exit_Notebook(isColab):
 	gc.collect()
-	os._exit(0)
+	# This trick is copyrigthed by "Captain FLAM" (2023) - MIT License
+	# That means you can use it, but you have to keep this comment in your code.
+	# After deep researches, I found this trick that nobody found before me !!!
+	if isColab:
+		from google.colab import runtime
+		runtime.unassign()
 
 
 if __name__ == '__main__':

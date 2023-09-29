@@ -1,6 +1,6 @@
 #!python3.10
 
-#   MIT License - Copyright (c) 2023 Captain FLAM
+#   MIT License - Copyright (c) 2023 - Captain FLAM
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
@@ -34,7 +34,7 @@ def Run(params):
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
 	checkbox_layout = {'width': '50px', 'max_width': '50px' }
 	max_width = str(int(width.replace('px','')) - 18) + 'px'  # = border + Left and Right "panel_layout" padding
-	console_max_height = str(int(height.replace('px','')) - 43) + 'px'
+	console_max_height = str(int(height.replace('px','')) - 20) + 'px'
 
 	# This CSS is the style for HTML elements for BOTH : PC and Colab
 	# BUG on Colab: "style={'font_size':'16px'}" as widgets param doesn't work !!
@@ -71,12 +71,12 @@ def Run(params):
 	with open(os.path.join(Project, "App", "Models_DATA.csv")) as csvfile:
 		reader = csv.DictReader(csvfile)
 		for row in reader:
-			# ignore "Other" stems
-			# TODO : if row['Use'] != "":
-			if row['Stem'] == "Instrumental":
-				instru.append(row['Name']);  filters.append(row['Name'])  # Append "Instrumental" to FILTERS !
-			elif row['Stem'] == "Vocals":
-				vocals.append(row['Name']);  filters.append(row['Name'])  # Append ALSO "Vocals" to FILTERS !
+			if row['Use'] == "x":
+				# ignore "Other" stems
+				if row['Stem'] == "Instrumental":
+					instru.append(row['Name'])
+				elif row['Stem'] == "Vocals":
+					vocals.append(row['Name']);  filters.append(row['Name'])  # Append ALSO "Vocals" to FILTERS !
 
 	# KaraFan Title
 	display(HTML('<div style="font-size: 24px; font-weight: bold; margin: 15px 0">KaraFan - version '+ Version +'</div>'))
@@ -96,29 +96,30 @@ def Run(params):
 	# PROCESS
 	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'200px'}, style=font_input)
 	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
-	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
-	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
+	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 55px 0 40px'})
 	# OPTIONS
-	normalize		= widgets.Checkbox((config['OPTIONS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
-	# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
-	# large_gpu		= widgets.Checkbox((config['OPTIONS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	shifts_vocals	= widgets.IntSlider(int(config['OPTIONS']['shifts_vocals']), min=1, max=24, step=1, style=font_input)
 	shifts_instru	= widgets.IntSlider(int(config['OPTIONS']['shifts_instru']), min=1, max=24, step=1, style=font_input)
 	shifts_filter	= widgets.IntSlider(int(config['OPTIONS']['shifts_filter']), min=1, max=12, step=1, style=font_input)
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
 	# BONUS
-	TEST_MODE		= widgets.Checkbox((config['BONUS']['TEST_MODE'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	KILL_on_END		= widgets.Checkbox((config['BONUS']['KILL_on_END'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	normalize		= widgets.Checkbox((config['BONUS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
 	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
 	PREVIEWS		= widgets.Checkbox((config['BONUS']['PREVIEWS'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	TEST_MODE		= widgets.Checkbox((config['BONUS']['TEST_MODE'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
+	# large_gpu		= widgets.Checkbox((config['BONUS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	Btn_Del_Vocals	= widgets.Button(description='Vocals', button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
 	Btn_Del_Music	= widgets.Button(description='Music',  button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
 	#
@@ -126,7 +127,6 @@ def Run(params):
 	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'15px 0 15px 0'})
 
 	# TAB 2
-	Status			= widgets.Image(format='png', width=16, height=16, layout={'border': 'none', 'width':'16px', 'height':'16px', 'margin':'7px 0 0 0'})
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
 	Progress_Bar	= widgets.IntProgress(value=0, min=0, max=10, orientation='horizontal', bar_style='info', layout={'width':'370px', 'height':'25px'})  # style={'bar_color': 'maroon'})
 	Progress_Text	= widgets.HTML(layout={'width':'300px', 'margin':'0 0 0 15px'})
@@ -154,26 +154,26 @@ def Run(params):
 				widgets.VBox([
 					widgets.HBox([ Label("Output Format", 201), output_format ]),
 #					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
-					widgets.HBox([ Label("MDX Instrumental", 203), instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
-					widgets.HBox([ Label("MDX Vocals", 204), vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Label("MDX Voc. Filters", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("MDX Vocals", 203), vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Label("MDX Music", 204), instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("MDX Music Clean", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 					widgets.HBox([ Btn_Reset_MDX, filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
 					# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
-					widgets.HBox([ Label("Normalize input", 301), normalize]),  # , Label('Large GPU', 302), large_gpu ]),
-					widgets.HBox([ Label("BigShifts Vocals", 303),  shifts_vocals ]),
-					widgets.HBox([ Label("BigShifts Instrum", 303), shifts_instru ]),
-					widgets.HBox([ Label("BigShifts Filters", 303), shifts_filter ]),
-#					widgets.HBox([ Label("Overlap MDX v3", 304), overlap_MDXv3 ]),
-					widgets.HBox([ Label("Chunk Size", 305), chunk_size ]),
+					widgets.HBox([ Label("BigShifts Vocals", 301),  shifts_vocals ]),
+					widgets.HBox([ Label("BigShifts Instrum", 301), shifts_instru ]),
+					widgets.HBox([ Label("BigShifts Filters", 301), shifts_filter ]),
+#					widgets.HBox([ Label("Overlap MDX v3", 302), overlap_MDXv3 ]),
+					widgets.HBox([ Label("Chunk Size", 303), chunk_size ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("DEBUG", 401), DEBUG, Label("TEST Mode", 402), TEST_MODE ]),
-					widgets.HBox([ Label("GOD Mode", 403), GOD_MODE, Label("Show Previews", 404), PREVIEWS ]),
-########					widgets.HBox([ Label("RE-Process ▶️▶️", 405), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
+					widgets.HBox([ Label("This is the END ...", 401), KILL_on_END, Label("Normalize input", 402), normalize, Label("Show Previews", 403), PREVIEWS ]),
+					widgets.HBox([ Label("DEBUG Mode", 404), DEBUG, Label("GOD Mode", 405), GOD_MODE, Label("TEST Mode", 406), TEST_MODE ]),
+					# , Label('Large GPU', 407), large_gpu ]),
+########					widgets.HBox([ Label("RE-Process ▶️▶️", 408), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
 				]),
 				separator,
 				widgets.HBox([Btn_Start], layout={'width':'100%', 'justify_content':'center'}),
@@ -182,7 +182,6 @@ def Run(params):
 		widgets.VBox(
 			layout = panel_layout,
 			children = [
-				widgets.HBox([ widgets.HTML('<span><b>Working Status : &nbsp;</b></span>'), Status ]),
 				CONSOLE,
 				widgets.HBox([ Progress_Bar, Progress_Text ], layout={'width':'100%', 'height': '30px', 'margin':'10px 0 0 0'}),
 			]),
@@ -200,19 +199,20 @@ help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside th
 help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
 help_index[2][1] = "Choose your prefered audio format to save audio files.";\
 help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
-help_index[2][3] = "<b>A.I</b> models : Make an Ensemble of instrumental extractions for repairing at the end of process.<br><br>Best combination : « <b>Inst HQ 3</b> » and <b>test byt yourself</b> ! 😉";\
-help_index[2][4] = "<b>A.I</b> models : Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
+help_index[2][3] = "<b>A.I</b> models : Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
+help_index[2][4] = "<b>A.I</b> models : Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Inst HQ 3</b> » and <b>test byt yourself</b> ! 😉";\
 help_index[2][5] = "<b>A.I</b> models : Pass Vocals trough different filters to remove <b>Bleedings</b> of instruments.<br><br>You have to test various models to find the best combination for your song !";\
-help_index[3][1] = "Normalize input audio files to avoid clipping and get better results.<br><br>Uncheck it for <b>SDR</b> testings !!";\
-help_index[3][2] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
-help_index[3][3] = "Set MDX « BigShifts » trick value. (default : 12 , filters : 2)<br><br>Set it to = 1 to disable that feature.";\
-help_index[3][4] = "MDX version 3 overlap. (default : 8)";\
-help_index[3][5] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
-help_index[4][1] = "IF checked, it will save all intermediate audio files to compare in your <b>Audacity</b>.";\
-help_index[4][2] = "For <b>testing only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
-help_index[4][3] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !";\
-help_index[4][4] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
-help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
+help_index[3][1] = "Set MDX « BigShifts » trick value. (default : 12 , filters : 2)<br><br>Set it to = 1 to disable that feature.";\
+help_index[3][2] = "MDX version 3 overlap. (default : 8)";\
+help_index[3][3] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
+help_index[4][1] = "On <b>Colab</b> : KaraFan will KILL your session at end of « Processongs », to save your credits !!<br>On <b>your Laptop</b> : KaraFan will KILL your GPU, to save battery (and hot-less) !!<br>On <b>your PC</b> : KaraFan will KILL your GPU, anyway ... maybe it helps ? Try it !!";\
+help_index[4][2] = "Normalize input audio files to avoid clipping and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !";\
+help_index[4][3] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
+help_index[4][4] = "IF checked, it will save all intermediate audio files to compare in your <b>Audacity</b>.";\
+help_index[4][5] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !";\
+help_index[4][6] = "For <b>testing only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
+help_index[4][7] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
+help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
 </script>'))
 
 	# Bug in VS Code : titles NEEDS to be set AFTER children
@@ -241,10 +241,10 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			if not os.path.isdir(path):
 				msg += "Your Output is not a valid folder !<br>You MUST set it to an existing folder path.<br>"
 		
-		if instru_1.value == "(None)" and instru_2.value == "(None)":
-			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
 		if vocals_1.value == "(None)" and vocals_2.value == "(None)":
 			msg += "You HAVE TO select at least one model for Vocals !<br>"
+		if instru_1.value == "(None)" and instru_2.value == "(None)":
+			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
 
 		if msg != "":
 			msg = "ERROR !!<br>"+ msg
@@ -262,10 +262,10 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		config['PROCESS'] = {
 			'output_format': output_format.value,
 #			'preset_genre': preset_genre.value,
-			'instru_1': instru_1.value,
-			'instru_2': instru_2.value,
 			'vocals_1': vocals_1.value,
 			'vocals_2': vocals_2.value,
+			'instru_1': instru_1.value,
+			'instru_2': instru_2.value,
 			'filter_1': filter_1.value,
 			'filter_2': filter_2.value,
 			'filter_3': filter_3.value,
@@ -277,16 +277,17 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			'shifts_filter': shifts_filter.value,
 #			'overlap_MDXv3': overlap_MDXv3.value,
 			'chunk_size': chunk_size.value,
-			'normalize': normalize.value,
-			# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
-			# 'large_gpu': large_gpu.value,
-			'large_gpu': False,
 		}
 		config['BONUS'] = {
-			'TEST_MODE': TEST_MODE.value,
+			'KILL_on_END': KILL_on_END.value,
+			'normalize': normalize.value,
 			'DEBUG': DEBUG.value,
 			'GOD_MODE': GOD_MODE.value,
 			'PREVIEWS': PREVIEWS.value,
+			'TEST_MODE': TEST_MODE.value,
+			# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
+			# 'large_gpu': large_gpu.value,
+			'large_gpu': False,
 		}
 		App.settings.Save(Gdrive, isColab, config)
 
@@ -300,8 +301,8 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 
 		options['Gdrive'] = Gdrive
 		options['Project'] = Project
+		options['isColab'] = isColab
 		options['CONSOLE'] = CONSOLE
-		options['Status']  = Status
 		options['Progress'] = Progress
 		options['DEV_MODE'] = DEV_MODE
 		
@@ -330,10 +331,10 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 
 
 	def on_Btn_Reset_MDX_clicked(b):
-		instru_1.value = App.settings.defaults['PROCESS']['instru_1']
-		instru_2.value = App.settings.defaults['PROCESS']['instru_2']
 		vocals_1.value = App.settings.defaults['PROCESS']['vocals_1']
 		vocals_2.value = App.settings.defaults['PROCESS']['vocals_2']
+		instru_1.value = App.settings.defaults['PROCESS']['instru_1']
+		instru_2.value = App.settings.defaults['PROCESS']['instru_2']
 		filter_1.value = App.settings.defaults['PROCESS']['filter_1']
 		filter_2.value = App.settings.defaults['PROCESS']['filter_2']
 		filter_3.value = App.settings.defaults['PROCESS']['filter_3']
@@ -484,7 +485,8 @@ help_index[4][5] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 	#*************
 
 	javascript = '\
-<script type="application/javascript">'
+<script type="application/javascript">\
+	var Keep_Running = null;'
 	
 	# Correct the bug on Google Colab (no titles at all !!)
 	if isColab:
@@ -503,7 +505,6 @@ function show_help(index) {\
 (function loop() {\
 	setTimeout(() => {\
 		if (document.getElementById("tab-key-0") == null || document.getElementById("HELP") == null) { loop(); return; }\
-		\
 		document.getElementById("HELP").innerHTML = "<div style=\'color: #bbb\'>Hover your mouse over an option to get more informations.</div>";'
 	
 	if isColab:
@@ -511,7 +512,17 @@ function show_help(index) {\
 		show_titles();\
 		document.getElementById("tab-key-0").onclick = show_titles;\
 		document.getElementById("tab-key-1").onclick = show_titles;\
-		document.getElementById("tab-key-2").onclick = show_titles;'
+		document.getElementById("tab-key-2").onclick = show_titles;\
+		/* Auto-Scroll to KaraFan */\
+		var lastCell = document.querySelector(".notebook-cell-list > div:last-child");\
+		if (lastCell) window.location = document.URL.replace(/#.*/, "#scrollTo=" + lastCell.id.replace("cell-", ""));\
+		/* Code from Deton24 : Keep session active */\
+		Keep_Running = setInterval(function() {\
+			document.querySelector("#top-toolbar > colab-connect-button").shadowRoot.querySelector("#connect").click();\
+			setTimeout(function() {\
+				document.querySelector("#top-toolbar > colab-connect-button").shadowRoot.querySelector("#connect").click();\
+			}, 1000)\
+		}, 60*1000)'
 	
 	javascript += '\
 	}, 500);\
@@ -525,23 +536,35 @@ function show_help(index) {\
 	on_input_change({'new': input_path.value})
 	on_output_change({'new': output_path.value})
 
-	# Load Status Led icons
-	with open(os.path.join(Project, "images", "Led_Grey.png"), 'rb') as file:
-		Status.value = file.read()
-
-	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
-	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
 	if config['PROCESS']['vocals_1'] in vocals:		vocals_1.value = config['PROCESS']['vocals_1']
 	if config['PROCESS']['vocals_2'] in vocals:		vocals_2.value = config['PROCESS']['vocals_2']
+	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
+	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
 	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
 	if config['PROCESS']['filter_2'] in filters:	filter_2.value = config['PROCESS']['filter_2']
 	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
 	if config['PROCESS']['filter_4'] in filters:	filter_4.value = config['PROCESS']['filter_4']
 
-	# For DEBUG : auto-start processing on execution
 
-	# file = os.path.join(Gdrive, "Music\\SDR_song_017\\2 - Vocal extract - (Voc FT).flac")
+	# DEBUG : Auto-start processing on execution
+
+	song_output_path = os.path.join(Gdrive, "Music\\song_017")
+
+	# # Remove ALL files
+	# for file in os.listdir(song_output_path):
+	# 	if not file == "SDR_Results.txt":
+	# 		os.remove(os.path.join(song_output_path, file))
+	
+	# # # or just these ones
+	# file = os.path.join(song_output_path, "1 - Vocal extract - (Voc FT).flac")
 	# if os.path.isfile(file):  os.remove(file)
-	
-	#on_Start_clicked(None)
-	
+	# file = os.path.join(song_output_path, "1 - Vocal extract - (Kim Vocal 2).flac")
+	# if os.path.isfile(file):  os.remove(file)
+	# file = os.path.join(song_output_path, "3 - Music extract - (Instrum HQ 3).flac")
+	# if os.path.isfile(file):  os.remove(file)
+	# file = os.path.join(song_output_path, "5 - Vocal FINAL.flac")
+	# if os.path.isfile(file):  os.remove(file)
+	# file = os.path.join(song_output_path, "6 - Music FINAL.flac")
+	# if os.path.isfile(file):  os.remove(file)
+
+	# on_Start_clicked(None)

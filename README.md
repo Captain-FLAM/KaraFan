@@ -5,7 +5,7 @@ The **BEST music separation** software with help of A.I. ... **to my ears** ! �
 As you've guessed, it was made specially for Karaoke (▶️ focus on musical part).  
 This project is **open to all goodwill**.  
 
-The Discord community, Chat-GPT & Copilot ...  and my human intelligence made this project possible.
+The Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made this project possible.
 
 ![KaraFan](images/KaraFan_3.0.jpg)
 
@@ -31,6 +31,11 @@ click here to send me an email, I'll give you my wallet address :
 
 You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us** on ![Discord](images/discord.svg) [this Discord server](https://discord.com/channels/708579735583588363/887455924845944873) !
 
+# 🚀 INSTALL
+
+- (https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-INSTALL)
+- 
+
 # 📖 Table of Contents
 
 - 🎰 [Success Story](#-success-story)
@@ -38,7 +43,6 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 - 💤 [An Old Dream](#-an-old-dream)
 - 🧒 [Biography](#-biography)
 - 📆 [History](#-history)
-- 📈 [Changes Log](#-changes-log)
 - 🦄 [Near Future](#-near-future)
 - 😍 [Wall of Fame](#-wall-of-fame)
 - 📝 [Todo List](#-todo-list)
@@ -47,7 +51,6 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 
 # 🧻 in the WIKI now
 
-- 🚀 [INSTALL](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-INSTALL)
 - 🎵 [How To Update ?](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B5-How-To-Update)
 - 🤡 [My Advices](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A4%A1-My-Advices)
 - 🥣 [My Magic « Recipe »](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A5%A3-My-Magic-%C2%AB-Recipe-%C2%BB)
@@ -116,8 +119,6 @@ Since the year 2000, I have been coding in PHP, MySQL, JavaScript, jQuery, HTML,
 
 And today in Python. ❤️
 
-~
-
 ----
 
 # 📆 HISTORY
@@ -132,20 +133,6 @@ So I decided to create my own process, based on the MDX models, but with the **b
 (Remembers : It's for **Karaoke !**).
 
 I also added a few tricks to improve the quality of the results.
-
-# 📈 CHANGES LOG
-
-| Date | Version | Description |
-| ---- | ------- | ----------- |
-| 2023-09-15 | 1.4 | Totally Rewamped INSTALLATION |
-| 2023-09-09 | 1.3 | Correct "Linkwitz-Riley" filter (better **SRS**)<br>New download system for Models (stay in GUI)<br>Add TEST MODE (process with only 1 pass)<br>Add "Delete" buttons (works with ONE file and DEBUG & GOD_MODE activated) |
-| 2023-09-08 | 1.2 | Possibility to choose any **MDX A.I. models** for Instrum & Vocals<br>New download system for Models (stay in GUI)<br>Saving MP3 with fucking Cut-OFF @ 16 Khz solved ! |
-| 2023-09-06 | 1.1 | Bugs Fixed with the returns of Discord's people<br>One can choose the ouput directory<br>KaraFan have **Automagic Updates** system ! |
-| 2023-09-05 | 1.0 | First version[ dropped on Discord](https://discord.com/channels/708579735583588363/887455924845944873/1148718029857890324) (buggy) |
-| 2023-09-03 | 0.8 | Post the first **R.T.F.R.M.** (Read The Fucking "READ ME") on GitHub |
-| 2023-08-19 | 0.5 | - Inform people on Discord that I'm working on a it...<br />« KaraFan » was born ! 🎉🎉🎉 |
-| 2023-08-03 | 0.1 | I started to dig infos on Discord to find the best models & process to use<br />(follow this link if you wanna [read all the story](https://discord.com/channels/708579735583588363/887455924845944873/1136629816246935654) since the beginning ...) |
-| 2023-07-12 | 0.0 | I found & tried the wonderful Facebook Demucs models, and the idea started to grow in my mind ... |
 
 ~
 
@@ -227,8 +214,10 @@ Thousands Thanks to all of you ! **I love you !** ❤️
 
 ### &copy; Captain FLAM & Jarredou - 2023 - M.I.T license
 
-That means you can do whatever you want with this code, but **YOU HAVE TO** mention my name and the fact that I'm the original author of this code, and mention the names of all the people who have contributed to this project.
+That means you can do whatever you want with our code, but **YOU HAVE TO** :
 
-**YOU HAVE TO** keep the original license file in your project, and keep the original header with copyrights in each source file.
+- **Mention our names** and the fact that WE ARE the original authors of this code
+- Keep the original license file in your project
+- **Copy the header with Copyrights** of each source file in the header of your files before redistributing
 
 ---

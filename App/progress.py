@@ -1,3 +1,9 @@
+#!python3.10
+
+#   MIT License - Copyright (c) 2023 - Captain FLAM
+#
+#   https://github.com/Captain-FLAM/KaraFan
+
 # import ipywidgets as widgets
 import time
 
@@ -25,28 +31,24 @@ class Bar:
 	def update(self, increment=1):
 		self.value += increment
 
-		# Mettez à jour la barre de progression
 		self.progress_bar.value = self.value
 
-		# Mettez à jour le texte à côté de la barre de progression
+		# Update the text next to the progress bar
 		elapsed_time = time.time() - self.start_time if self.start_time else 0
 		if self.value > 0:
 			time_per_unit = elapsed_time / self.value
 		else:
 			time_per_unit = 0
 		
+		# for Download models (Bug : downloaded packets : 34/33 = 101 %)
+		if self.value > self.total: self.value = self.total
+
 		percent = int(100 * self.value / self.total)
 		if percent < 10:
 			percent = f"&nbsp;&nbsp;{percent}"
 		elif percent < 100:
 			percent = f"&nbsp;{percent}"
-		else:
-			percent = f"{percent}"
 
 		download = " MB" if self.unit == "MB" else ""
 		text = f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - {percent}% - {self.value}/{self.total}{download} - {time_per_unit:.2f} sec/{self.unit}"
 		self.progress_text.value = text
-
-	def close(self):
-		# Fermez le layout
-		self.layout.close()

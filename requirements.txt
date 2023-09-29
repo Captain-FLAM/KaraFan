@@ -1,16 +1,19 @@
 
-# Audio      : soundfile, librosa, pydub, samplerate2
-# GUI        : configparse, ipywidgets, tqdm
-# Inference  : numpy, scipy, ml_collections, onnxruntime-gpu
-
 # Needed for both PC and Colab (missing packages)
 
 # NOTE : PyTorch_CUDA is already installed on Colab !
 
+
+#****  GUI  ****
+
 configparse
 
+#****  Audio  ****
+
 pydub
-samplerate2
+resampy
+
+#****  Inference  ****
 
 onnxruntime-gpu
 
@@ -18,5 +21,6 @@ onnxruntime-gpu
 # ml_collections
 # yaml
 
-# MP3 Tags   : mutagen (for future use)
+#****  MP3 Tags (for future use)  ****
+
 # mutagen

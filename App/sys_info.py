@@ -1,3 +1,8 @@
+#!python3.10
+
+#   MIT License - Copyright (c) 2023 - Captain FLAM
+#
+#   https://github.com/Captain-FLAM/KaraFan
 
 import os, sys, subprocess, json, gc, torch
 import regex as re

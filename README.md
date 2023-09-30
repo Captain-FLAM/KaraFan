@@ -38,7 +38,6 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 
 # 📖 Table of Contents
 
-- 🎰 [Success Story](#-success-story)
 - 🔥 [Introduction](#-introduction)
 - 💤 [An Old Dream](#-an-old-dream)
 - 🧒 [Biography](#-biography)
@@ -51,41 +50,14 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 
 # 🧻 in the WIKI now
 
-- 🤡 [My Advices](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A4%A1-My-Advices)
-- 🥣 [My Magic « Recipe »](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A5%A3-My-Magic-%C2%AB-Recipe-%C2%BB)
-- 💡 [Technical Details](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%92%A1-Technical-Details)
+- 🤡 [My Advices](/Captain-FLAM/KaraFan/wiki/%F0%9F%A4%A1-My-Advices)
+- 🥣 [My Magic « Recipe »](/Captain-FLAM/KaraFan/wiki/%F0%9F%A5%A3-My-Magic-%C2%AB-Recipe-%C2%BB)
+- 💡 [Technical Details](/Captain-FLAM/KaraFan/wiki/%F0%9F%92%A1-Technical-Details)
+- 🎰 [Success Story](/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B0-Success-Story)
 
 So for now, in addition to being obliged to **R.T.F.R.M** (Read The Fucking READ ME), you have to **R.T.F.W** (Read The Fucking WIKI) !! 😛
 
 ~
-
----
-
-# 🎰 SUCCESS STORY
-
-This 12th of September 2023, I've receveid my first compliment from one of KaraFan's users : **SCRFilms** (on Discord) :
-
-> It's weird why Source Separation Ratio (SSR) doesn't exist, it is also a big part of defining quality.  
-> Like how well the model separates from it's original signal, how often it false detects other instruments, and stuffs.  
-> I can tell not all model are the same and have different SSRs,  
-> but tbh, if talking about source separation ratio, **the KaraFan wins from ALL models**  
-> Salute.  
-> ...  
-> eyyy, I find it cool tho where it actually mute the signal when there is no vocals detected.  
-> **MDX23C 8k FFT** usually have around **-70dB separation ratio**, but for **KaraFan, it's beyond 120dB** or in short mutes the signal **which is insane !**
-
-We were talking about **SDR score** that define the quality of the separation.  
-... and « MDX23C 8k FFT » was actually the BEST model with high SDR score !!
-
-But ... I'm only talking aboout HIFI quality for my ears ... once again.
-
-And also :
-
-I answered **Bas Curtiz** (who made the SDR tests, thanks to him !) in private message :
-
-> I could trick the SDR algo if I would 😉
-
-Remember all of you : I'm a (white hat) hacker ...
 
 ---
 

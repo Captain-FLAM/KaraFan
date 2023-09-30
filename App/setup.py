@@ -76,26 +76,29 @@ def Install(params):
 	os.makedirs(os.path.join(folder, "Models"), exist_ok=True)
 
 	# Auto-Magic update !
-	if not DEV_MODE:
-		try:
-			response = requests.get(Version_url)
-			if response.status_code == requests.codes.ok:
-				Git_version = response.text.split('\n')[0].replace("# Version", "").strip()
+	try:
+		response = requests.get(Version_url)
+		if response.status_code == requests.codes.ok:
+			Git_version = response.text.split('\n')[0].replace("# Version", "").strip()
+		else:
+			print("Unable to check version on GitHub ! Maybe you're behind a firewall ?")
+	except ValueError as e:
+		print("Error processing version data :", e)
+	except requests.exceptions.ConnectionError as e:
+		print("Connection error while trying to fetch version :", e)
+
+	if Version and Git_version:
+		if Git_version > Version:
+			print(f'A new version of "KaraFan" is available : {Git_version} !')
+
+			warning = 'You have to download the new version manually from :\n'
+			warning += Repository
+			warning +='\n... and extract it in your KaraFan folder.\n'
+			warning +='Then, you have to "Restart" the notebook to use the new version of "KaraFan" !\n\n'
+			
+			if DEV_MODE:
+				print(warning)
 			else:
-				print("Unable to check version on GitHub ! Maybe you're behind a firewall ?")
-		except ValueError as e:
-			print("Error processing version data :", e)
-		except requests.exceptions.ConnectionError as e:
-			print("Connection error while trying to fetch version :", e)
-
-		if Version and Git_version:
-			if Git_version > Version:
-				print(f'A new version of "KaraFan" is available : {Git_version} !')
-
-				warning = 'You have to download the new version manually from :\n'
-				warning += Repository
-				warning +='\n... and extract it in your KaraFan folder.\n'
-
 				if os.path.exists(os.path.join(Project, ".git")):
 					try:
 						subprocess.run(["git", "-C", Project, "pull"], text=True, capture_output=True, check=True)
@@ -114,10 +117,8 @@ def Install(params):
 						else:
 							print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
 							Exit_Notebook(isColab)
-				else:
-					print(warning)
-			else:
-				print('"KaraFan" is up to date.')
+		else:
+			print('"KaraFan" is up to date.')
 
 def Exit_Notebook(isColab):
 	gc.collect()

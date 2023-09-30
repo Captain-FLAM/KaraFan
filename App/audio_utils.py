@@ -52,9 +52,9 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 		RMS = np.max(librosa.amplitude_to_db(librosa.feature.rms(y=audio[:, i:(i + window_frame)], frame_length=window_frame, hop_length=window_frame)))
 		# print(f"RMS : {RMS}")
 		if RMS < threshold_db:
-			end = i + window_frame
 			# Last part (in case of silence at the end)
 			if i == audio_length - window_frame:
+				end = i + window_frame
 				if end - start > min_size:
 					# Fade out
 					if start > fade_duration:
@@ -63,6 +63,8 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 
 					# Clean in between
 					audio[:, start:end] = 0.0
+			else:
+				end = i + window_frame
 		else:
 			# Clean the "min_size" samples found
 			if end - start > min_size:
@@ -244,40 +246,40 @@ def Make_Ensemble(algorithm, audio_input):
 	
 	waves = []
 	
-	# if algorithm == AVERAGE:
+	if algorithm == AVERAGE:
 
-	# 	waves_shapes = []
-	# 	final_waves = []
+		waves_shapes = []
+		final_waves = []
 
-	# 	for i in range(len(audio_input)):
-	# 		wave = audio_input[i]
-	# 		waves.append(wave)
-	# 		waves_shapes.append(wave.shape[1])
+		for i in range(len(audio_input)):
+			wave = audio_input[i]
+			waves.append(wave)
+			waves_shapes.append(wave.shape[1])
 
-	# 	wave_shapes_index = waves_shapes.index(max(waves_shapes))
-	# 	target_shape = waves[wave_shapes_index]
-	# 	waves.pop(wave_shapes_index)
-	# 	final_waves.append(target_shape)
+		wave_shapes_index = waves_shapes.index(max(waves_shapes))
+		target_shape = waves[wave_shapes_index]
+		waves.pop(wave_shapes_index)
+		final_waves.append(target_shape)
 
-	# 	for n_array in waves:
-	# 		wav_target = to_shape(n_array, target_shape.shape)
-	# 		final_waves.append(wav_target)
+		for n_array in waves:
+			wav_target = to_shape(n_array, target_shape.shape)
+			final_waves.append(wav_target)
 
-	# 	waves = sum(final_waves)
-	# 	output = waves / len(audio_input)
-	# else:
-	specs = []
-	
-	for i in range(len(audio_input)):  
-		waves.append(audio_input[i])
-		spec = wave_to_spectrogram_no_mp(audio_input[i])
-		specs.append(spec)
-	
-	waves_shapes = [w.shape[1] for w in waves]
-	target_shape = waves[waves_shapes.index(max(waves_shapes))]
-	
-	output = spectrogram_to_wave_no_mp(ensembling(algorithm, specs))
-	output = to_shape(output, target_shape.shape)
+		waves = sum(final_waves)
+		output = waves / len(audio_input)
+	else:
+		specs = []
+		
+		for i in range(len(audio_input)):  
+			waves.append(audio_input[i])
+			spec = wave_to_spectrogram_no_mp(audio_input[i])
+			specs.append(spec)
+		
+		waves_shapes = [w.shape[1] for w in waves]
+		target_shape = waves[waves_shapes.index(max(waves_shapes))]
+		
+		output = spectrogram_to_wave_no_mp(ensembling(algorithm, specs))
+		output = to_shape(output, target_shape.shape)
 
 	return output
 
@@ -294,8 +296,6 @@ def ensembling(a, specs):
 			spec = np.where(np.abs(specs[i]) <= np.abs(spec), specs[i], spec)
 		elif MAX_SPEC == a:
 			spec = np.where(np.abs(specs[i]) >= np.abs(spec), specs[i], spec)  
-		elif AVERAGE == a:
-			spec = np.where(np.abs(specs[i]) == np.abs(spec), specs[i], spec)  
 
 	return spec
 

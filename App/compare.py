@@ -23,7 +23,7 @@ def calculate(reference, estimate):
 	estimates  = np.expand_dims(estimate, axis=0)
 
 	if estimates.shape != references.shape:
-		print('Warning: Different length of files : {} != {}. Skip it !'.format(estimates.shape, references.shape))
+		print('Warning: Different audio lengths : {} != {} !'.format(estimates.shape, references.shape))
 		return [None]
 
 	delta = 1e-7  # avoid numerical errors
@@ -78,9 +78,11 @@ def SDR(song_output_path, output_format, Gdrive):
 		estimate, _	= sf.read(extract)
 		song_score	= calculate(References[type], estimate)[0]
 
-		if not song_score is None:
-			pad = 40 - len(file_name)
-
+		pad = 40 - len(file_name)
+		
+		if song_score is None:
+			print("• " + file_name + ("&nbsp;" * pad) + 'SDR : --- [ Skipped ]')
+		else:
 			print("• " + file_name + ("&nbsp;" * pad) + 'SDR : <b>{:9.6f}</b>'.format(song_score))
 			Results += file_name + (" " * pad) + 'SDR : {:9.6f}'.format(song_score) + "\n"
 

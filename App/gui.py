@@ -98,17 +98,17 @@ def Run(params):
 	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
 	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
-	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
-	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
-	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+#	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+#	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+#	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+#	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+#	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+#	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 55px 0 40px'})
 	# OPTIONS
 	shifts_vocals	= widgets.IntSlider(int(config['OPTIONS']['shifts_vocals']), min=1, max=24, step=1, style=font_input)
-	shifts_instru	= widgets.IntSlider(int(config['OPTIONS']['shifts_instru']), min=1, max=24, step=1, style=font_input)
-	shifts_filter	= widgets.IntSlider(int(config['OPTIONS']['shifts_filter']), min=1, max=12, step=1, style=font_input)
+#	shifts_instru	= widgets.IntSlider(int(config['OPTIONS']['shifts_instru']), min=1, max=24, step=1, style=font_input)
+#	shifts_filter	= widgets.IntSlider(int(config['OPTIONS']['shifts_filter']), min=1, max=12, step=1, style=font_input)
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
 	# BONUS
@@ -155,16 +155,16 @@ def Run(params):
 					widgets.HBox([ Label("Output Format", 201), output_format ]),
 #					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
 					widgets.HBox([ Label("MDX Vocals", 203), vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Label("MDX Music", 204), instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
-					widgets.HBox([ Label("MDX Music Clean", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
-					widgets.HBox([ Btn_Reset_MDX, filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+#					widgets.HBox([ Label("MDX Music", 204), instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+#					widgets.HBox([ Label("MDX Music Clean", 205), filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+#					widgets.HBox([ Btn_Reset_MDX, filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
 					# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 					widgets.HBox([ Label("BigShifts Vocals", 301),  shifts_vocals ]),
-					widgets.HBox([ Label("BigShifts Instrum", 301), shifts_instru ]),
-					widgets.HBox([ Label("BigShifts Filters", 301), shifts_filter ]),
+#					widgets.HBox([ Label("BigShifts Instrum", 301), shifts_instru ]),
+#					widgets.HBox([ Label("BigShifts Filters", 301), shifts_filter ]),
 #					widgets.HBox([ Label("Overlap MDX v3", 302), overlap_MDXv3 ]),
 					widgets.HBox([ Label("Chunk Size", 303), chunk_size ]),
 				]),
@@ -243,8 +243,8 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		
 		if vocals_1.value == "(None)" and vocals_2.value == "(None)":
 			msg += "You HAVE TO select at least one model for Vocals !<br>"
-		if instru_1.value == "(None)" and instru_2.value == "(None)":
-			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
+#		if instru_1.value == "(None)" and instru_2.value == "(None)":
+#			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
 
 		if msg != "":
 			msg = "ERROR !!<br>"+ msg
@@ -264,17 +264,17 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 #			'preset_genre': preset_genre.value,
 			'vocals_1': vocals_1.value,
 			'vocals_2': vocals_2.value,
-			'instru_1': instru_1.value,
-			'instru_2': instru_2.value,
-			'filter_1': filter_1.value,
-			'filter_2': filter_2.value,
-			'filter_3': filter_3.value,
-			'filter_4': filter_4.value,
+#			'instru_1': instru_1.value,
+#			'instru_2': instru_2.value,
+#			'filter_1': filter_1.value,
+#			'filter_2': filter_2.value,
+#			'filter_3': filter_3.value,
+#			'filter_4': filter_4.value,
 		}
 		config['OPTIONS'] = {
 			'shifts_vocals': shifts_vocals.value,
-			'shifts_instru': shifts_instru.value,
-			'shifts_filter': shifts_filter.value,
+#			'shifts_instru': shifts_instru.value,
+#			'shifts_filter': shifts_filter.value,
 #			'overlap_MDXv3': overlap_MDXv3.value,
 			'chunk_size': chunk_size.value,
 		}
@@ -333,16 +333,16 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 	def on_Btn_Reset_MDX_clicked(b):
 		vocals_1.value = App.settings.defaults['PROCESS']['vocals_1']
 		vocals_2.value = App.settings.defaults['PROCESS']['vocals_2']
-		instru_1.value = App.settings.defaults['PROCESS']['instru_1']
-		instru_2.value = App.settings.defaults['PROCESS']['instru_2']
-		filter_1.value = App.settings.defaults['PROCESS']['filter_1']
-		filter_2.value = App.settings.defaults['PROCESS']['filter_2']
-		filter_3.value = App.settings.defaults['PROCESS']['filter_3']
-		filter_4.value = App.settings.defaults['PROCESS']['filter_4']
+#		instru_1.value = App.settings.defaults['PROCESS']['instru_1']
+#		instru_2.value = App.settings.defaults['PROCESS']['instru_2']
+#		filter_1.value = App.settings.defaults['PROCESS']['filter_1']
+#		filter_2.value = App.settings.defaults['PROCESS']['filter_2']
+#		filter_3.value = App.settings.defaults['PROCESS']['filter_3']
+#		filter_4.value = App.settings.defaults['PROCESS']['filter_4']
 
 	def on_SysInfo_clicked(b):
 		font_size = '13px' if isColab == True else '12px'
-		Btn_SysInfo.layout = {'display':'none'}
+		sys_info.value = ""
 		sys_info.value = App.sys_info.Get(font_size)
 
 	def on_Create_input_clicked(b):
@@ -538,12 +538,12 @@ function show_help(index) {\
 
 	if config['PROCESS']['vocals_1'] in vocals:		vocals_1.value = config['PROCESS']['vocals_1']
 	if config['PROCESS']['vocals_2'] in vocals:		vocals_2.value = config['PROCESS']['vocals_2']
-	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
-	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
-	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
-	if config['PROCESS']['filter_2'] in filters:	filter_2.value = config['PROCESS']['filter_2']
-	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
-	if config['PROCESS']['filter_4'] in filters:	filter_4.value = config['PROCESS']['filter_4']
+#	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
+#	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
+#	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
+#	if config['PROCESS']['filter_2'] in filters:	filter_2.value = config['PROCESS']['filter_2']
+#	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
+#	if config['PROCESS']['filter_4'] in filters:	filter_4.value = config['PROCESS']['filter_4']
 
 
 	# DEBUG : Auto-start processing on execution

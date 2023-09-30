@@ -129,20 +129,18 @@ def Get(font_size):
 		html += '<div style="line-height: 1; ">'+ gpu_info +'</div><br>'
 
 		if gpu_info.find('failed') >= 0:
-			html += "GPU runtime is disabled. You can only use your CPU with available RAM."
+			html += "<b>GPU runtime is disabled. You can only use your CPU with available RAM.</b>"
 		elif gpu_info.find('Tesla T4') >= 0:
-			html += "You got a Tesla T4 GPU. (speeds are around  10-25 it/s)"
+			html += "You got a Tesla T4 GPU. (speeds are around  10-25 iterations/sec)"
 		elif gpu_info.find('Tesla P4') >= 0:
-			html += "You got a Tesla P4 GPU. (speeds are around  8-22 it/s)"
+			html += "You got a Tesla P4 GPU. (speeds are around  8-22 iterations/sec)"
 		elif gpu_info.find('Tesla K80') >= 0:
-			html += "You got a Tesla K80 GPU. (This is the most common and slowest gpu, speeds are around 2-10 it/s)"
+			html += "You got a Tesla K80 GPU. (This is the most common and slowest gpu, speeds are around 2-10 iterations/sec)"
 		elif gpu_info.find('Tesla P100') >= 0:
-			html += "You got a Tesla P100 GPU. (This is the FASTEST gpu, speeds are around  15-42 it/s)"
-		else:
-			html += "You got an unknown GPU !!"
+			html += "You got a Tesla P100 GPU. (This is the FASTEST gpu, speeds are around  15-42 iterations/sec)"
 	
 	except FileNotFoundError:
-		html += "--> Can't get GPU infos : 'nvidia-smi' tool is not available on this platform."
+		html += "<b>--> Can't get GPU infos : 'nvidia-smi' tool is not available on this platform.</b>"
 
 	html += "</pre>"
 	

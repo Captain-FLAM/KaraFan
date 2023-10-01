@@ -247,9 +247,6 @@ class MusicSeparationModel:
 		self.output = os.path.join(options['Gdrive'], options['output'])
 		
 #		self.preset_genre	= options['preset_genre']
-		self.shifts_vocals	= options['shifts_vocals']
-#		self.shifts_instru	= options['shifts_instru']
-#		self.shifts_filter	= options['shifts_filter']
 #		self.overlap_MDXv3	= int(options['overlap_MDXv3'])
 		self.normalize		= options['normalize']
 		self.large_gpu		= options['large_gpu']
@@ -283,13 +280,31 @@ class MusicSeparationModel:
 #		if self.overlap_MDXv3 > 40:		self.overlap_MDXv3 = 40
 #		if self.overlap_MDXv3 < 1:		self.overlap_MDXv3 = 1
 
-#		if self.bigshifts_MDX > 41:		self.bigshifts_MDX = 41
-#		if self.bigshifts_MDX < 1:		self.bigshifts_MDX = 1
-
 		# MDX-B models initialization
 
 		self.models = { 'vocals': [], 'instrum': [], 'filters': [] }
 		self.MDX = {}
+		self.Compensation_SUB = 1.0
+
+		# Set BigShifts & Volume Compensation from Quality option
+		match options['quality']:
+			case 'Lowest':
+				Quality = "x0"
+				self.shifts_vocals	=  1
+#				self.shifts_instru	= options['shifts_instru']
+#				self.shifts_filter	= options['shifts_filter']
+			case 'Low':
+				Quality = "x1"
+				self.shifts_vocals	=  6
+			case 'Medium':
+				Quality = "x2"
+				self.shifts_vocals	= 12
+			case 'High':
+				Quality = "x3"
+				self.shifts_vocals	= 16
+			case 'Highest':
+				Quality = "x4"
+				self.shifts_vocals	= 21
 
 		# Load Models parameters
 		with open(os.path.join(options['Project'], "App", "Models_DATA.csv")) as csvfile:
@@ -297,27 +312,46 @@ class MusicSeparationModel:
 			for row in reader:
 				# ignore "Other" stems for now !
 				name = row['Name']
-				if name == options['vocals_1'] or name == options['vocals_2']:
-					self.models['vocals'].append(row)
-#				elif name == options['instru_1'] or name == options['instru_2']:
-#					self.models['instrum'].append(row)
-				
-				# Special case for "Filters" : can be Vocal or Instrumental !
-#				if name == options['filter_1'] or name == options['filter_2'] or name == options['filter_3'] or name == options['filter_4']:
-#					self.models['filters'].append(row)
+
+				# Set Volume Compensation from Quality option for "Music_SUB"
+				#  ->  MANDATORY to be set in CSV !!
+				if name.startswith("MUSIC_SUB"):
+					if len(self.models['vocals']) > 2 and name == "MUSIC_SUB_x3":
+						self.Compensation_SUB = float(row['Comp_' + Quality])
+					elif len(self.models['vocals']) == 2 and name == "MUSIC_SUB_x2":
+						self.Compensation_SUB = float(row['Comp_' + Quality])
+
+					self.Compensation_SUB = float(row['Comp_' + Quality])
+				else:
+					if name == options['vocals_1'] or name == options['vocals_2'] \
+					or name == options['vocals_3'] or name == options['vocals_4']:
+						self.models['vocals'].append(row)
+#					elif name == options['instru_1'] or name == options['instru_2']:
+#						self.models['instrum'].append(row)
+#
+#					# Special case for "Filters" : can be Vocal or Instrumental !
+#					if name == options['filter_1'] or name == options['filter_2'] \
+#					or name == options['filter_3'] or name == options['filter_4']:
+#						self.models['filters'].append(row)
 
 		# Download Models to :
 		models_path	= os.path.join(options['Gdrive'], "KaraFan_user", "Models")
 
-		# IMPORTANT : Volume Compensations are specific for each model AND each song (different re-mastering(s) in Studio) !!!
-
 		for stem in self.models:
 			for model in self.models[stem]:
-				model['Compensation']	= float(model['Comp_01'])
 				model['Cut_OFF']		= int(model['Cut_OFF'])
 				model['N_FFT_scale']	= int(model['N_FFT_scale'])
 				model['dim_F_set']		= int(model['dim_F_set'])
 				model['dim_T_set']		= int(model['dim_T_set'])
+
+				# IMPORTANT : Volume Compensations are specific for each model !!!
+				# TODO : Empirical values to get the best SDR !
+				# Need to be checked against each models combinations !!
+
+				if model['Comp_' + Quality] == "":
+					model['Compensation'] = 1.0
+				else:
+					model['Compensation'] = float(model['Comp_' + Quality])
 				
 				model['PATH'] = Download_Model(model, models_path, self.CONSOLE, self.Progress)
 		
@@ -434,7 +468,7 @@ class MusicSeparationModel:
 		
 		if len(vocals_extract) > 1:
 			print("► Make Ensemble Vocals")
-			vocals_ensemble = App.audio_utils.Make_Ensemble('Average', vocals_extract)
+			vocals_ensemble = App.audio_utils.Make_Ensemble('Max', vocals_extract)
 
 # TODO : Use with Filters
 #			self.Save_Audio("1 - "+ self.AudioFiles[1] +" - Ensemble", vocals_ensemble)
@@ -450,11 +484,13 @@ class MusicSeparationModel:
 
 		# DEBUG : Test different values for SDR Volume Compensation
 		if self.DEBUG and self.SDR_Testing:
-			App.compare.SDR_Volumes("Music", music_sub, self.song_output_path, self.Options['Gdrive'])
+			Best_Volume = App.compare.SDR_Volumes("Music", music_sub, self.song_output_path, self.Options['Gdrive'])
 
-		# TODO : Empirical value to get the best SDR ! Need to be checked !!
-		#  * 0.997 with low params !!
-		music_sub = music_sub * 0.999   
+			if self.Compensation_SUB != Best_Volume:
+				print(f"-> is different ({self.Compensation_SUB}) in CSV : will use <b>{Best_Volume}</b> instead !")
+				self.Compensation_SUB = Best_Volume
+
+		music_sub = music_sub * self.Compensation_SUB
 
 # TODO : Use with Filters
 #		self.Save_Audio("2 - Music - SUB", music_sub)
@@ -545,7 +581,7 @@ class MusicSeparationModel:
 			print("----------------------------------------")
 			App.compare.SDR(self.song_output_path, self.Options['output_format'], self.Options['Gdrive'])
 		
-		elif self.Options['BATCH_MODE'] and not self.PREVIEWS:
+		if not self.DEBUG and self.Options['BATCH_MODE'] and not self.PREVIEWS:
 			self.CONSOLE.clear_output()
 
 		elapsed_time = time() - start_time
@@ -587,7 +623,7 @@ class MusicSeparationModel:
 
 		# ONLY 1 Pass, for testing purposes
 		if self.TEST_MODE:
-			print(text + " (1 Pass !)")
+			print(text + " (<b>1 Pass !</b>)")
 			source = self.demix_full(audio, mdx_model, inference, bigshifts)[0]
 		else:
 			print(text + " (2 Passes)")
@@ -619,7 +655,7 @@ class MusicSeparationModel:
 
 			# ONLY 1 Pass, for testing purposes
 			if self.TEST_MODE:
-				print(text + " -> SRS High (1 Pass !)")
+				print(text + " -> SRS High (<b>1 Pass !</b>)")
 				source_SRS = App.audio_utils.Change_sample_rate(
 					self.demix_full(audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
 			else:
@@ -660,7 +696,7 @@ class MusicSeparationModel:
 
 			# ONLY 1 Pass, for testing purposes
 			if self.TEST_MODE:
-				print(text + " -> SRS Low (1 Pass !)")
+				print(text + " -> SRS Low (<b>1 Pass !</b>)")
 				source_SRS = App.audio_utils.Change_sample_rate(
 					self.demix_full(audio_SRS, mdx_model, inference, bigshifts)[0], 'DOWN', self.original_cutoff, cut_freq)
 			else:
@@ -678,7 +714,11 @@ class MusicSeparationModel:
 
 		# DEBUG : Test different values for SDR Volume Compensation
 		if self.DEBUG and self.SDR_Testing:
-			App.compare.SDR_Volumes(type, source, self.song_output_path, self.Options['Gdrive'])
+			Best_Volume = App.compare.SDR_Volumes(type, source, self.song_output_path, self.Options['Gdrive'])
+
+			if model['Compensation'] != Best_Volume:
+				print(f"-> is different ({model['Compensation']}) in CSV : will use <b>{Best_Volume}</b> instead !")
+				model['Compensation'] = Best_Volume
 
 		source = source * model['Compensation']  # Volume Compensation
 

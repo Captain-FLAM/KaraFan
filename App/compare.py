@@ -118,7 +118,7 @@ def SDR_Volumes(type, audio, song_output_path, Gdrive):
 	audio  = audio.T
 	reference, _ = sf.read(os.path.join(MultiSong_path, song_name[-3:] + '_' + type + '.flac'))
 	
-	for i in range(0, 95, 1):
+	for i in range(0, 130, 1):
 		volume = round(0.94 + (i * 0.001), 3)
 		song_score = calculate(reference, audio * volume)[0]
 
@@ -127,12 +127,15 @@ def SDR_Volumes(type, audio, song_output_path, Gdrive):
 			Volumes.append(volume)
 
 	# Show Best Volume Compensation
+	Best_Volume = 1.0
 	if len(Scores) > 0:
-		SDR		= max(Scores)
-		volume	= Volumes[Scores.index(SDR)]
+		SDR			= max(Scores)
+		Best_Volume	= Volumes[Scores.index(SDR)]
 
-		print("Best Volume Compensation : {} - ({} to {})- <b>{:9.6f}</b>".format(volume, min(Volumes), max(Volumes), SDR))
+		print("Best Volume Compensation : {} - ({} to {})- <b>{:9.6f}</b>".format(Best_Volume, min(Volumes), max(Volumes), SDR))
 		
+	return Best_Volume
+
 def Spectrograms(audio_file1, audio_file2):
 	
 	audio1, _ = librosa.load(audio_file1, sr=None, mono=False)

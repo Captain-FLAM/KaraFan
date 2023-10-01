@@ -1,13 +1,13 @@
 # 🎵 KaraFan  [![](https://img.shields.io/github/stars/Captain-FLAM/KaraFan?color=ff0080&style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/stargazers) [![](https://img.shields.io/github/license/Captain-FLAM/KaraFan?style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/blob/master/LICENSE)
 
+![KaraFan](images/KaraFan_3.0.jpg)
+
 The **BEST music separation** software with help of A.I. ... **to my ears** ! 👂👂
 
 As you've guessed, it was made specially for Karaoke (▶️ focus on musical part).  
 This project is **open to all goodwill**.  
 
-The Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made this project possible.
-
-![KaraFan](images/KaraFan_3.0.jpg)
+Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made this project possible.
 
 KaraFan works with **Google Colab** or if you have a decent GPU, **on Your PC** !!
 

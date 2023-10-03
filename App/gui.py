@@ -85,7 +85,7 @@ def Run(params):
 	titles = ["☢️ Settings", "♾️ Progress", "❓ System Info"]
 
 	# TAB 1
-	separator = widgets.HTML('<div style="border-bottom: dashed 1px #000; margin: 5px 0 5px 0; width: 100%">')
+	separator		= widgets.HTML('<div style="border-bottom: dashed 1px #000; margin: 5px 0 5px 0; width: 100%">')
 	# PATHS
 	input_path		= widgets.Text(config['PATHS']['input'], continuous_update=True, style=font_input)
 	input_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path : ALL audio files inside this folder will be separated by a Batch processing.</div>')
@@ -96,33 +96,34 @@ def Run(params):
 	# PROCESS
 	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'200px'}, style=font_input)
 	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
+	normalize		= widgets.Checkbox((config['PROCESS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_3		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_4		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
-#	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
-#	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	REPAIR_MUSIC	= widgets.Checkbox((config['PROCESS']['REPAIR_MUSIC'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 #	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 #	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 #	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 #	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 55px 0 40px'})
+	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 55px 0 40px'}, style={'button_color':'#eee'})
 	# OPTIONS
 	quality			= widgets.SelectionSlider(value = config['OPTIONS']['quality'], options=['Lowest', 'Low', 'Medium', 'High', 'Highest'], readout=True, layout={'margin':'0 0 0 10px'}, style=font_input)
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, layout={'margin':'0 0 0 10px'}, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', layout={'margin':'0 0 0 10px'}, style=font_input)
 	# BONUS
 	KILL_on_END		= widgets.Checkbox((config['BONUS']['KILL_on_END'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
-	normalize		= widgets.Checkbox((config['BONUS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	PREVIEWS		= widgets.Checkbox((config['BONUS']['PREVIEWS'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
 	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
-	PREVIEWS		= widgets.Checkbox((config['BONUS']['PREVIEWS'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	TEST_MODE		= widgets.Checkbox((config['BONUS']['TEST_MODE'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 	# large_gpu		= widgets.Checkbox((config['BONUS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	Btn_Del_Vocals	= widgets.Button(description='Vocals', button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
 	Btn_Del_Music	= widgets.Button(description='Music',  button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
-	#
+	# +
 	HELP			= widgets.HTML('<div id="HELP"></div>')
 	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'15px 0 15px 0'})
 
@@ -130,9 +131,8 @@ def Run(params):
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
 	Progress_Bar	= widgets.IntProgress(value=0, min=0, max=10, orientation='horizontal', bar_style='info', layout={'width':'370px', 'height':'25px'})  # style={'bar_color': 'maroon'})
 	Progress_Text	= widgets.HTML(layout={'width':'300px', 'margin':'0 0 0 15px'})
-	
-	# Class for Progress Bar
-	Progress		= App.progress.Bar(Progress_Bar, Progress_Text)
+	# +
+	Progress		= App.progress.Bar(Progress_Bar, Progress_Text)  # Class for Progress Bar
 
 	# TAB 3
 	sys_info		= widgets.HTML()
@@ -152,27 +152,28 @@ def Run(params):
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("Output Format", 201), output_format ]),
-#					widgets.HBox([ Label("Preset Genre", 202), preset_genre, preset_models ]),
-					widgets.HBox([ Label("MDX Vocals", 203),		vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Label("Output Format", 201), output_format, Label("&nbsp; Normalize input", 202), normalize ]),
+#					widgets.HBox([ Label("Preset Genre", 203), preset_genre, preset_models ]),
+					widgets.HBox([ Label("MDX Vocals", 204),		vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
 					widgets.HBox([ Btn_Reset_MDX,					vocals_3, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-#					widgets.HBox([ Label("MDX Music", 204),			instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
-#					widgets.HBox([ Label("MDX Music Clean", 205),	filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("Repair Music", 205), REPAIR_MUSIC ]),
+					widgets.HBox([ Label("MDX Music", 206),			instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+#					widgets.HBox([ Label("MDX Music Clean", 207),	filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 #					widgets.HBox([ Btn_Reset_MDX,					filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
-					# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
+					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
 					widgets.HBox([ Label("Quality", 301),  quality ]),
 #					widgets.HBox([ Label("Overlap MDX v3", 302), overlap_MDXv3 ]),
 					widgets.HBox([ Label("Chunk Size", 303), chunk_size ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("This is the END ...", 401), KILL_on_END, Label("Normalize input", 402), normalize, Label("Show Previews", 403), PREVIEWS ]),
-					widgets.HBox([ Label("DEBUG Mode", 404), DEBUG, Label("GOD Mode", 405), GOD_MODE, Label("TEST Mode", 406), TEST_MODE ]),
-					# , Label('Large GPU', 407), large_gpu ]),
-########					widgets.HBox([ Label("RE-Process ▶️▶️", 408), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
+					widgets.HBox([ Label("This is the END ...", 401), KILL_on_END, Label("Show Previews", 402), PREVIEWS ]),
+					widgets.HBox([ Label("DEBUG Mode", 403), DEBUG, Label("GOD Mode", 404), GOD_MODE, Label("TEST Mode", 405), TEST_MODE ]),
+					# , Label('Large GPU', 406), large_gpu ]),
+########					widgets.HBox([ Label("RE-Process ▶️▶️", 407), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
 				]),
 				separator,
 				widgets.HBox([Btn_Start], layout={'width':'100%', 'justify_content':'center'}),
@@ -197,21 +198,22 @@ var help_index = []; help_index[1] = []; help_index[2] = []; help_index[3] = [];
 help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside this folder will be separated by a Batch processing.<br>- Else, only the selected audio file will be processed.";\
 help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
 help_index[2][1] = "Choose your prefered audio format to save audio files.";\
-help_index[2][2] = "Genre of music to automatically select the best A.I models.";\
-help_index[2][3] = "<b>A.I</b> models : Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
-help_index[2][4] = "<b>A.I</b> models : Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Inst HQ 3</b> » and <b>test byt yourself</b> ! 😉";\
-help_index[2][5] = "<b>A.I</b> models : Pass Vocals trough different filters to remove <b>Bleedings</b> of instruments.<br><br>You have to test various models to find the best combination for your song !";\
+help_index[2][2] = "Normalize input audio files to avoid clipping and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !";\
+help_index[2][3] = "Genre of music to automatically select the best A.I models.";\
+help_index[2][4] = "<b>A.I</b> models : Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
+help_index[2][5] = "Repair music with <b>A.I</b> models.<br>Use it if you hear missing instruments, but ... it will take <b>longer time</b> also !<br>If you hear too much <b>vocal bleedings in Music Final</b>, change Models or <b>DON\'T use it</b> !!";\
+help_index[2][6] = "<b>A.I</b> models : Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Inst HQ 3</b> » and ... test by yourself ! 😉<br>... but, you are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!";\
+help_index[2][7] = "<b>A.I</b> models : Pass Vocals trough different filters to remove <b>Bleedings</b> of instruments.<br><br>You have to test various models to find the best combination for your song !";\
 help_index[3][1] = "Set Quality of extraction.<br>Lowest is the fastest processing, but don\'t complain about worst quality.<br>Highest is the best quality, but it will take hours (days ? 😝) to process !!";\
 help_index[3][2] = "MDX version 3 overlap. (default : 8)";\
 help_index[3][3] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
 help_index[4][1] = "On <b>Colab</b> : KaraFan will KILL your session at end of « Processongs », to save your credits !!<br>On <b>your Laptop</b> : KaraFan will KILL your GPU, to save battery (and hot-less) !!<br>On <b>your PC</b> : KaraFan will KILL your GPU, anyway ... maybe it helps ? Try it !!";\
-help_index[4][2] = "Normalize input audio files to avoid clipping and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !";\
-help_index[4][3] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
-help_index[4][4] = "IF checked, it will save all intermediate audio files to compare in your <b>Audacity</b>.";\
-help_index[4][5] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !";\
-help_index[4][6] = "For <b>testing only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
-help_index[4][7] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
-help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
+help_index[4][2] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
+help_index[4][3] = "IF checked, it will save all intermediate audio files to compare in your <b>Audacity</b>.";\
+help_index[4][4] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !";\
+help_index[4][5] = "For <b>testing only</b> : Extract with A.I models with 1 pass instead of 2 passes.<br>The quality will be badder (due to weak noise added by MDX models) !<br>The normal <b>TWO PASSES</b> is the same as <b>DENOISE</b> option in <b>UVR 5</b> 😉";\
+help_index[4][6] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
+help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
 </script>'))
 
 	# Bug in VS Code : titles NEEDS to be set AFTER children
@@ -243,8 +245,9 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		if vocals_1.value == "(None)" and vocals_2.value == "(None)" \
 		and vocals_3.value == "(None)" and vocals_4.value == "(None)":
 			msg += "You HAVE TO select at least one model for Vocals !<br>"
-#		if instru_1.value == "(None)" and instru_2.value == "(None)":
-#			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
+		
+		if REPAIR_MUSIC.value and instru_1.value == "(None)" and instru_2.value == "(None)":
+			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
 
 		if msg != "":
 			msg = "ERROR !!<br>"+ msg
@@ -262,12 +265,14 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		config['PROCESS'] = {
 			'output_format': output_format.value,
 #			'preset_genre': preset_genre.value,
+			'normalize': normalize.value,
 			'vocals_1': vocals_1.value,
 			'vocals_2': vocals_2.value,
 			'vocals_3': vocals_3.value,
 			'vocals_4': vocals_4.value,
-#			'instru_1': instru_1.value,
-#			'instru_2': instru_2.value,
+			'REPAIR_MUSIC': REPAIR_MUSIC.value,
+			'instru_1': instru_1.value,
+			'instru_2': instru_2.value,
 #			'filter_1': filter_1.value,
 #			'filter_2': filter_2.value,
 #			'filter_3': filter_3.value,
@@ -280,10 +285,9 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		}
 		config['BONUS'] = {
 			'KILL_on_END': KILL_on_END.value,
-			'normalize': normalize.value,
+			'PREVIEWS': PREVIEWS.value,
 			'DEBUG': DEBUG.value,
 			'GOD_MODE': GOD_MODE.value,
-			'PREVIEWS': PREVIEWS.value,
 			'TEST_MODE': TEST_MODE.value,
 			# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 			# 'large_gpu': large_gpu.value,
@@ -297,16 +301,15 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		if isColab:
 			display(HTML('<script type="application/javascript">show_titles();</script>'))
 
-		options = App.settings.Convert_to_Options(config)
-
-		options['Gdrive'] = Gdrive
-		options['Project'] = Project
-		options['isColab'] = isColab
-		options['CONSOLE'] = CONSOLE
-		options['Progress'] = Progress
-		options['DEV_MODE'] = DEV_MODE
-		
-		options['input'] = []
+		options = {
+			'input': [],
+			'Gdrive': Gdrive,
+			'Project': Project,
+			'isColab': isColab,
+			'CONSOLE': CONSOLE,
+			'Progress': Progress,
+			'DEV_MODE': DEV_MODE,
+		}
 
 		real_input  = os.path.join(Gdrive, input_path.value)
 
@@ -321,7 +324,7 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 						options['input'].append(file_path)
 		
 		# Start processing
-		CONSOLE.clear_output();  App.inference.Process(options)
+		CONSOLE.clear_output();  App.inference.Process(options, config)
 
 		# Refresh Google Drive files cache
 #		if isColab:
@@ -335,8 +338,8 @@ help_index[4][8] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		vocals_2.value = App.settings.defaults['PROCESS']['vocals_2']
 		vocals_3.value = App.settings.defaults['PROCESS']['vocals_3']
 		vocals_4.value = App.settings.defaults['PROCESS']['vocals_4']
-#		instru_1.value = App.settings.defaults['PROCESS']['instru_1']
-#		instru_2.value = App.settings.defaults['PROCESS']['instru_2']
+		instru_1.value = App.settings.defaults['PROCESS']['instru_1']
+		instru_2.value = App.settings.defaults['PROCESS']['instru_2']
 #		filter_1.value = App.settings.defaults['PROCESS']['filter_1']
 #		filter_2.value = App.settings.defaults['PROCESS']['filter_2']
 #		filter_3.value = App.settings.defaults['PROCESS']['filter_3']
@@ -524,7 +527,7 @@ function show_help(index) {\
 			setTimeout(function() {\
 				document.querySelector("#top-toolbar > colab-connect-button").shadowRoot.querySelector("#connect").click();\
 			}, 1000)\
-		}, 60*1000)'
+		}, 60000)'
 	
 	javascript += '\
 	}, 500);\
@@ -542,8 +545,8 @@ function show_help(index) {\
 	if config['PROCESS']['vocals_2'] in vocals:		vocals_2.value = config['PROCESS']['vocals_2']
 	if config['PROCESS']['vocals_3'] in vocals:		vocals_3.value = config['PROCESS']['vocals_3']
 	if config['PROCESS']['vocals_4'] in vocals:		vocals_4.value = config['PROCESS']['vocals_4']
-#	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
-#	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
+	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
+	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
 #	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
 #	if config['PROCESS']['filter_2'] in filters:	filter_2.value = config['PROCESS']['filter_2']
 #	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
@@ -559,6 +562,16 @@ function show_help(index) {\
 	# 	if not file == "SDR_Results.txt":
 	# 		os.remove(os.path.join(song_output_path, file))
 	
+	# Remove only Vocals files
+	# for file in os.listdir(song_output_path):
+	# 	if file.startswith("1"):
+	# 		os.remove(os.path.join(song_output_path, file))
+
+	# Remove only Music files
+	# for file in os.listdir(song_output_path):
+	# 	if file.startswith("2"):
+	# 		os.remove(os.path.join(song_output_path, file))
+
 	# # or just these ones
 	# file = os.path.join(song_output_path, "1 - Vocal extract - (Voc FT).flac")
 	# if os.path.isfile(file):  os.remove(file)

@@ -15,12 +15,14 @@ defaults = {
 	'PROCESS': {
 		'output_format': "FLAC",
 #		'preset_genre': "Pop Rock",
+		'normalize': False,
 		'vocals_1': "Kim Vocal 2",
 		'vocals_2': "Kim Vocal 1",
 		'vocals_3': "Voc FT",
 		'vocals_4': "(None)",
-#		'instru_1': "Instrum HQ 3",
-#		'instru_2': "(None)",
+		'REPAIR_MUSIC': True,
+		'instru_1': "Instrum HQ 3",
+		'instru_2': "(None)",
 #		'filter_1': "Kim Vocal 2",
 #		'filter_2': "Voc FT",
 #		'filter_3': "(None)",
@@ -33,44 +35,13 @@ defaults = {
 	},
 	'BONUS': {
 		'KILL_on_END': False,
-		'normalize': False,
+		'PREVIEWS': False,
 		'DEBUG': False,
 		'GOD_MODE': False,
-		'PREVIEWS': False,
 		'TEST_MODE': False,
 		'large_gpu': True,
 	},
 }
-
-def Convert_to_Options(config):
-
-	options = {}
-	options['input']			= config['PATHS']['input']
-	options['output']			= config['PATHS']['output']
-	options['output_format']	= config['PROCESS']['output_format']
-#	options['preset_genre']		= config['PROCESS']['preset_genre']
-	options['vocals_1']			= config['PROCESS']['vocals_1']
-	options['vocals_2']			= config['PROCESS']['vocals_2']
-	options['vocals_3']			= config['PROCESS']['vocals_3']
-	options['vocals_4']			= config['PROCESS']['vocals_4']
-#	options['instru_1']			= config['PROCESS']['instru_1']
-#	options['instru_2']			= config['PROCESS']['instru_2']
-#	options['filter_1']			= config['PROCESS']['filter_1']
-#	options['filter_2']			= config['PROCESS']['filter_2']
-#	options['filter_3']			= config['PROCESS']['filter_3']
-#	options['filter_4']			= config['PROCESS']['filter_4']
-	options['quality']			= config['OPTIONS']['quality']
-#	options['overlap_MDXv3']	= int(config['OPTIONS']['overlap_MDXv3'])
-	options['chunk_size']		= int(config['OPTIONS']['chunk_size'])
-	options['KILL_on_END']		= (config['BONUS']['KILL_on_END'].lower() == "true")
-	options['normalize']		= (config['BONUS']['normalize'].lower() == "true")
-	options['DEBUG']			= (config['BONUS']['DEBUG'].lower() == "true")
-	options['GOD_MODE']			= (config['BONUS']['GOD_MODE'].lower() == "true")
-	options['PREVIEWS']			= (config['BONUS']['PREVIEWS'].lower() == "true")
-	options['TEST_MODE']		= (config['BONUS']['TEST_MODE'].lower() == "true")
-	options['large_gpu']		= (config['BONUS']['large_gpu'].lower() == "true")
-
-	return options
 
 def Load(Gdrive, isColab):
 

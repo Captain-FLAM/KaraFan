@@ -104,7 +104,7 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 # ordre =  6 => filtre target freq = 14400hz
 # ordre =  8 => filtre target freq = 15200hz (-2200)
 # ordre = 10 => filtre target freq = 15700hz
-# ordre = 12 => filtre target freq = 16000hz
+# ordre = 12 => filtre target freq = 16000hz (-1640)
 # ordre = 14 => filtre target freq = 16200hz
 # ordre = 16 => filtre target freq = 16400hz
 
@@ -272,18 +272,27 @@ def Make_Ensemble(algorithm, audio_input):
 		
 		for i in range(len(audio_input)):  
 			waves.append(audio_input[i])
-			spec = wave_to_spectrogram_no_mp(audio_input[i])
+			
+			# wave_to_spectrogram_no_mp
+			spec = librosa.stft(audio_input[i], n_fft=6144, hop_length=1024)
+			
+			if spec.ndim == 1:  spec = np.asfortranarray([spec, spec])
+
 			specs.append(spec)
 		
 		waves_shapes = [w.shape[1] for w in waves]
 		target_shape = waves[waves_shapes.index(max(waves_shapes))]
 		
-		output = spectrogram_to_wave_no_mp(ensembling(algorithm, specs))
-		output = to_shape(output, target_shape.shape)
+		# spectrogram_to_wave_no_mp
+		wave = librosa.istft(ensembling(algorithm, specs), n_fft=6144, hop_length=1024)
+	
+		if wave.ndim == 1:  wave = np.asfortranarray([wave, wave])
+
+		output = to_shape(wave, target_shape.shape)
 
 	return output
 
-def ensembling(a, specs):   
+def ensembling(a, specs):
 	for i in range(1, len(specs)):
 		if i == 1:
 			spec = specs[0]
@@ -295,20 +304,8 @@ def ensembling(a, specs):
 		if MIN_SPEC == a:
 			spec = np.where(np.abs(specs[i]) <= np.abs(spec), specs[i], spec)
 		elif MAX_SPEC == a:
-			spec = np.where(np.abs(specs[i]) >= np.abs(spec), specs[i], spec)  
+			spec = np.where(np.abs(specs[i]) >= np.abs(spec), specs[i], spec)
 
-	return spec
-
-def spectrogram_to_wave_no_mp(spec):
-	wave = librosa.istft(spec, n_fft=4096, hop_length=1024)
-	
-	if wave.ndim == 1:  wave = np.asfortranarray([wave, wave])
-	return wave
-
-def wave_to_spectrogram_no_mp(wave):
-	spec = librosa.stft(wave, n_fft=4096, hop_length=1024)
-	
-	if spec.ndim == 1:  spec = np.asfortranarray([spec, spec])
 	return spec
 
 def to_shape(x, target_shape):

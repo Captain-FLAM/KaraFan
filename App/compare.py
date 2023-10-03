@@ -101,7 +101,7 @@ def SDR(song_output_path, output_format, Gdrive):
 			file.write(f"\n► {datetime.datetime.now().strftime('%Y-%m-%d ~ %H:%M:%S')} - {song_name}\n\n")
 			file.write(Results)
 
-def SDR_Volumes(type, audio, song_output_path, Gdrive):
+def SDR_Volumes(type, audio, actual_compensation, song_output_path, Gdrive):
 
 	# The "song_output_path" contains the NAME of the song to compare within the "Gdrive > KaraFan_user > Multi-Song" folder
 
@@ -114,25 +114,30 @@ def SDR_Volumes(type, audio, song_output_path, Gdrive):
 	elif type == "Music":	type = "instrum"
 	else:					return
 
-	Scores = [];  Volumes = []
+	Best_Volume = 1.0
+	Score  = 0
 	audio  = audio.T
 	reference, _ = sf.read(os.path.join(MultiSong_path, song_name[-3:] + '_' + type + '.flac'))
 	
-	for i in range(0, 130, 1):
-		volume = round(0.94 + (i * 0.001), 3)
+	min_volume = 0.94
+	max_volume = 1.07
+	range_volume = int((max_volume - min_volume) * 1000)
+
+	for i in range(0, range_volume, 1):
+
+		volume = round(min_volume + (i * 0.001), 3)
 		song_score = calculate(reference, audio * volume)[0]
 
 		if not song_score is None:
-			Scores.append(song_score)
-			Volumes.append(volume)
+			if song_score > Score:
+				Score = song_score;  Best_Volume = volume
+			else:
+				break
 
 	# Show Best Volume Compensation
-	Best_Volume = 1.0
-	if len(Scores) > 0:
-		SDR			= max(Scores)
-		Best_Volume	= Volumes[Scores.index(SDR)]
-
-		print("Best Volume Compensation : {} - ({} to {})- <b>{:9.6f}</b>".format(Best_Volume, min(Volumes), max(Volumes), SDR))
+	if Score != 0 and actual_compensation != Best_Volume:
+		print("Best Volume Compensation : {} - ({} to {})- <b>{:9.6f}</b>".format(Best_Volume, min_volume, max_volume, Score))
+		print(f"-> is different ({actual_compensation}) in CSV : will use <b>{Best_Volume}</b> instead !")
 		
 	return Best_Volume
 

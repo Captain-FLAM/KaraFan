@@ -521,11 +521,10 @@ class MusicSeparationModel:
 		if self.REPAIR_MUSIC:
 			music_extracts = []
 			
-
 			for model in self.models['instrum']:
 				audio = self.Check_Already_Processed(2, model['Name'])
 				if audio is None:
-					audio = self.Extract_with_Model("Music", music_sub, model)
+					audio = self.Extract_with_Model("Music", normalized, model)
 
 					self.Save_Audio(2, audio, model['Name'])
 				

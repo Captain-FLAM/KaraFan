@@ -33,7 +33,7 @@ def calculate(reference, estimate):
 	den += delta
 	return 10 * np.log10(num / den)
 
-def SDR(song_output_path, output_format, Gdrive):
+def SDR(song_output_path, output_format, Gdrive, Best_Compensations):
 
 	# The "song_output_path" contains the NAME of the song to compare within the "Gdrive > KaraFan_user > Multi-Song" folder
 
@@ -100,6 +100,10 @@ def SDR(song_output_path, output_format, Gdrive):
 		with open(os.path.join(song_output_path, "SDR_Results.txt"), 'a', encoding='utf-8') as file:
 			file.write(f"\n► {datetime.datetime.now().strftime('%Y-%m-%d ~ %H:%M:%S')} - {song_name}\n\n")
 			file.write(Results)
+			if len(Best_Compensations) > 0:
+				file.write("\n")
+				for line in Best_Compensations:
+					file.write(line + "\n")
 
 def SDR_Volumes(type, audio, actual_compensation, song_output_path, Gdrive):
 
@@ -137,10 +141,10 @@ def SDR_Volumes(type, audio, actual_compensation, song_output_path, Gdrive):
 	# Show Best Volume Compensation
 	if Score != 0:
 		if actual_compensation != Best_Volume:
-			print("Best Volume Compensation : {} - ({} to {})- <b>{:9.6f}</b>".format(Best_Volume, min_volume, max_volume, Score))
-			print(f"-> is different ({actual_compensation}) in CSV : will use <b>{Best_Volume}</b> instead !")
+			print("Best Compensation : {} - ({} to {})- <b>{:9.6f}</b>".format(Best_Volume, min_volume, max_volume, Score))
+			print(f"-> is different in CSV ({actual_compensation}) : will use <b>{Best_Volume}</b> instead !")
 		# else:
-		#	print("Best Volume Compensation in CSV is OK !")
+		#	print("Compensation in CSV is OK !")
 		
 	return Best_Volume
 

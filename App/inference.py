@@ -308,6 +308,7 @@ class MusicSeparationModel:
 				self.shifts_instru	= 21
 				self.shifts_SRS		=  5
 		
+		self.Best_Compensations = []
 		self.Compensation_Vocal_ENS = 1.0
 		self.Compensation_Music_SUB = 1.0
 		self.Compensation_Music_ENS = 1.0
@@ -481,7 +482,9 @@ class MusicSeparationModel:
 			if self.DEBUG and self.SDR_Testing:
 				Best_Volume = App.compare.SDR_Volumes("Vocal", vocals_ensemble, self.Compensation_Vocal_ENS, self.song_output_path, self.Gdrive)
 
-				if self.Compensation_Vocal_ENS != Best_Volume:  self.Compensation_Vocal_ENS = Best_Volume
+				if self.Compensation_Vocal_ENS != Best_Volume:
+					self.Compensation_Vocal_ENS = Best_Volume
+					self.Best_Compensations.append('Best Compensation for "Ensemble Vocal" : {:9.6f}'.format(Best_Volume))
 
 			vocals_ensemble = vocals_ensemble * self.Compensation_Vocal_ENS
 
@@ -513,7 +516,9 @@ class MusicSeparationModel:
 				if self.DEBUG and self.SDR_Testing:
 					Best_Volume = App.compare.SDR_Volumes("Music", music_ensemble, self.Compensation_Music_ENS, self.song_output_path, self.Gdrive)
 
-					if self.Compensation_Music_ENS != Best_Volume:  self.Compensation_Music_ENS = Best_Volume
+					if self.Compensation_Music_ENS != Best_Volume:
+						self.Compensation_Music_ENS = Best_Volume
+						self.Best_Compensations.append('Best Compensation for "Ensemble Music" : {:9.6f}'.format(Best_Volume))
 
 				music_ensemble = music_ensemble * self.Compensation_Music_ENS
 
@@ -533,11 +538,13 @@ class MusicSeparationModel:
 		if self.DEBUG and self.SDR_Testing:
 			Best_Volume = App.compare.SDR_Volumes("Music", music_sub, self.Compensation_Music_SUB, self.song_output_path, self.Gdrive)
 
-			if self.Compensation_Music_SUB != Best_Volume:  self.Compensation_Music_SUB = Best_Volume
+			if self.Compensation_Music_SUB != Best_Volume:
+				self.Compensation_Music_SUB = Best_Volume
+				self.Best_Compensations.append('Best Compensation for "Music SUB"      : {:9.6f}'.format(Best_Volume))
 
 		music_sub = music_sub * self.Compensation_Music_SUB
 
-		# 4 -Repair Music
+		# 4 - Repair Music
 
 		if self.REPAIR_MUSIC:
 
@@ -545,10 +552,10 @@ class MusicSeparationModel:
 				self.Save_Audio("2 - Music - SUB", music_sub)
 
 			print("► Repair Music")
-			# music_final = App.audio_utils.Make_Ensemble('Max', [music_sub, music_ensemble])
+			music_final = App.audio_utils.Make_Ensemble('Max', [music_sub, music_ensemble])
 			
 			# Take the max of Music_SUB (lost instruments)
-			music_final = np.where((np.abs(music_sub) >= np.abs(music_final)) or (np.abs(music_final) >= np.abs(music_sub)), music_sub, music_final)
+			# music_final = np.where((np.abs(music_sub) >= np.abs(music_ensemble)) & (np.abs(music_ensemble) >= np.abs(music_sub)), music_sub, music_ensemble)
 		else:
 			music_final = music_sub
 
@@ -611,7 +618,7 @@ class MusicSeparationModel:
 
 		if self.SDR_Testing:
 			print("----------------------------------------")
-			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive)
+			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, self.Best_Compensations)
 		
 		if self.BATCH_MODE and not self.DEBUG and not self.PREVIEWS:
 			self.CONSOLE.clear_output()

@@ -5,7 +5,7 @@ def Start(params):
 
 	# DEBUG : Auto-start processing on execution
 
-	Auto_Start = False
+	Auto_Start = 1
 
 	song_output_path = os.path.join(params['Gdrive'], "Music", "song_017")
 
@@ -29,7 +29,5 @@ def Start(params):
 	# if os.path.isfile(file):  os.remove(file)
 	# file = os.path.join(song_output_path, "1 - Vocal extract - (Kim Vocal 2).flac")
 	# if os.path.isfile(file):  os.remove(file)
-
-	# on_Start_clicked(None)
 
 	App.gui.Run(params, Auto_Start)

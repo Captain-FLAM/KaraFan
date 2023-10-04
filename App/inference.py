@@ -461,7 +461,7 @@ class MusicSeparationModel:
 		
 		# 1 - Extract Vocals with MDX models
 
-		vocals_extract = []
+		vocal_extracts = []
 		for model in self.models['vocals']:
 			audio = self.Check_Already_Processed(1, model['Name'])
 			if audio is None:
@@ -472,45 +472,68 @@ class MusicSeparationModel:
 		
 				self.Save_Audio(1, audio, model['Name'])
 			
-			vocals_extract.append(audio)
+			vocal_extracts.append(audio)
 		
-		if len(vocals_extract) > 1:
+		if len(vocal_extracts) > 1:
 			print("► Make Ensemble Vocals")
-			vocals_ensemble = App.audio_utils.Make_Ensemble('Max', vocals_extract)
+			vocal_ensemble = App.audio_utils.Make_Ensemble('Max', vocal_extracts)
 
 			# DEBUG : Test different values for SDR Volume Compensation
 			if self.DEBUG and self.SDR_Testing:
-				Best_Volume = App.compare.SDR_Volumes("Vocal", vocals_ensemble, self.Compensation_Vocal_ENS, self.song_output_path, self.Gdrive)
+				Best_Volume = App.compare.SDR_Volumes("Vocal", vocal_ensemble, self.Compensation_Vocal_ENS, self.song_output_path, self.Gdrive)
 
 				if self.Compensation_Vocal_ENS != Best_Volume:
 					self.Compensation_Vocal_ENS = Best_Volume
 					self.Best_Compensations.append('Best Compensation for "Ensemble Vocal" : {:9.6f}'.format(Best_Volume))
 
-			vocals_ensemble = vocals_ensemble * self.Compensation_Vocal_ENS
+			vocal_ensemble = vocal_ensemble * self.Compensation_Vocal_ENS
+
+			# Better SDR
+			#  -->  Highpass filter is at the end, because we pass this to the MDX Music models,
+			#  so : Keep the Bass !!
+			vocal_ensemble = App.audio_utils.Pass_filter('lowpass', 16000, vocal_ensemble, self.sample_rate, order = 4)
 
 # TODO : Use with Filters
-			self.Save_Audio("1 - "+ self.AudioFiles[1] +" - Ensemble", vocals_ensemble)
+			self.Save_Audio("1 - "+ self.AudioFiles[1] +" - Ensemble", vocal_ensemble)
 		else:
-			vocals_ensemble = vocals_extract[0]
+			vocal_ensemble = vocal_extracts[0]
 		
-		del vocals_extract;  gc.collect()
+		del vocal_extracts;  gc.collect()
 		
+		# 3 - Get Music by substracting Vocals from original audio (for instrumental not captured by MDX models)
+# TODO : Use with Filters
+		
+		print("► Get Music by substracting Vocals from original audio")
+		music_sub = normalized - vocal_ensemble
+
+		# DEBUG : Test different values for SDR Volume Compensation
+		if self.DEBUG and self.SDR_Testing:
+			Best_Volume = App.compare.SDR_Volumes("Music", music_sub, self.Compensation_Music_SUB, self.song_output_path, self.Gdrive)
+
+			if self.Compensation_Music_SUB != Best_Volume:
+				self.Compensation_Music_SUB = Best_Volume
+				self.Best_Compensations.append('Best Compensation for "Music SUB"      : {:9.6f}'.format(Best_Volume))
+
+		music_sub = music_sub * self.Compensation_Music_SUB
+
 		# 2 - Extract Music with MDX models
 
 		if self.REPAIR_MUSIC:
-			music_extract = []
+			music_extracts = []
+			
+
 			for model in self.models['instrum']:
 				audio = self.Check_Already_Processed(2, model['Name'])
 				if audio is None:
-					audio = self.Extract_with_Model("Music", normalized, model)
+					audio = self.Extract_with_Model("Music", music_sub, model)
 
 					self.Save_Audio(2, audio, model['Name'])
 				
-				music_extract.append(audio)
+				music_extracts.append(audio)
 				
-			if len(music_extract) > 1:
+			if len(music_extracts) > 1:
 				print("► Make Ensemble Music")
-				music_ensemble = App.audio_utils.Make_Ensemble('Average', music_extract)
+				music_ensemble = App.audio_utils.Make_Ensemble('Average', music_extracts)
 				
 				# DEBUG : Test different values for SDR Volume Compensation
 				if self.DEBUG and self.SDR_Testing:
@@ -524,25 +547,9 @@ class MusicSeparationModel:
 
 				self.Save_Audio("2 - "+ self.AudioFiles[2] +" - Ensemble", music_ensemble)
 			else:
-				music_ensemble = music_extract[0]
+				music_ensemble = music_extracts[0]
 
-			del music_extract;  gc.collect()
-
-		# 3 - Get Music by substracting Vocals from original audio (for instrumental not captured by MDX models)
-# TODO : Use with Filters
-		
-		print("► Get Music by substracting Vocals from original audio")
-		music_sub = normalized - vocals_ensemble
-
-		# DEBUG : Test different values for SDR Volume Compensation
-		if self.DEBUG and self.SDR_Testing:
-			Best_Volume = App.compare.SDR_Volumes("Music", music_sub, self.Compensation_Music_SUB, self.song_output_path, self.Gdrive)
-
-			if self.Compensation_Music_SUB != Best_Volume:
-				self.Compensation_Music_SUB = Best_Volume
-				self.Best_Compensations.append('Best Compensation for "Music SUB"      : {:9.6f}'.format(Best_Volume))
-
-		music_sub = music_sub * self.Compensation_Music_SUB
+			del music_extracts;  gc.collect()
 
 		# 4 - Repair Music
 
@@ -552,10 +559,10 @@ class MusicSeparationModel:
 				self.Save_Audio("2 - Music - SUB", music_sub)
 
 			print("► Repair Music")
-			music_final = App.audio_utils.Make_Ensemble('Max', [music_sub, music_ensemble])
+			music_final = App.audio_utils.Make_Ensemble('Average', [music_sub, music_ensemble])
 			
 			# Take the max of Music_SUB (lost instruments)
-			# music_final = np.where((np.abs(music_sub) >= np.abs(music_ensemble)) & (np.abs(music_ensemble) >= np.abs(music_sub)), music_sub, music_ensemble)
+			music_final = np.where(np.abs(music_sub) >= np.abs(music_final), music_sub, music_final)
 		else:
 			music_final = music_sub
 
@@ -598,14 +605,14 @@ class MusicSeparationModel:
 		# 6 - FINAL saving
 
 		print("► Save Vocals FINAL !")
+
 		# Better SDR
-		vocals_ensemble = App.audio_utils.Pass_filter('highpass',    70, vocals_ensemble, self.sample_rate, order = 4)
-		vocals_ensemble = App.audio_utils.Pass_filter('lowpass',  16000, vocals_ensemble, self.sample_rate, order = 4)
+		vocal_ensemble = App.audio_utils.Pass_filter('highpass', 70, vocal_ensemble, self.sample_rate, order = 4)
 
 		# Apply silence filter : -60 dB !
-		vocals_ensemble = App.audio_utils.Silent(vocals_ensemble, self.sample_rate, threshold_db = -60)
+		vocal_ensemble = App.audio_utils.Silent(vocal_ensemble, self.sample_rate, threshold_db = -60)
 
-		self.Save_Audio(4, vocals_ensemble)
+		self.Save_Audio(4, vocal_ensemble)
 
 		print("► Save Music FINAL !")
 		
@@ -670,8 +677,15 @@ class MusicSeparationModel:
 
 			source += 0.5 * self.demix_full( audio, mdx_model, inference, bigshifts)[0]
 
+		# **********************************
+		# I don't use it for instrumental, because you win only 0.004 points of SDR !!
+
+		JARREDOU_wanna_play_with_SRS = False
+		
+		# **********************************
+
 		# Automatic SRS
-		if model['Cut_OFF'] > 0 and model['Name'] != "Vocal Main":  # Exception !!
+		if (type == 'Vocal' or JARREDOU_wanna_play_with_SRS) and model['Cut_OFF'] > 0 and model['Name'] != "Vocal Main":  # Exception !!
 
 			# This is mandatory, I don't know why, but without this,
 			# the sample rate DOWN doesn't fit the MDX model Band
@@ -709,10 +723,6 @@ class MusicSeparationModel:
 			# *3/4 = Dynamic SRS personal taste of "Jarredou", to avoid too much SRS noise
 			# He also told me that 12 Khz cut-off was setted for MDX23C model, but now I use the REAL cut-off of MDX models !
 
-			# *******************************************************
-			# **    self.JARREDOU_wanna_play_with_SRS = True ??    **
-			# *******************************************************
-
 			if type == 'Music':
 				# OLD formula from Jarredou
 				# Avec cutoff = 17.4khz & -60dB d'atténuation et ordre = 12 --> target freq = 16000 hz (-1640)
@@ -732,7 +742,7 @@ class MusicSeparationModel:
 				source = App.audio_utils.Make_Ensemble('Max', [source, source_SRS])
 
 		# Low SRS for Vocal models
-		if type == 'Vocal' or (type == 'Filter' and model['Stem'] == 'Vocals'):
+		if (type == 'Vocal' or (type == 'Filter' and model['Stem'] == 'Vocals')) and JARREDOU_wanna_play_with_SRS == False:
 
 			cut_freq = 18550 # Hz
 
@@ -879,7 +889,7 @@ class MusicSeparationModel:
 		"""
 		
 		# Save only mandatory files if not in DEBUG mode
-		if not self.GOD_MODE and type(key) is int and key not in self.AudioFiles_Mandatory:  return
+		if not self.DEBUG and type(key) is int and key not in self.AudioFiles_Mandatory:  return
 
 		if type(key) is int:
 			filename = self.AudioFiles[key]

@@ -6,8 +6,8 @@ Instrum HQ 1,,Instrumental,1.016,,,,,0,6144,3072,8,2023-03-28,UVR-MDX-NET-Inst_H
 Instrum HQ 2,,Instrumental,1.026,,,,,0,6144,3072,8,2023-04-10,UVR-MDX-NET-Inst_HQ_2.onnx
 Instrum HQ 3,x,Instrumental,1.005,1.007,1.007,1.007,1.007,0,6144,3072,8,2023-06-11,UVR-MDX-NET-Inst_HQ_3.onnx
 Instrum Main,x,Instrumental,1.010,1.010,0.983,1.011,1.011,17640,5120,2048,8,2022-12-19,UVR-MDX-NET-Inst_Main.onnx
-Kim Instrum,x,Instrumental,1.003,1.006,1.006,1.006,,17640,7680,3072,8,2023-04-26,Kim_Inst.onnx
-Instrum 3,x,Instrumental,1.002,1.011,1.011,1.011,,17640,7680,3072,8,2022-10-31,UVR-MDX-NET-Inst_3.onnx
+Kim Instrum,x,Instrumental,1.003,1.006,1.006,1.006,1.006,17640,7680,3072,8,2023-04-26,Kim_Inst.onnx
+Instrum 3,x,Instrumental,1.002,1.011,1.011,1.011,1.011,17640,7680,3072,8,2022-10-31,UVR-MDX-NET-Inst_3.onnx
 (de-)Reverb HQ,,OTHER,1.035,,,,,0,6144,3072,9,2023-04-13,Reverb_HQ_By_FoxJoy.onnx
 Kim Vocal 1,x,Vocals,1.027,1.033,1.050,1.056,1.059,17640,7680,3072,8,2022-12-27,Kim_Vocal_1.onnx
 Kim Vocal 2,x,Vocals,0.975,0.980,0.994,0.998,1.001,17640,7680,3072,8,2023-05-19,Kim_Vocal_2.onnx
@@ -17,7 +17,7 @@ Vocal Main,x,Vocals,1.005,0.985,0.999,1.004,1.007,17640,7680,3072,8,2022-07-21,U
 VOCAL_ENS_x2,,,0.989,0.988,0.987,0.988,0.989,,,,,,
 VOCAL_ENS_x3,,,0.977,0.977,0.977,0.977,0.977,,,,,,
 ,,,,,,,,,,,,,
-MUSIC_ENS_x2,,,1.003,1.002,1.002,1.002,1.002,,,,,,
+MUSIC_ENS_x2,,,1.003,1.002,1.002,1.002,1.001,,,,,,
 MUSIC_ENS_x3,,,1.0,1.0,1.0,1.0,1.0,,,,,,
 ,,,,,,,,,,,,,
 MUSIC_SUB_x2,,,1.006,1.004,1.004,1.003,1.002,,,,,,

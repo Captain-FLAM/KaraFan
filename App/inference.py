@@ -606,7 +606,7 @@ class MusicSeparationModel:
 		print("► Save Vocals FINAL !")
 
 		# Better SDR
-		vocal_ensemble = App.audio_utils.Pass_filter('highpass', 70, vocal_ensemble, self.sample_rate, order = 4)
+		vocal_ensemble = App.audio_utils.Pass_filter('highpass', 70, vocal_ensemble, self.sample_rate, order = 100)
 
 		# Apply silence filter : -60 dB !
 		vocal_ensemble = App.audio_utils.Silent(vocal_ensemble, self.sample_rate, threshold_db = -60)

@@ -5,7 +5,7 @@ def Start(params):
 
 	# DEBUG : Auto-start processing on execution
 
-	Auto_Start = 1
+	Auto_Start = 0
 
 	song_output_path = os.path.join(params['Gdrive'], "Music", "song_017")
 

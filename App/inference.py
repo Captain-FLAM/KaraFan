@@ -558,7 +558,7 @@ class MusicSeparationModel:
 				self.Save_Audio("2 - Music - SUB", music_sub)
 
 			print("► Repair Music")
-			music_final = App.audio_utils.Make_Ensemble('Max', [music_sub, music_ensemble])
+			music_final = App.audio_utils.Make_Ensemble('Average', [music_sub, music_ensemble])
 			
 			# Take the max of Music_SUB (lost instruments)
 			# music_final = np.where(np.abs(music_sub) >= np.abs(music_final), music_sub, music_final)

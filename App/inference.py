@@ -307,7 +307,7 @@ class MusicSeparationModel:
 				self.shifts_vocals	= 21
 				self.shifts_instru	= 21
 				self.shifts_SRS		=  5
-
+		
 		self.Compensation_Vocal_ENS = 1.0
 		self.Compensation_Music_SUB = 1.0
 		self.Compensation_Music_ENS = 1.0
@@ -545,10 +545,10 @@ class MusicSeparationModel:
 				self.Save_Audio("2 - Music - SUB", music_sub)
 
 			print("► Repair Music")
-			music_final = App.audio_utils.Make_Ensemble('Average', [music_sub, music_ensemble])
+			# music_final = App.audio_utils.Make_Ensemble('Max', [music_sub, music_ensemble])
 			
 			# Take the max of Music_SUB (lost instruments)
-			music_final = np.where(np.abs(music_sub) >= np.abs(music_final), music_sub, music_final)
+			music_final = np.where((np.abs(music_sub) >= np.abs(music_final)) or (np.abs(music_final) >= np.abs(music_sub)), music_sub, music_final)
 		else:
 			music_final = music_sub
 

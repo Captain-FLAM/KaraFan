@@ -9,7 +9,7 @@ import os, csv, glob
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
-def Run(params):
+def Run(params, Auto_Start):
 
 	import App.settings, App.inference, App.sys_info, App.progress
 
@@ -110,9 +110,9 @@ def Run(params):
 #	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 55px 0 40px'}, style={'button_color':'#eee'})
 	# OPTIONS
-	quality			= widgets.SelectionSlider(value = config['OPTIONS']['quality'], options=['Lowest', 'Low', 'Medium', 'High', 'Highest'], readout=True, layout={'margin':'0 0 0 10px'}, style=font_input)
+	quality			= widgets.SelectionSlider(value = config['OPTIONS']['quality'], options=['Lowest', 'Low', 'Medium', 'High', 'Highest'], readout=True, style=font_input)
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, layout={'margin':'0 0 0 10px'}, style=font_input)
-	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', layout={'margin':'0 0 0 10px'}, style=font_input)
+	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
 	# BONUS
 	KILL_on_END		= widgets.Checkbox((config['BONUS']['KILL_on_END'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	PREVIEWS		= widgets.Checkbox((config['BONUS']['PREVIEWS'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
@@ -554,28 +554,4 @@ function show_help(index) {\
 
 
 	# DEBUG : Auto-start processing on execution
-
-	song_output_path = os.path.join(Gdrive, "Music", "song_017")
-
-	# # Remove ALL files
-	# for file in os.listdir(song_output_path):
-	# 	if not file == "SDR_Results.txt":
-	# 		os.remove(os.path.join(song_output_path, file))
-	
-	# Remove only Vocals files
-	# for file in os.listdir(song_output_path):
-	# 	if file.startswith("1"):
-	# 		os.remove(os.path.join(song_output_path, file))
-
-	# Remove only Music files
-	# for file in os.listdir(song_output_path):
-	# 	if file.startswith("2"):
-	# 		os.remove(os.path.join(song_output_path, file))
-
-	# # or just these ones
-	# file = os.path.join(song_output_path, "1 - Vocal extract - (Voc FT).flac")
-	# if os.path.isfile(file):  os.remove(file)
-	# file = os.path.join(song_output_path, "1 - Vocal extract - (Kim Vocal 2).flac")
-	# if os.path.isfile(file):  os.remove(file)
-
-	# on_Start_clicked(None)
+	if Auto_Start:  on_Start_clicked(None)

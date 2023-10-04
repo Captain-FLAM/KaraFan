@@ -821,14 +821,10 @@ class MusicSeparationModel:
 		Key :
 			index of AudioFiles list or "str" (direct filename for test mode)
 		"""
-		if type(key) is int:
-			if key not in self.AudioFiles_Reload:  return None
+		if not self.GOD_MODE or key not in self.AudioFiles_Reload:  return None
 
-			filename = self.AudioFiles[key]
-			if self.DEBUG:  filename = f"{key} - {filename}"
-		else:
-			filename = key
-
+		filename = self.AudioFiles[key]
+		if self.DEBUG:  filename = f"{key} - {filename}"
 		if model_name != "":  filename += " - ("+ model_name +")"
 
 		match self.output_format:
@@ -839,7 +835,7 @@ class MusicSeparationModel:
 
 		file = os.path.join(self.song_output_path, filename)
 		
-		if self.GOD_MODE and os.path.isfile(file):
+		if os.path.isfile(file):
 			
 			print(filename + " --> Loading ...")
 			audio, _ = librosa.load(file, mono=False, sr=self.sample_rate)

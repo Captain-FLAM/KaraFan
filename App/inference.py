@@ -324,18 +324,18 @@ class MusicSeparationModel:
 				# Set Volume Compensation from Quality option for "Music_SUB"
 				#  ->  MANDATORY to be set in CSV !!
 				match name:
-					case "MUSIC_SUB_x2":
-						if len(self.models['vocals']) == 2:		self.Compensation_Music_SUB = float(row['Comp_' + Quality])
-					case "MUSIC_SUB_x3":
-						if len(self.models['vocals']) > 2:		self.Compensation_Music_SUB = float(row['Comp_' + Quality])
 					case "VOCAL_ENS_x2":
 						if len(self.models['vocals']) == 2:		self.Compensation_Vocal_ENS = float(row['Comp_' + Quality])
 					case "VOCAL_ENS_x3":
 						if len(self.models['vocals']) > 2:		self.Compensation_Vocal_ENS = float(row['Comp_' + Quality])
 					case "MUSIC_ENS_x2":
 						if len(self.models['instrum']) == 2:	self.Compensation_Music_ENS = float(row['Comp_' + Quality])
-					case "MUSIC_ENS_x3":
-						if len(self.models['instrum']) > 2:		self.Compensation_Music_ENS = float(row['Comp_' + Quality])
+					# 2 VOCALS models !!
+					case "MUSIC_SUB_x2":
+						if len(self.models['vocals']) == 2:		self.Compensation_Music_SUB = float(row['Comp_' + Quality])
+					# 3 VOCALS models !!
+					case "MUSIC_SUB_x3":
+						if len(self.models['vocals']) > 2:		self.Compensation_Music_SUB = float(row['Comp_' + Quality])
 					case _:
 						if name == config['PROCESS']['vocals_1'] or name == config['PROCESS']['vocals_2'] \
 						or name == config['PROCESS']['vocals_3'] or name == config['PROCESS']['vocals_4']:
@@ -812,37 +812,6 @@ class MusicSeparationModel:
 		raise NameError(msg)
 	
 		
-	def Show_Preview(self, name, audio):
-
-		name = os.path.splitext(name)[0]
-		
-		with self.CONSOLE:
-			audio_mp3 = io.BytesIO()
-			audio_mp3.name = "Preview.mp3"
-			
-			# Get the first 60 seconds of the audio
-			audio = audio[:, :int(60.3 * self.sample_rate)]
-
-			# Convert audio to PCM_16 audio data (bytes)
-			audio_tmp = (audio.T * 32768).astype(np.int16)  # 2 ^15
-
-			audio_segment = AudioSegment(
-				audio_tmp.tobytes(),
-				channels = 2,
-				frame_rate = self.sample_rate,
-				sample_width = 2  # sample width (in bytes)
-			)
-
-			# audio_segment.export(audio_mp3, format='mp3', bitrate='192k', codec='libmp3lame')
-			audio_segment.export(audio_mp3, format='mp3', bitrate='192k', codec='libshine')
-			# audio_mp3.seek(0)
-
-			display(HTML(
-				'<div class="player"><div>'+ name +'</div><audio controls preload="metadata" src="data:audio/mp3;base64,' \
-				+ base64.b64encode(audio_mp3.getvalue()).decode('utf-8') +'"></audio></div>'))
-
-			# audio_mp3.close()
-
 	def Check_Already_Processed(self, key, model_name = ""):
 		"""
 		if GOD MODE :
@@ -890,7 +859,11 @@ class MusicSeparationModel:
 		"""
 		
 		# Save only mandatory files if not in DEBUG mode
-		if not self.DEBUG and type(key) is int and key not in self.AudioFiles_Mandatory:  return
+		if type(key) is int:
+			if self.DEBUG:
+				if key not in self.AudioFiles_Reload and key not in self.AudioFiles_Mandatory:  return
+			else:
+				if key not in self.AudioFiles_Mandatory:  return
 
 		if type(key) is int:
 			filename = self.AudioFiles[key]

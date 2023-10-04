@@ -113,11 +113,11 @@ def SDR_Volumes(type, audio, actual_compensation, song_output_path, Gdrive):
 	song_name		= os.path.basename(song_output_path)
 	MultiSong_path	= os.path.join(Gdrive, "KaraFan_user", "Multi_Song", "Stems")
 
-	if not os.path.exists(MultiSong_path):  return
+	if not os.path.exists(MultiSong_path):  return actual_compensation
 
 	if type == "Vocal":		type = "vocals"
 	elif type == "Music":	type = "instrum"
-	else:					return
+	else:					return actual_compensation
 
 	Best_Volume = 1.0
 	Score  = 0

@@ -143,9 +143,9 @@ def SDR_Volumes(type, audio, actual_compensation, song_output_path, Gdrive):
 	if Score != 0:
 		if actual_compensation != Best_Volume:
 			print("Best Compensation : {} - ({} to {})- <b>{:9.6f}</b>".format(Best_Volume, min_volume, max_volume, Score))
-			print(f"-> is different in CSV ({actual_compensation}) : will use <b>{Best_Volume}</b> instead !")
-		# else:
-		#	print("Compensation in CSV is OK !")
+			print(f"--> is different in CSV ({actual_compensation}) : will use <b>{Best_Volume}</b> instead !")
+		else:
+			print("--> Compensation in CSV is OK !")
 		
 	return Best_Volume
 

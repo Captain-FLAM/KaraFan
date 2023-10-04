@@ -108,7 +108,7 @@ def Run(params, Auto_Start):
 #	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 #	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 #	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 55px 0 40px'}, style={'button_color':'#eee'})
+	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 90px 0 0'}, style={'button_color':'#eee'})
 	# OPTIONS
 	quality			= widgets.SelectionSlider(value = config['OPTIONS']['quality'], options=['Lowest', 'Low', 'Medium', 'High', 'Highest'], readout=True, style=font_input)
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, layout={'margin':'0 0 0 10px'}, style=font_input)

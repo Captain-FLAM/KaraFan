@@ -561,7 +561,7 @@ class MusicSeparationModel:
 			music_final = App.audio_utils.Make_Ensemble('Max', [music_sub, music_ensemble])
 			
 			# Take the max of Music_SUB (lost instruments)
-			music_final = np.where(np.abs(music_sub) >= np.abs(music_final), music_sub, music_final)
+			# music_final = np.where(np.abs(music_sub) >= np.abs(music_final), music_sub, music_final)
 		else:
 			music_final = music_sub
 

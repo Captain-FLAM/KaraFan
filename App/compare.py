@@ -33,7 +33,7 @@ def calculate(reference, estimate):
 	den += delta
 	return 10 * np.log10(num / den)
 
-def SDR(song_output_path, output_format, Gdrive, Best_Compensations):
+def SDR(song_output_path, output_format, Gdrive, Best_Compensations, elapsed_time):
 
 	# The "song_output_path" contains the NAME of the song to compare within the "Gdrive > KaraFan_user > Multi-Song" folder
 
@@ -100,6 +100,7 @@ def SDR(song_output_path, output_format, Gdrive, Best_Compensations):
 		with open(os.path.join(song_output_path, "SDR_Results.txt"), 'a', encoding='utf-8') as file:
 			file.write(f"\n► {datetime.datetime.now().strftime('%Y-%m-%d ~ %H:%M:%S')} - {song_name}\n\n")
 			file.write(Results)
+			file.write("\n" + elapsed_time + "\n")
 			if len(Best_Compensations) > 0:
 				file.write("\n")
 				for line in Best_Compensations:

@@ -623,17 +623,18 @@ class MusicSeparationModel:
 
 		print('<b>--> Processing DONE !</b>')
 
-		if self.SDR_Testing:
-			print("----------------------------------------")
-			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, self.Best_Compensations)
-		
-		if self.BATCH_MODE and not self.DEBUG and not self.PREVIEWS:
-			self.CONSOLE.clear_output()
-
 		elapsed_time = time() - start_time
 		minutes = int(elapsed_time // 60)
 		seconds = int(elapsed_time % 60)
-		print('Elapsed Time for <b>{}</b> : {:02d}:{:02d} min.<br><br>'.format(name, minutes, seconds))
+		elapsed_time = 'Elapsed Time for <b>{}</b> : {:02d}:{:02d} min.<br><br>'.format(name, minutes, seconds)
+		print(elapsed_time)
+
+		if self.SDR_Testing:
+			print("----------------------------------------")
+			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, self.Best_Compensations, elapsed_time)
+		
+		if self.BATCH_MODE and not self.DEBUG and not self.PREVIEWS:
+			self.CONSOLE.clear_output()
 		
 
 		# DEBUG : Examples (with old version of KaraFan 1.0)

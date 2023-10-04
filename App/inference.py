@@ -500,22 +500,6 @@ class MusicSeparationModel:
 		
 		del vocal_extracts;  gc.collect()
 		
-		# 3 - Get Music by substracting Vocals from original audio (for instrumental not captured by MDX models)
-# TODO : Use with Filters
-		
-		print("► Get Music by substracting Vocals from original audio")
-		music_sub = normalized - vocal_ensemble
-
-		# DEBUG : Test different values for SDR Volume Compensation
-		if self.DEBUG and self.SDR_Testing:
-			Best_Volume = App.compare.SDR_Volumes("Music", music_sub, self.Compensation_Music_SUB, self.song_output_path, self.Gdrive)
-
-			if self.Compensation_Music_SUB != Best_Volume:
-				self.Compensation_Music_SUB = Best_Volume
-				self.Best_Compensations.append('Best Compensation for "Music SUB"      : {:9.6f}'.format(Best_Volume))
-
-		music_sub = music_sub * self.Compensation_Music_SUB
-
 		# 2 - Extract Music with MDX models
 
 		if self.REPAIR_MUSIC:
@@ -549,6 +533,22 @@ class MusicSeparationModel:
 				music_ensemble = music_extracts[0]
 
 			del music_extracts;  gc.collect()
+
+		# 3 - Get Music by substracting Vocals from original audio (for instrumental not captured by MDX models)
+# TODO : Use with Filters
+		
+		print("► Get Music by substracting Vocals from original audio")
+		music_sub = normalized - vocal_ensemble
+
+		# DEBUG : Test different values for SDR Volume Compensation
+		if self.DEBUG and self.SDR_Testing:
+			Best_Volume = App.compare.SDR_Volumes("Music", music_sub, self.Compensation_Music_SUB, self.song_output_path, self.Gdrive)
+
+			if self.Compensation_Music_SUB != Best_Volume:
+				self.Compensation_Music_SUB = Best_Volume
+				self.Best_Compensations.append('Best Compensation for "Music SUB"      : {:9.6f}'.format(Best_Volume))
+
+		music_sub = music_sub * self.Compensation_Music_SUB
 
 		# 4 - Repair Music
 

@@ -91,26 +91,26 @@ def Run(params, Auto_Start):
 	input_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path : ALL audio files inside this folder will be separated by a Batch processing.</div>')
 	output_path		= widgets.Text(config['PATHS']['output'], continuous_update=True, style=font_input)
 	output_info		= widgets.HTML()
-	Btn_Create_input  = widgets.Button(description='➕', tooltip="Create the input folder",  button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
-	Btn_Create_output = widgets.Button(description='➕', tooltip="Create the output folder", button_style='warning', layout={'display':'none', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
+	Btn_Create_input  = widgets.Button(description='➕', tooltip="Create the input folder",  button_style='warning', layout={'visibility':'hidden', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
+	Btn_Create_output = widgets.Button(description='➕', tooltip="Create the output folder", button_style='warning', layout={'visibility':'hidden', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
 	# PROCESS
-	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options=[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")], layout = {'width':'200px'}, style=font_input)
-	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'], options=["Pop Rock"], disabled=True, layout = {'width':'150px'}, style=font_input)
+	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options = App.settings.Options['output_format'], layout = {'width':'150px'}, style=font_input)
+	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'],  options = App.settings.Options['preset_genre'], layout = {'width':'150px'}, style=font_input)
 	normalize		= widgets.Checkbox((config['PROCESS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_3		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_4		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
-	REPAIR_MUSIC	= widgets.Checkbox((config['PROCESS']['REPAIR_MUSIC'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	REPAIR_MUSIC	= widgets.Dropdown(value = config['PROCESS']['REPAIR_MUSIC'], options = App.settings.Options['REPAIR_MUSIC'], layout = {'width':'200px'}, style=font_input)
 	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
-#	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-#	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-#	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-#	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX Filters to defaults !!", layout={'width':'45px', 'margin':'0 94px 0 0'}, style={'button_color':'#eee'})
+	filter_1		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
+	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX models to defaults !!", layout={'width':'45px', 'margin':'0 94px 0 0'}, style={'button_color':'#eee'})
 	# OPTIONS
-	quality			= widgets.SelectionSlider(value = config['OPTIONS']['quality'], options=['Lowest', 'Low', 'Medium', 'High', 'Highest'], readout=True, style=font_input)
+	quality			= widgets.SelectionSlider(value = config['OPTIONS']['quality'], options = App.settings.Options['quality'], readout=True, style=font_input) 
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, layout={'margin':'0 0 0 10px'}, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
 	# BONUS
@@ -156,10 +156,10 @@ def Run(params, Auto_Start):
 #					widgets.HBox([ Label("Preset Genre", 203), preset_genre, preset_models ]),
 					widgets.HBox([ Label("MDX Vocals", 204),		vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
 					widgets.HBox([ Btn_Reset_MDX,					vocals_3, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Label("Repair Music", 205), REPAIR_MUSIC ]),
+					widgets.HBox([ Label("Repair Music &nbsp;▶️", 205), REPAIR_MUSIC ]),
 					widgets.HBox([ Label("MDX Music", 206),			instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
-#					widgets.HBox([ Label("MDX Music Clean", 207),	filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
-#					widgets.HBox([ Btn_Reset_MDX,					filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("MDX Music Clean", 207),	filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("", 207),					filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
@@ -200,10 +200,10 @@ help_index[1][2] = "« Output folder » will be created based on the file\'s nam
 help_index[2][1] = "Choose your prefered audio format to save audio files.";\
 help_index[2][2] = "Normalize input audio files to avoid clipping and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !";\
 help_index[2][3] = "Genre of music to automatically select the best A.I models.";\
-help_index[2][4] = "<b>A.I</b> models : Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
+help_index[2][4] = "Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
 help_index[2][5] = "Repair music with <b>A.I</b> models.<br>Use it if you hear missing instruments, but ... it will take <b>longer time</b> also !<br>If you hear too much <b>vocal bleedings in Music Final</b>, change Models or <b>DON\'T use it</b> !!";\
-help_index[2][6] = "<b>A.I</b> models : Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Inst HQ 3</b> » and ... test by yourself ! 😉<br>... but, you are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!";\
-help_index[2][7] = "<b>A.I</b> models : Pass Vocals trough different filters to remove <b>Bleedings</b> of instruments.<br><br>You have to test various models to find the best combination for your song !";\
+help_index[2][6] = "Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Inst HQ 3</b> » and ... test by yourself ! 😉<br>... You are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!";\
+help_index[2][7] = "Pass Vocals trough different filters to remove <b>Vocals Bleedings</b> of instruments.<br>If you want to keep SFX in music, use only one model : « <b>Kim Vocal 1</b> » !<br>You have to test various models to find the best combination for your song ...";\
 help_index[3][1] = "Set Quality of extraction.<br>Lowest is the fastest processing, but don\'t complain about worst quality.<br>Highest is the best quality, but it will take hours (days ? 😝) to process !!";\
 help_index[3][2] = "MDX version 3 overlap. (default : 8)";\
 help_index[3][3] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
@@ -273,10 +273,10 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			'REPAIR_MUSIC': REPAIR_MUSIC.value,
 			'instru_1': instru_1.value,
 			'instru_2': instru_2.value,
-#			'filter_1': filter_1.value,
-#			'filter_2': filter_2.value,
-#			'filter_3': filter_3.value,
-#			'filter_4': filter_4.value,
+			'filter_1': filter_1.value,
+			'filter_2': filter_2.value,
+			'filter_3': filter_3.value,
+			'filter_4': filter_4.value,
 		}
 		config['OPTIONS'] = {
 			'quality': quality.value,
@@ -334,16 +334,17 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 
 
 	def on_Btn_Reset_MDX_clicked(b):
-		vocals_1.value = App.settings.defaults['PROCESS']['vocals_1']
-		vocals_2.value = App.settings.defaults['PROCESS']['vocals_2']
-		vocals_3.value = App.settings.defaults['PROCESS']['vocals_3']
-		vocals_4.value = App.settings.defaults['PROCESS']['vocals_4']
-		instru_1.value = App.settings.defaults['PROCESS']['instru_1']
-		instru_2.value = App.settings.defaults['PROCESS']['instru_2']
-#		filter_1.value = App.settings.defaults['PROCESS']['filter_1']
-#		filter_2.value = App.settings.defaults['PROCESS']['filter_2']
-#		filter_3.value = App.settings.defaults['PROCESS']['filter_3']
-#		filter_4.value = App.settings.defaults['PROCESS']['filter_4']
+		vocals_1.value = App.settings.Defaults['PROCESS']['vocals_1']
+		vocals_2.value = App.settings.Defaults['PROCESS']['vocals_2']
+		vocals_3.value = App.settings.Defaults['PROCESS']['vocals_3']
+		vocals_4.value = App.settings.Defaults['PROCESS']['vocals_4']
+		REPAIR_MUSIC.value = App.settings.Defaults['PROCESS']['REPAIR_MUSIC']
+		instru_1.value = App.settings.Defaults['PROCESS']['instru_1']
+		instru_2.value = App.settings.Defaults['PROCESS']['instru_2']
+		filter_1.value = App.settings.Defaults['PROCESS']['filter_1']
+		filter_2.value = App.settings.Defaults['PROCESS']['filter_2']
+		filter_3.value = App.settings.Defaults['PROCESS']['filter_3']
+		filter_4.value = App.settings.Defaults['PROCESS']['filter_4']
 
 	def on_SysInfo_clicked(b):
 		font_size = '13px' if isColab == True else '12px'
@@ -352,12 +353,12 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 
 	def on_Create_input_clicked(b):
 		os.makedirs(os.path.join(Gdrive, input_path.value), exist_ok=True)
-		Btn_Create_input.layout.display = 'none'
+		Btn_Create_input.layout.visibility = 'hidden'
 		on_input_change({'new': input_path.value})
 
 	def on_Create_output_clicked(b):
 		os.makedirs(os.path.join(Gdrive, output_path.value), exist_ok=True)
-		Btn_Create_output.layout.display = 'none'
+		Btn_Create_output.layout.visibility = 'hidden'
 		on_output_change({'new': output_path.value})
 	
 	# Delete all vocals files extracted from THIS song
@@ -434,11 +435,11 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		is_file	= os.path.isfile(path)
 		
 		if path != "":
-			input_warning.layout.display = 'block' if input_path.value != "" and is_dir else 'none'
-			Btn_Create_input.layout.display = 'inline' if not is_file and not is_dir else 'none'
+			input_warning.layout.visibility = 'visible' if input_path.value != "" and is_dir else 'hidden'
+			Btn_Create_input.layout.visibility = 'visible' if not is_file and not is_dir else 'hidden'
 		else:
-			Btn_Create_input.layout.display = 'none'
-			input_warning.layout.display = 'none'
+			Btn_Create_input.layout.visibility = 'hidden'
+			input_warning.layout.visibility = 'hidden'
 
 		on_GOD_MODE_change(change)
 
@@ -475,9 +476,9 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			
 			if path != output_path.value:  output_path.value = path
 
-			Btn_Create_output.layout.display = 'inline' if not os.path.isdir(os.path.join(Gdrive, path)) else 'none'
+			Btn_Create_output.layout.visibility = 'visible' if not os.path.isdir(os.path.join(Gdrive, path)) else 'hidden'
 		else:
-			Btn_Create_output.layout.display = 'none'
+			Btn_Create_output.layout.visibility = 'hidden'
 
 	# Link Events to functions
 	input_path.observe(on_input_change, names='value')
@@ -547,10 +548,10 @@ function show_help(index) {\
 	if config['PROCESS']['vocals_4'] in vocals:		vocals_4.value = config['PROCESS']['vocals_4']
 	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
 	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
-#	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
-#	if config['PROCESS']['filter_2'] in filters:	filter_2.value = config['PROCESS']['filter_2']
-#	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
-#	if config['PROCESS']['filter_4'] in filters:	filter_4.value = config['PROCESS']['filter_4']
+	if config['PROCESS']['filter_1'] in filters:	filter_1.value = config['PROCESS']['filter_1']
+	if config['PROCESS']['filter_2'] in filters:	filter_2.value = config['PROCESS']['filter_2']
+	if config['PROCESS']['filter_3'] in filters:	filter_3.value = config['PROCESS']['filter_3']
+	if config['PROCESS']['filter_4'] in filters:	filter_4.value = config['PROCESS']['filter_4']
 
 
 	# DEBUG : Auto-start processing on execution

@@ -272,7 +272,7 @@ class MusicSeparationModel:
 			self.providers = ["CUDAExecutionProvider"]
 
 		# Set BigShifts & Volume Compensation from Quality option
-		match 'Lowest': # config['OPTIONS']['quality']:
+		match config['OPTIONS']['speed']:
 			case 'Fastest':
 				Quality = "x0"
 				self.shifts_vocals	=  1

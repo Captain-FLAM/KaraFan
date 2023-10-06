@@ -410,7 +410,7 @@ class MusicSeparationModel:
 		# That's all !!
 		# (only the song file, not "instrum.flac" or "vocals.flac" from "Stems" folder)
 
-		self.SDR_Testing = (name.startswith("song_") and re.match(r"^song_\d{3}\.", name) is not None)
+		self.SDR_Testing = (name.startswith("song_") and re.match(r"^song_\d{3}$", name) is not None)
 
 		#*************************************************
 

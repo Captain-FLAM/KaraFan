@@ -120,7 +120,7 @@ def Run(params, Auto_Start):
 	Btn_Del_Music	= widgets.Button(description='Music',  button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
 	# +
 	HELP			= widgets.HTML('<div id="HELP"></div>')
-	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'12px 0 12px 0'})
+	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'8px 0 12px 0'})
 
 	# TAB 2
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
@@ -250,21 +250,6 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			HELP.value = '<div id="HELP"><div style="color: #f00">'+ msg +'</div></div>'
 			return
 		
-		# Code from Deton24 : Keep session active !!
-		if isColab:
-			display(HTML('\
-<script type="application/javascript">\
-window.Keep_Running = setInterval(function() {\
-	var selector = document.querySelector("#top-toolbar > colab-connect-button");\
-	if (selector != null) {\
-		selector.shadowRoot.querySelector("#connect").click();\
-		setTimeout(function(selector) {\
-			selector.shadowRoot.querySelector("#connect").click();\
-		}, 2000 + Math.round(Math.random() * 6000));\
-	}\
-}, 120000);\
-</script>'))
-
 		input_path.value = os.path.normpath(input_path.value)
 		output_path.value = os.path.normpath(output_path.value)
 
@@ -488,6 +473,18 @@ function show_titles() {\
 	document.getElementById("tab-key-1").getElementsByClassName("lm-TabBar-tabLabel")[0].innerHTML = "'+ titles[1] +'";\
 	document.getElementById("tab-key-2").getElementsByClassName("lm-TabBar-tabLabel")[0].innerHTML = "'+ titles[2] +'";\
 }'
+	# Code from Deton24 : Keep session active !!
+		javascript += '\
+window.Keep_Running = setInterval(function() {\
+	var selector = document.querySelector("#top-toolbar > colab-connect-button");\
+	if (typeof(selector) != "undefined" && selector != null) {\
+		selector.shadowRoot.querySelector("#connect").click();\
+		setTimeout(function(selector) {\
+			selector.shadowRoot.querySelector("#connect").click();\
+		}, 2000);\
+	}\
+}, 60000);'
+
 
 	# Add HELP
 	javascript += '\

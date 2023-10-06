@@ -439,24 +439,24 @@ Keep_Running = setInterval(function() {\
 		if HELP.value.find("ERROR") != -1:
 			HELP.value = '<div id="HELP"></div>'  # Clear HELP
 
-		msg = ""
-		path	= os.path.join(Gdrive, path)
-		is_dir	= os.path.isdir(path)
-		is_file	= os.path.isfile(path)
+		# msg = ""
+		# path	= os.path.join(Gdrive, path)
+		# is_dir	= os.path.isdir(path)
+		# is_file	= os.path.isfile(path)
 		
-		if path != "":
-			input_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path :<br>ALL audio files inside this folder will be separated by a Batch processing !</div>')
-			input_warning.layout.visibility = 'visible' if input_path.value != "" and is_dir else 'hidden'
-		else:
-			input_warning.layout.visibility = 'hidden'
+		# if path != "":
+		# 	input_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path :<br>ALL audio files inside this folder will be separated by a Batch processing !</div>')
+		# 	input_warning.layout.visibility = 'visible' if input_path.value != "" and is_dir else 'hidden'
+		# else:
+		# 	input_warning.layout.visibility = 'hidden'
 
-			widgets.HBox([ widgets.HTML('<div class="option-label" style="color:#999">Your Final path</div>'), output_info ]),
+		# 	widgets.HBox([ widgets.HTML('<div class="option-label" style="color:#999">Your Final path</div>'), output_info ]),
 		
-		name = "[ NAME of FILES ]"
-		if is_file:
-			name = os.path.splitext(os.path.basename(path))[0]
+		# name = "[ NAME of FILES ]"
+		# if is_file:
+		# 	name = os.path.splitext(os.path.basename(path))[0]
 
-		output_info.value = f'<div class="path-info">{Gdrive}{os.path.sep}{output_path.value} {os.path.sep} {name} {os.path.sep}</div>'
+		# output_info.value = f'<div class="path-info">{Gdrive}{os.path.sep}{output_path.value} {os.path.sep} {name} {os.path.sep}</div>'
 
 	def on_GOD_MODE_change(change):
 		path = os.path.join(Gdrive, input_path.value)

@@ -254,7 +254,7 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		if isColab:
 			display(HTML('\
 <script type="application/javascript">\
-Keep_Running = setInterval(function() {\
+window.Keep_Running = setInterval(function() {\
 	var selector = document.querySelector("#top-toolbar > colab-connect-button");\
 	if (selector != null) {\
 		selector.shadowRoot.querySelector("#connect").click();\
@@ -345,7 +345,7 @@ Keep_Running = setInterval(function() {\
 
 		if isColab:
 			# To stop automatic reactivation of Colab session
-			display(HTML('<script type="application/javascript">clearInterval(Keep_Running);Keep_Running=null;</script>'))
+			display(HTML('<script type="application/javascript">clearInterval(window.Keep_Running);window.Keep_Running=null;</script>'))
 
 
 	def on_SysInfo_clicked(b):
@@ -478,8 +478,7 @@ Keep_Running = setInterval(function() {\
 	#*************
 
 	javascript = '\
-<script type="application/javascript">\
-	var Keep_Running;'
+<script type="application/javascript">'
 
 	# Correct the bug on Google Colab (no titles at all !!)
 	if isColab:

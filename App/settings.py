@@ -14,22 +14,22 @@ Defaults = {
 	},
 	'PROCESS': {
 		'output_format': "FLAC",
-#		'preset_genre': "Pop Rock",
+		'preset': "Rock",
 		'normalize': False,
 		'vocals_1': "Kim Vocal 2",
 		'vocals_2': "Voc FT",
-		'vocals_3': "Kim Vocal 1",
-		'vocals_4': "(None)",
-		'REPAIR_MUSIC': "Maximum",
+		'vocals_3': "----",
+		'vocals_4': "----",
+		'REPAIR_MUSIC': "Maximum Mix",
 		'instru_1': "Instrum HQ 3",
-		'instru_2': "Instrum 3",
-		'filter_1': "Kim Vocal 1",
-		'filter_2': "(None)",
-		'filter_3': "(None)",
-		'filter_4': "(None)"
+		'instru_2': "----",
+		'filter_1': "Voc FT",
+		'filter_2': "----",
+		'filter_3': "----",
+		'filter_4': "----"
 	},
 	'OPTIONS': {
-		'quality': "Medium",
+		'speed': "Medium",
 #		'overlap_MDXv3': 8,
 		'chunk_size': 500000,
 	},
@@ -43,10 +43,82 @@ Defaults = {
 	},
 }
 Options = {
-	'output_format': [("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
-#	'preset_genre': ["Pop Rock"],
-    'REPAIR_MUSIC': ["No !!", "Maximum", "Average", "(Experimental Average)"],
-	'quality': ['Lowest', 'Low', 'Medium', 'High', 'Highest'],
+	'Output_format': [("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
+	'Presets': ["🎵 Pop Rock", "🎵 Techno & SFX", "⏰ I'm a impatient !", "⭐ I want the best quality !", "🤩 * Special best SDR *"],
+	'Speed': ['Fastest', 'Fast', 'Medium', 'Slow', 'Slowest'],
+    'REPAIR_MUSIC': ["No !!", "Maximum Mix", "Average Mix"],
+}
+Presets = {
+	"Rock": {
+		'speed': "Medium",
+		'vocals_1': "Kim Vocal 2",
+		'vocals_2': "Voc FT",
+		'vocals_3': "Kim Vocal 1",
+		'vocals_4': "----",
+		'REPAIR_MUSIC': "Maximum Mix",
+		'instru_1': "Instrum HQ 3",
+		'instru_2': "Instrum 3",
+		'filter_1': "Kim Vocal 2",
+		'filter_2': "Voc FT",
+		'filter_3': "----",
+		'filter_4': "----"
+	},
+	"Techno": {
+		'speed': "Medium",
+		'vocals_1': "Kim Vocal 2",
+		'vocals_2': "Voc FT",
+		'vocals_3': "Kim Vocal 1",
+		'vocals_4': "----",
+		'REPAIR_MUSIC': "Maximum Mix",
+		'instru_1': "Instrum HQ 3",
+		'instru_2': "Instrum 3",
+		'filter_1': "Kim Vocal 1",
+		'filter_2': "----",
+		'filter_3': "----",
+		'filter_4': "----"
+	},
+	"impatient": {
+		'speed': "Fastest",
+		'vocals_1': "Kim Vocal 2",
+		'vocals_2': "Voc FT",
+		'vocals_3': "----",
+		'vocals_4': "----",
+		'REPAIR_MUSIC': "No !!",
+		'instru_1': "----",
+		'instru_2': "----",
+		'filter_1': "----",
+		'filter_2': "----",
+		'filter_3': "----",
+		'filter_4': "----"
+	},
+	"quality": {
+		'speed': "Slow",
+		'vocals_1': "Kim Vocal 2",
+		'vocals_2': "Voc FT",
+		'vocals_3': "Kim Vocal 1",
+		'vocals_4': "----",
+		'REPAIR_MUSIC': "Maximum Mix",
+		'instru_1': "Instrum HQ 3",
+		'instru_2': "Instrum 3",
+		'filter_1': "Kim Vocal 2",
+		'filter_2': "Voc FT",
+		'filter_3': "Kim Vocal 1",
+		'filter_4': "----"
+	},
+	"SDR": {
+		'speed': "Medium",
+		'vocals_1': "Kim Vocal 2",
+		'vocals_2': "Voc FT",
+		'vocals_3': "Kim Vocal 1",
+		'vocals_4': "----",
+		'REPAIR_MUSIC': "No !!",
+		'instru_1': "----",
+		'instru_2': "----",
+		'filter_1': "----",
+		'filter_2': "----",
+		'filter_3': "----",
+		'filter_4': "----"
+	}
 }
 
 def Load(Gdrive, isColab):
@@ -70,14 +142,14 @@ def Load(Gdrive, isColab):
 		config.read_dict(Defaults)
 		Save(Gdrive, isColab, config)
 	
+	if  config['PROCESS']['output_format'] not in [x[1] for x in Options['Output_format']]:
+		config['PROCESS']['output_format'] = Defaults['PROCESS']['output_format']
+	if  config['PROCESS']['preset'] not in Options['Presets']:
+		config['PROCESS']['preset'] = Defaults['PROCESS']['preset']
 	if  config['PROCESS']['REPAIR_MUSIC'] not in Options['REPAIR_MUSIC']:
 		config['PROCESS']['REPAIR_MUSIC'] = Defaults['PROCESS']['REPAIR_MUSIC']
-	if  config['PROCESS']['output_format'] not in [x[1] for x in Options['output_format']]:
-		config['PROCESS']['output_format'] = Defaults['PROCESS']['output_format']
-	if  config['OPTIONS']['quality'] not in Options['quality']:
-		config['OPTIONS']['quality'] = Defaults['OPTIONS']['quality']
-	# if config['OPTIONS']['preset_genre'] not in Options['preset_genre']:
-	# 	config['OPTIONS']['preset_genre'] = Defaults['OPTIONS']['preset_genre']
+	if  config['OPTIONS']['speed'] not in Options['Speed']:
+		config['OPTIONS']['speed'] = Defaults['OPTIONS']['speed']
 		
 	return config
 

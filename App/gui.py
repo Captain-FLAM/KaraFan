@@ -19,7 +19,7 @@ def Run(params, Auto_Start):
 	DEV_MODE = params['I_AM_A_DEVELOPER']
 
 	width  = '670px'
-	height = '720px'
+	height = '760px'
 
 	# Set the font size when running on your PC
 	font = '14px'
@@ -67,7 +67,7 @@ def Run(params, Auto_Start):
 	config = App.settings.Load(Gdrive, isColab)
 
 	# Fill Models dropdowns
-	vocals = ["(None)"]; instru = ["(None)"]; filters = ["(None)"]
+	vocals = ["----"]; instru = ["----"]; filters = ["----"]
 	with open(os.path.join(Project, "App", "Models_DATA.csv")) as csvfile:
 		reader = csv.DictReader(csvfile)
 		for row in reader:
@@ -88,14 +88,10 @@ def Run(params, Auto_Start):
 	separator		= widgets.HTML('<div style="border-bottom: dashed 1px #000; margin: 5px 0 5px 0; width: 100%">')
 	# PATHS
 	input_path		= widgets.Text(config['PATHS']['input'], continuous_update=True, style=font_input)
-	input_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path : ALL audio files inside this folder will be separated by a Batch processing.</div>')
 	output_path		= widgets.Text(config['PATHS']['output'], continuous_update=True, style=font_input)
-	output_info		= widgets.HTML()
-	Btn_Create_input  = widgets.Button(description='➕', tooltip="Create the input folder",  button_style='warning', layout={'visibility':'hidden', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
-	Btn_Create_output = widgets.Button(description='➕', tooltip="Create the output folder", button_style='warning', layout={'visibility':'hidden', 'width':'25px', 'margin':'3px 0 0 15px', 'padding':'0'})
 	# PROCESS
-	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options = App.settings.Options['output_format'], layout = {'width':'150px'}, style=font_input)
-	# preset_genre	= widgets.Dropdown(value = config['PROCESS']['preset_genre'],  options = App.settings.Options['preset_genre'], layout = {'width':'150px'}, style=font_input)
+	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'150px'}, style=font_input)
+	preset			= widgets.Dropdown(options = App.settings.Options['Presets'], layout = {'width':'150px'}, style=font_input)
 	normalize		= widgets.Checkbox((config['PROCESS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
@@ -108,9 +104,8 @@ def Run(params, Auto_Start):
 	filter_2		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_3		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
 	filter_4		= widgets.Dropdown(options = filters, layout = {'width':'200px'}, style=font_input)
-	Btn_Reset_MDX	= widgets.Button(description='🌀', tooltip="Reset MDX models to defaults !!", layout={'width':'45px', 'margin':'0 94px 0 0'}, style={'button_color':'#eee'})
 	# OPTIONS
-	quality			= widgets.SelectionSlider(value = config['OPTIONS']['quality'], options = App.settings.Options['quality'], readout=True, style=font_input) 
+	speed			= widgets.SelectionSlider(value = config['OPTIONS']['speed'], options = App.settings.Options['Speed'], readout=True, style=font_input) 
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, layout={'margin':'0 0 0 10px'}, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
 	# BONUS
@@ -125,7 +120,7 @@ def Run(params, Auto_Start):
 	Btn_Del_Music	= widgets.Button(description='Music',  button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
 	# +
 	HELP			= widgets.HTML('<div id="HELP"></div>')
-	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'15px 0 15px 0'})
+	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'12px 0 12px 0'})
 
 	# TAB 2
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
@@ -145,26 +140,27 @@ def Run(params, Auto_Start):
 			layout = panel_layout,
 			children = [
 				widgets.VBox([
-					widgets.HBox([ Label("Input X file or PATH", 101), input_path, Btn_Create_input ]),
-					input_warning,
-					widgets.HBox([ Label("Output PATH", 102), output_path, Btn_Create_output ]),
-					widgets.HBox([ widgets.HTML('<div class="option-label" style="color:#999">Your Final path</div>'), output_info ]),
+					widgets.HBox([ Label("Input X file or PATH", 101), input_path ]),
+					widgets.HBox([ Label("Output PATH", 102), output_path ]),
 				]),
 				separator,
 				widgets.VBox([
 					widgets.HBox([ Label("Output Format", 201), output_format, Label("&nbsp; Normalize input", 202), normalize ]),
-#					widgets.HBox([ Label("Preset Genre", 203), preset_genre, preset_models ]),
-					widgets.HBox([ Label("MDX Vocals", 204),		vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Btn_Reset_MDX,					vocals_3, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Label("Presets", 203), preset ]),
+					widgets.HBox([ Label("MDX Vocals", 204),		vocals_1, vocals_3, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Label("", 204),					vocals_2, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+				]),
+				separator,
+				widgets.VBox([
 					widgets.HBox([ Label("Repair Music &nbsp;▶️", 205), REPAIR_MUSIC ]),
 					widgets.HBox([ Label("MDX Music", 206),			instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
-					widgets.HBox([ Label("MDX Music Clean", 207),	filter_1, filter_2, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
-					widgets.HBox([ Label("", 207),					filter_3, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("MDX Music Clean", 207),	filter_1, filter_3, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("", 207),					filter_2, filter_4, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
 					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
-					widgets.HBox([ Label("Quality", 301),  quality ]),
+					widgets.HBox([ Label("Speed", 301), speed ]),
 #					widgets.HBox([ Label("Overlap MDX v3", 302), overlap_MDXv3 ]),
 					widgets.HBox([ Label("Chunk Size", 303), chunk_size ]),
 				]),
@@ -204,7 +200,7 @@ help_index[2][4] = "Make an Ensemble of extractions with Vocals selected models.
 help_index[2][5] = "Repair music with <b>A.I</b> models.<br>Use it if you hear missing instruments, but ... it will take <b>longer time</b> also !<br>If you hear too much <b>vocal bleedings in Music Final</b>, change Models or <b>DON\'T use it</b> !!";\
 help_index[2][6] = "Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Inst HQ 3</b> » and ... test by yourself ! 😉<br>... You are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!";\
 help_index[2][7] = "Pass Vocals trough different filters to remove <b>Vocals Bleedings</b> of instruments.<br>If you want to keep SFX in music, use only one model : « <b>Kim Vocal 1</b> » !<br>You have to test various models to find the best combination for your song ...";\
-help_index[3][1] = "Set Quality of extraction.<br>Lowest is the fastest processing, but don\'t complain about worst quality.<br>Highest is the best quality, but it will take hours (days ? 😝) to process !!";\
+help_index[3][1] = "Set speed of extraction.<br>With fastest processing, don\'t complain about worst quality.<br><b>Slow</b> is the best quality, but it will take hours (days ? 😝) to process !!";\
 help_index[3][2] = "MDX version 3 overlap. (default : 8)";\
 help_index[3][3] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
 help_index[4][1] = "On <b>Colab</b> : KaraFan will KILL your session at end of « Processongs », to save your credits !!<br>On <b>your Laptop</b> : KaraFan will KILL your GPU, to save battery (and hot-less) !!<br>On <b>your PC</b> : KaraFan will KILL your GPU, anyway ... maybe it helps ? Try it !!";\
@@ -242,11 +238,11 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			if not os.path.isdir(path):
 				msg += "Your Output is not a valid folder !<br>You MUST set it to an existing folder path.<br>"
 		
-		if vocals_1.value == "(None)" and vocals_2.value == "(None)" \
-		and vocals_3.value == "(None)" and vocals_4.value == "(None)":
+		if vocals_1.value == "----" and vocals_2.value == "----" \
+		and vocals_3.value == "----" and vocals_4.value == "----":
 			msg += "You HAVE TO select at least one model for Vocals !<br>"
 		
-		if REPAIR_MUSIC.value and instru_1.value == "(None)" and instru_2.value == "(None)":
+		if REPAIR_MUSIC.value and instru_1.value == "----" and instru_2.value == "----":
 			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
 
 		if msg != "":
@@ -254,6 +250,21 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			HELP.value = '<div id="HELP"><div style="color: #f00">'+ msg +'</div></div>'
 			return
 		
+		# Code from Deton24 : Keep session active !!
+		if isColab:
+			display(HTML('\
+<script type="application/javascript">\
+Keep_Running = setInterval(function() {\
+	var selector = document.querySelector("#top-toolbar > colab-connect-button");\
+	if (selector != null) {\
+		selector.shadowRoot.querySelector("#connect").click();\
+		setTimeout(function(selector) {\
+			selector.shadowRoot.querySelector("#connect").click();\
+		}, 2000 + Math.round(Math.random() * 6000));\
+	}\
+}, 120000);\
+</script>'))
+
 		input_path.value = os.path.normpath(input_path.value)
 		output_path.value = os.path.normpath(output_path.value)
 
@@ -264,7 +275,7 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		}
 		config['PROCESS'] = {
 			'output_format': output_format.value,
-#			'preset_genre': preset_genre.value,
+			'preset': preset.value,
 			'normalize': normalize.value,
 			'vocals_1': vocals_1.value,
 			'vocals_2': vocals_2.value,
@@ -279,7 +290,7 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			'filter_4': filter_4.value,
 		}
 		config['OPTIONS'] = {
-			'quality': quality.value,
+			'speed': speed.value,
 #			'overlap_MDXv3': overlap_MDXv3.value,
 			'chunk_size': chunk_size.value,
 		}
@@ -301,7 +312,7 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		if isColab:
 			display(HTML('<script type="application/javascript">show_titles();</script>'))
 
-		options = {
+		params = {
 			'input': [],
 			'Gdrive': Gdrive,
 			'Project': Project,
@@ -314,17 +325,17 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		real_input  = os.path.join(Gdrive, input_path.value)
 
 		if os.path.isfile(real_input):
-			options['input'].append(real_input)
+			params['input'].append(real_input)
 		else:
 			# Get all audio files inside the folder (NOT recursive !)
 			for file_path in sorted(glob.glob(os.path.join(real_input, "*.*")))[:]:
 				if os.path.isfile(file_path):
 					ext = os.path.splitext(file_path)[1].lower()
 					if ext == ".mp3" or ext == ".wav" or ext == ".flac":
-						options['input'].append(file_path)
+						params['input'].append(file_path)
 		
 		# Start processing
-		CONSOLE.clear_output();  App.inference.Process(options, config)
+		CONSOLE.clear_output();  App.inference.Process(params, config)
 
 		# Refresh Google Drive files cache
 #		if isColab:
@@ -332,35 +343,16 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 #			drive.flush_and_unmount(stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
 #			drive.mount("/content/Gdrive", stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
 
+		if isColab:
+			# To stop automatic reactivation of Colab session
+			display(HTML('<script type="application/javascript">clearInterval(Keep_Running);Keep_Running=null;</script>'))
 
-	def on_Btn_Reset_MDX_clicked(b):
-		vocals_1.value = App.settings.Defaults['PROCESS']['vocals_1']
-		vocals_2.value = App.settings.Defaults['PROCESS']['vocals_2']
-		vocals_3.value = App.settings.Defaults['PROCESS']['vocals_3']
-		vocals_4.value = App.settings.Defaults['PROCESS']['vocals_4']
-		REPAIR_MUSIC.value = App.settings.Defaults['PROCESS']['REPAIR_MUSIC']
-		instru_1.value = App.settings.Defaults['PROCESS']['instru_1']
-		instru_2.value = App.settings.Defaults['PROCESS']['instru_2']
-		filter_1.value = App.settings.Defaults['PROCESS']['filter_1']
-		filter_2.value = App.settings.Defaults['PROCESS']['filter_2']
-		filter_3.value = App.settings.Defaults['PROCESS']['filter_3']
-		filter_4.value = App.settings.Defaults['PROCESS']['filter_4']
 
 	def on_SysInfo_clicked(b):
 		font_size = '13px' if isColab == True else '12px'
 		sys_info.value = ""
 		sys_info.value = App.sys_info.Get(font_size)
 
-	def on_Create_input_clicked(b):
-		os.makedirs(os.path.join(Gdrive, input_path.value), exist_ok=True)
-		Btn_Create_input.layout.visibility = 'hidden'
-		on_input_change({'new': input_path.value})
-
-	def on_Create_output_clicked(b):
-		os.makedirs(os.path.join(Gdrive, output_path.value), exist_ok=True)
-		Btn_Create_output.layout.visibility = 'hidden'
-		on_output_change({'new': output_path.value})
-	
 	# Delete all vocals files extracted from THIS song
 	def on_Del_Vocals_clicked(b):
 
@@ -398,9 +390,6 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			HELP.value = '<div id="HELP"><div style="color: #f00">No files to delete !</div></div>'
 
 	# Link Buttons to functions
-	Btn_Create_input.on_click(on_Create_input_clicked)
-	Btn_Create_output.on_click(on_Create_output_clicked)
-	Btn_Reset_MDX.on_click(on_Btn_Reset_MDX_clicked)
 	Btn_Del_Vocals.on_click(on_Del_Vocals_clicked)
 	Btn_Del_Music.on_click(on_Del_Music_clicked)
 	Btn_Start.on_click(on_Start_clicked)
@@ -411,13 +400,11 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 	#**************
 	
 	def on_input_change(change):
-		if HELP.value.find("ERROR") != -1:
-			HELP.value = '<div id="HELP"></div>'  # Clear HELP
-			
+
 		# DO NOT USE os.path.normpath() :
 		# it will remove the last separator in real-time --> impossible to type it in the input field !
-		path = change['new']
 		
+		path = change['new']
 		if path != "":
 			path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
 
@@ -425,30 +412,52 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 				path = path.replace(Gdrive, "")  # Remove Gdrive path from "input"
 			
 			# BUG signaled by Jarredou : remove the first separator
-			if path[0] == os.path.sep:
-				path = path[1:]
+			if path[0] == os.path.sep:  path = path[1:]
 			
 			if path != input_path.value:  input_path.value = path
 			
+		on_GOD_MODE_change(change);  update_paths_info()
+		
+	def on_output_change(change):
+			
+		path = change['new']
+		if path != "":
+			path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
+
+			if path.find(Gdrive) != -1:
+				path = path.replace(Gdrive, "")  # Remove Gdrive path from "output"
+
+			# BUG signaled by Jarredou : remove the first separator
+			if path[0] == os.path.sep:  path = path[1:]
+			
+			if path != output_path.value:  output_path.value = path
+		
+		update_paths_info()
+	
+	def update_paths_info():
+
+		if HELP.value.find("ERROR") != -1:
+			HELP.value = '<div id="HELP"></div>'  # Clear HELP
+
+		msg = ""
 		path	= os.path.join(Gdrive, path)
 		is_dir	= os.path.isdir(path)
 		is_file	= os.path.isfile(path)
 		
 		if path != "":
+			input_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path :<br>ALL audio files inside this folder will be separated by a Batch processing !</div>')
 			input_warning.layout.visibility = 'visible' if input_path.value != "" and is_dir else 'hidden'
-			Btn_Create_input.layout.visibility = 'visible' if not is_file and not is_dir else 'hidden'
 		else:
-			Btn_Create_input.layout.visibility = 'hidden'
 			input_warning.layout.visibility = 'hidden'
 
-		on_GOD_MODE_change(change)
-
+			widgets.HBox([ widgets.HTML('<div class="option-label" style="color:#999">Your Final path</div>'), output_info ]),
+		
 		name = "[ NAME of FILES ]"
 		if is_file:
 			name = os.path.splitext(os.path.basename(path))[0]
 
 		output_info.value = f'<div class="path-info">{Gdrive}{os.path.sep}{output_path.value} {os.path.sep} {name} {os.path.sep}</div>'
-		
+
 	def on_GOD_MODE_change(change):
 		path = os.path.join(Gdrive, input_path.value)
 		disable = not (os.path.isfile(path) and DEBUG.value and GOD_MODE.value)
@@ -457,28 +466,6 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 
 	def on_DEBUG_change(change):
 		on_GOD_MODE_change(change)
-
-	def on_output_change(change):
-		if HELP.value.find("ERROR") != -1:
-			HELP.value = '<div id="HELP"></div>'  # Clear HELP
-			
-		path = change['new']
-
-		if path != "":
-			path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
-
-			if path.find(Gdrive) != -1:
-				path = path.replace(Gdrive, "")  # Remove Gdrive path from "output"
-
-			# BUG signaled by Jarredou : remove the first separator
-			if path[0] == os.path.sep:
-				path = path[1:]
-			
-			if path != output_path.value:  output_path.value = path
-
-			Btn_Create_output.layout.visibility = 'visible' if not os.path.isdir(os.path.join(Gdrive, path)) else 'hidden'
-		else:
-			Btn_Create_output.layout.visibility = 'hidden'
 
 	# Link Events to functions
 	input_path.observe(on_input_change, names='value')
@@ -492,8 +479,8 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 
 	javascript = '\
 <script type="application/javascript">\
-	var Keep_Running = null;'
-	
+	var Keep_Running;'
+
 	# Correct the bug on Google Colab (no titles at all !!)
 	if isColab:
 		javascript += '\
@@ -502,6 +489,7 @@ function show_titles() {\
 	document.getElementById("tab-key-1").getElementsByClassName("lm-TabBar-tabLabel")[0].innerHTML = "'+ titles[1] +'";\
 	document.getElementById("tab-key-2").getElementsByClassName("lm-TabBar-tabLabel")[0].innerHTML = "'+ titles[2] +'";\
 }'
+
 	# Add HELP
 	javascript += '\
 function show_help(index) {\
@@ -521,14 +509,7 @@ function show_help(index) {\
 		document.getElementById("tab-key-2").onclick = show_titles;\
 		/* Auto-Scroll to KaraFan */\
 		var lastCell = document.querySelector(".notebook-cell-list > div:last-child");\
-		if (lastCell) window.location = document.URL.replace(/#.*/, "#scrollTo=" + lastCell.id.replace("cell-", ""));\
-		/* Code from Deton24 : Keep session active */\
-		Keep_Running = setInterval(function() {\
-			document.querySelector("#top-toolbar > colab-connect-button").shadowRoot.querySelector("#connect").click();\
-			setTimeout(function() {\
-				document.querySelector("#top-toolbar > colab-connect-button").shadowRoot.querySelector("#connect").click();\
-			}, 1000)\
-		}, 60000)'
+		if (lastCell) window.location = document.URL.replace(/#.*/, "#scrollTo=" + lastCell.id.replace("cell-", ""));'
 	
 	javascript += '\
 	}, 500);\
@@ -541,6 +522,10 @@ function show_help(index) {\
 
 	on_input_change({'new': input_path.value})
 	on_output_change({'new': output_path.value})
+
+	# Example "Pop Rock" -> only one word, key = 'Rock'
+	for words in App.settings.Options['Presets']:
+		if config['PROCESS']['preset'] in words:  preset.value = words;  break
 
 	if config['PROCESS']['vocals_1'] in vocals:		vocals_1.value = config['PROCESS']['vocals_1']
 	if config['PROCESS']['vocals_2'] in vocals:		vocals_2.value = config['PROCESS']['vocals_2']

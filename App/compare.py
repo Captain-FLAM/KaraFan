@@ -122,7 +122,7 @@ def SDR_Volumes(type, audio, actual_compensation, song_output_path, Gdrive):
 	Best_Volume = 1.0
 	Score  = 0
 	audio  = audio.T
-	reference, _ = sf.read(os.path.join(MultiSong_path, song_name[-3:] + '_' + type + '.flac'))
+	reference, _ = sf.read(os.path.join(MultiSong_path, song_name[-3:] + '_' + type + '.flac'))  # Get only the number of the song
 	
 	min_volume = 0.94
 	max_volume = 1.07

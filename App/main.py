@@ -1,9 +1,11 @@
 
 import os, App.gui
 
-def Start(params, Auto_Start = 0):
+def Start(params):
+	
+	Auto_Start = 0
 
-	song_output_path = os.path.join(params['Gdrive'], "Music", "song_017")
+	song_output_path = os.path.join(params['Gdrive'], "Music", "SDR_song_017")
 
 	# # Remove ALL files
 	# for file in os.listdir(song_output_path):
@@ -24,6 +26,8 @@ def Start(params, Auto_Start = 0):
 	# file = os.path.join(song_output_path, "1 - Vocal extract - (Voc FT).flac")
 	# if os.path.isfile(file):  os.remove(file)
 	# file = os.path.join(song_output_path, "1 - Vocal extract - (Kim Vocal 2).flac")
+	# if os.path.isfile(file):  os.remove(file)
+	# file = os.path.join(song_output_path, "2 - Music extract - (Instrum HQ 3).flac")
 	# if os.path.isfile(file):  os.remove(file)
 
 	App.gui.Run(params, Auto_Start)  # Auto-run processing on execution for DEBUG

@@ -26,7 +26,7 @@ Defaults = {
 	},
 	'OPTIONS': {
 		'speed_vocal': "Fast",
-		'speed_music': "Normal",
+		'speed_music': "Medium",
 #		'overlap_MDXv3': 8,
 		'chunk_size': 500000,
 	},
@@ -43,7 +43,7 @@ Options = {
 	'Output_format': [("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
     'REPAIR_MUSIC': [("DON'T !!", "NO"), ("Maximum Mix", 'Max'), ("Average Mix", 'Average')],
     'Bleedings': ["NO", "Soft", "Medium", "Hard"],
-	'Speed': ['Fastest', 'Fast', 'Normal', 'Slow', 'Slowest'],
+	'Speed': ['Fastest', 'Fast', 'Medium', 'Slow', 'Slowest'],
 }
 
 def Load(Gdrive, isColab):

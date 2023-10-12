@@ -50,7 +50,7 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 
 # 🧻 in the WIKI now
 
-- ☸️ [Settings Advices](https://github.com/Captain-FLAM/KaraFan/wiki/%E2%98%B8%EF%B8%8F-Settings-Advices.md)
+- ☢️ [Settings Advices](https://github.com/Captain-FLAM/KaraFan/wiki/%E2%98%A2%EF%B8%8F-Settings-Advices)
 - 🤡 [My Advices](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A4%A1-My-Advices)
 - 🥣 [My Magic « Recipe »](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%A5%A3-My-Magic-%C2%AB-Recipe-%C2%BB)
 - 💡 [Technical Details](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%92%A1-Technical-Details)

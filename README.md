@@ -56,7 +56,8 @@ You can reach me by [email](https://github.com/Captain-FLAM) or **Join all of us
 - 💡 [Technical Details](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%92%A1-Technical-Details)
 - 🎰 [Success Story](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B0-Success-Story)
 
-So for now, in addition to being obliged to **R.T.F.R.M** (Read The Fucking READ ME), you have to **R.T.F.W** (Read The Fucking WIKI) !! 😛
+So for now, in addition to being obliged to **R.T.F.R.M** (Read This Fucking READ ME),  
+you have to **R.T.F.W** (Read The Fucking WIKI) !! 😛
 
 ~
 

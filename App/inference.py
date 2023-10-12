@@ -268,35 +268,28 @@ class MusicSeparationModel:
 		else:
 			self.providers = ["CUDAExecutionProvider"]
 
-		# Set BigShifts from Speed option
-		match config['OPTIONS']['speed_vocal']:
+		# Set BigShifts from Speed option (last +X is for SRS Low : 1 pass, or not for "x0")
+		match config['OPTIONS']['speed']:
 			case 'Fastest':
-				self.Quality_Vocal = { 'CSV': "x0", 'Denoise': False, 'Demix_seconds': 1, 'BigShifts': 1, 'BigShifts_SRS': 0 }
+				self.Quality_Vocal = { 'CSV': "x0", 'BigShifts': 1, 'BigShifts_SRS': 0 } # 1 + 0 + 0 = 1 pass
+				self.Quality_Bleed = { 'CSV': "x0", 'BigShifts': 1, 'BigShifts_SRS': 0 } # SRS because it's Vocal model !
+				self.Quality_Music = { 'CSV': "x0", 'BigShifts': 1, 'BigShifts_SRS': 0 }
 			case 'Fast':
-				self.Quality_Vocal = { 'CSV': "x1", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 1, 'BigShifts_SRS': 1 }
+				self.Quality_Vocal = { 'CSV': "x1", 'BigShifts': 1, 'BigShifts_SRS': 1 } # 1 + 1 + 1 = 3 pass
+				self.Quality_Bleed = { 'CSV': "x1", 'BigShifts': 1, 'BigShifts_SRS': 1 } # SRS because it's Vocal model !
+				self.Quality_Music = { 'CSV': "x1", 'BigShifts': 1, 'BigShifts_SRS': 0 }
 			case 'Medium':
-				self.Quality_Vocal = { 'CSV': "x2", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 1, 'BigShifts_SRS': 3 }
+				self.Quality_Vocal = { 'CSV': "x2", 'BigShifts': 1, 'BigShifts_SRS': 3 } # 1 + 3 + 1 = 5 pass
+				self.Quality_Bleed = { 'CSV': "x2", 'BigShifts': 2, 'BigShifts_SRS': 1 } # SRS because it's Vocal model !
+				self.Quality_Music = { 'CSV': "x2", 'BigShifts': 2, 'BigShifts_SRS': 0 }
 			case 'Slow':
-				self.Quality_Vocal = { 'CSV': "x3", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 2, 'BigShifts_SRS': 1 }
+				self.Quality_Vocal = { 'CSV': "x3", 'BigShifts': 2, 'BigShifts_SRS': 3 } # 2 + 3 + 1 = 6 pass
+				self.Quality_Bleed = { 'CSV': "x3", 'BigShifts': 2, 'BigShifts_SRS': 1 } # SRS because it's Vocal model !
+				self.Quality_Music = { 'CSV': "x3", 'BigShifts': 3, 'BigShifts_SRS': 0 }
 			case 'Slowest':
-				self.Quality_Vocal = { 'CSV': "x4", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 2, 'BigShifts_SRS': 3 }
-		
-		match config['OPTIONS']['speed_music']:
-			case 'Fastest':
-				self.Quality_Music = { 'CSV': "x0", 'Denoise': False, 'Demix_seconds': 1, 'BigShifts': 1, 'BigShifts_SRS': 0 }
-				self.Quality_Bleed = { 'CSV': "x0", 'Denoise': False, 'Demix_seconds': 1, 'BigShifts': 1, 'BigShifts_SRS': 0 }
-			case 'Fast':
-				self.Quality_Music = { 'CSV': "x1", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 1, 'BigShifts_SRS': 0 }
-				self.Quality_Bleed = { 'CSV': "x1", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 1, 'BigShifts_SRS': 1 } # SRS because it's Vocal model !
-			case 'Medium':
-				self.Quality_Music = { 'CSV': "x2", 'Denoise': True,  'Demix_seconds': 2, 'BigShifts': 2, 'BigShifts_SRS': 0 }
-				self.Quality_Bleed = { 'CSV': "x2", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 2, 'BigShifts_SRS': 1 } # SRS because it's Vocal model !
-			case 'Slow':
-				self.Quality_Music = { 'CSV': "x3", 'Denoise': True,  'Demix_seconds': 4, 'BigShifts': 3, 'BigShifts_SRS': 0 }
-				self.Quality_Bleed = { 'CSV': "x3", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 2, 'BigShifts_SRS': 1 } # SRS because it's Vocal model !
-			case 'Slowest':
-				self.Quality_Music = { 'CSV': "x4", 'Denoise': True,  'Demix_seconds': 8, 'BigShifts': 4, 'BigShifts_SRS': 0 }
-				self.Quality_Bleed = { 'CSV': "x4", 'Denoise': True,  'Demix_seconds': 1, 'BigShifts': 2, 'BigShifts_SRS': 1 } # SRS because it's Vocal model !
+				self.Quality_Vocal = { 'CSV': "x4", 'BigShifts': 2, 'BigShifts_SRS': 4 } # 2 + 4 + 1 = 7 pass
+				self.Quality_Bleed = { 'CSV': "x4", 'BigShifts': 2, 'BigShifts_SRS': 1 } # SRS because it's Vocal model !
+				self.Quality_Music = { 'CSV': "x4", 'BigShifts': 4, 'BigShifts_SRS': 0 }
 		
 		bleedings = config['PROCESS']['bleedings']
 		match bleedings:
@@ -304,7 +297,6 @@ class MusicSeparationModel:
 			case "Medium":	bleedings = "Voc FT"
 			case "Hard":	bleedings = "Kim Vocal 2"
 
-		self.Best_Compensations = []
 		self.Compensation_Vocal_ENS = 1.0
 		self.Compensation_Music_SUB = 1.0
 		self.Compensation_Music_ENS = 1.0
@@ -411,6 +403,8 @@ class MusicSeparationModel:
 
 		self.SDR_Testing = name.startswith("SDR_")
 
+		self.SDR_Compensation_Test = True
+
 		#*************************************************
 
 		start_time = time.time()
@@ -481,12 +475,11 @@ class MusicSeparationModel:
 			vocal_ensemble = App.audio_utils.Make_Ensemble('Max', vocal_extracts)  # MAX and not average, because it's Vocals !!
 
 			# DEBUG : Test different values for SDR Volume Compensation
-			if self.DEBUG and self.SDR_Testing:
+			if self.DEBUG and self.SDR_Testing and self.SDR_Compensation_Test:
 				Best_Volume = App.compare.SDR_Volumes("Vocal", vocal_ensemble, self.Compensation_Vocal_ENS, self.song_output_path, self.Gdrive)
 
 				if self.Compensation_Vocal_ENS != Best_Volume:
 					self.Compensation_Vocal_ENS = Best_Volume
-					self.Best_Compensations.append('Best Compensation for "Vocal Ensemble" : {:5.3f}'.format(Best_Volume))
 
 			vocal_ensemble = vocal_ensemble * self.Compensation_Vocal_ENS
 
@@ -509,18 +502,17 @@ class MusicSeparationModel:
 		music_sub = normalized - vocal_ensemble
 
 		# DEBUG : Test different values for SDR Volume Compensation
-		if self.DEBUG and self.SDR_Testing:
+		if self.DEBUG and self.SDR_Testing and self.SDR_Compensation_Test:
 			Best_Volume = App.compare.SDR_Volumes("Music", music_sub, self.Compensation_Music_SUB, self.song_output_path, self.Gdrive)
 
 			if self.Compensation_Music_SUB != Best_Volume:
 				self.Compensation_Music_SUB = Best_Volume
-				self.Best_Compensations.append('Best Compensation for "Music SUB"      : {:5.3f}'.format(Best_Volume))
 
 		music_sub = music_sub * self.Compensation_Music_SUB
 
 		# 3 - Extract Music with MDX models
 
-		if self.Algorithm == "NO":
+		if self.Algorithm == "NO REPAIR":
 			music_final = music_sub
 		else:
 			if self.DEBUG:  self.Save_Audio("2 - Music - SUB", music_sub)
@@ -544,12 +536,11 @@ class MusicSeparationModel:
 				music_ensemble = App.audio_utils.Make_Ensemble(self.Algorithm, music_extracts)  # Algorithm
 				
 				# DEBUG : Test different values for SDR Volume Compensation
-				if self.DEBUG and self.SDR_Testing:
+				if self.DEBUG and self.SDR_Testing and self.SDR_Compensation_Test:
 					Best_Volume = App.compare.SDR_Volumes("Music", music_ensemble, self.Compensation_Music_ENS, self.song_output_path, self.Gdrive)
 
 					if self.Compensation_Music_ENS != Best_Volume:
 						self.Compensation_Music_ENS = Best_Volume
-						self.Best_Compensations.append('Best Compensation for "Music Ensemble" : {:5.3f}'.format(Best_Volume))
 
 				music_ensemble = music_ensemble * self.Compensation_Music_ENS
 
@@ -608,7 +599,7 @@ class MusicSeparationModel:
 
 		if self.SDR_Testing:
 			print("----------------------------------------")
-			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, self.Best_Compensations, elapsed_time)
+			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, elapsed_time)
 		
 		if self.BATCH_MODE and not self.DEBUG and not self.PREVIEWS:
 			self.CONSOLE.clear_output()
@@ -639,7 +630,8 @@ class MusicSeparationModel:
 			case 'Vocal':	quality = self.Quality_Vocal;  text = 'Extract Vocals'
 			case 'Filter':	quality = self.Quality_Bleed;  text = 'Clean Vocal Bleedings'
 		
-		text = f'► {text} with "{name}"'
+		text	= f'► {text} with "{name}"'
+		denoise	= (quality['CSV'] != "x0")
 
 		if not self.large_gpu:
 			# print(f'Large GPU is disabled : Loading model "{name}" now...')
@@ -648,19 +640,24 @@ class MusicSeparationModel:
 		mdx_model = self.MDX[name]['model']
 		inference = self.MDX[name]['inference']
 
-		# ONLY 1 Pass, for testing purposes
-		if quality['Denoise']:
-			print(text)
-			source = 0.5 * -self.demix_full(-audio, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts'])[0]
-			source += 0.5 * self.demix_full( audio, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts'])[0]
+		demix_seconds = 1 if type == 'Music' else quality['BigShifts']  # 1 second for Music !!
+
+		if denoise:
+			print(f"{text} ({quality['BigShifts']} pass)")
+			source = 0.5 * -self.demix_full(-audio, mdx_model, inference, demix_seconds, quality['BigShifts'])[0]
+			source += 0.5 * self.demix_full( audio, mdx_model, inference, demix_seconds, quality['BigShifts'])[0]
 		else:
-			print(text + " (<b>1 Pass !</b>)")
-			source = self.demix_full(audio, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts'])[0]
+			# ONLY 1 Pass, for testing purposes
+			print(f"{text} ({quality['BigShifts']} pass) - <b>NO Denoise !</b>")
+			source = self.demix_full(audio, mdx_model, inference, demix_seconds, quality['BigShifts'])[0]
 
 		# Automatic SRS
 		if quality['BigShifts_SRS'] > 0:
 
-			# SRS High
+			bigshifts = quality['BigShifts_SRS']  # "demix_seconds" is equal because SRS is only for Vocals !!
+
+			# 1 - High SRS
+
 			if model['Cut_OFF'] > 0 and model['Name'] != "Vocal Main":  # Exception !!
 
 				# This is mandatory, I don't know why, but without this,
@@ -679,19 +676,19 @@ class MusicSeparationModel:
 				# DEBUG
 				# self.Save_Audio(type + " - SRS REAL - High", audio_SRS)
 
-				# ONLY 1 Pass, for testing purposes
-				if quality['Denoise']:
-					print(text +" -> SRS High")
+				if denoise:
+					print(f"{text} -> SRS High ({bigshifts} pass)")
 					
 					source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
-						-self.demix_full(-audio_SRS, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts_SRS'])[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
+						-self.demix_full(-audio_SRS, mdx_model, inference, bigshifts, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
 					
 					source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
-						self.demix_full( audio_SRS, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts_SRS'])[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
+						self.demix_full( audio_SRS, mdx_model, inference, bigshifts, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
 				else:
-					print(text + " -> SRS High (<b>1 Pass !</b>)")
+					# ONLY 1 Pass, for testing purposes
+					print(f"{text} -> SRS High ({bigshifts} pass) - <b>NO Denoise !</b>")
 					source_SRS = App.audio_utils.Change_sample_rate(
-						self.demix_full(audio_SRS, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts_SRS'])[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
+						self.demix_full(audio_SRS, mdx_model, inference, bigshifts, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
 
 				# Check if source_SRS is same size than source
 				source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
@@ -718,7 +715,8 @@ class MusicSeparationModel:
 				
 				source = App.audio_utils.Make_Ensemble('Max', [source, source_SRS])
 
-			# Low SRS
+			# 2 - Low SRS -> Bigshifts only 1 pass, else bad SDR
+			
 			cut_freq = 18550 # Hz
 
 			audio_SRS = App.audio_utils.Change_sample_rate(audio, 'UP', self.original_cutoff, cut_freq)
@@ -730,18 +728,18 @@ class MusicSeparationModel:
 			# self.Save_Audio(type + " - SRS REAL - Low", audio_SRS)
 
 			# ONLY 1 Pass, for testing purposes
-			if quality['Denoise']:
-				print(text +" -> SRS Low")
+			if denoise:
+				print(f"{text} -> SRS Low (1 pass)")
 				
 				source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
-					-self.demix_full(-audio_SRS, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts_SRS'])[0], 'DOWN', self.original_cutoff, cut_freq)
+					-self.demix_full(-audio_SRS, mdx_model, inference, 1, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
 
 				source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
-					self.demix_full( audio_SRS, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts_SRS'])[0], 'DOWN', self.original_cutoff, cut_freq)
+					self.demix_full( audio_SRS, mdx_model, inference, 1, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
 			else:
-				print(text + " -> SRS Low (<b>1 Pass !</b>)")
+				print(f"{text} -> SRS Low (1 pass) - <b>NO Denoise !</b>")
 				source_SRS = App.audio_utils.Change_sample_rate(
-					self.demix_full(audio_SRS, mdx_model, inference, quality['Demix_seconds'], quality['BigShifts_SRS'])[0], 'DOWN', self.original_cutoff, cut_freq)
+					self.demix_full(audio_SRS, mdx_model, inference, 1, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
 
 			# Check if source_SRS is same size than source
 			source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
@@ -749,7 +747,7 @@ class MusicSeparationModel:
 			source = App.audio_utils.Make_Ensemble('Max', [source, source_SRS])
 
 		# DEBUG : Test different values for SDR Volume Compensation
-		if self.DEBUG and self.SDR_Testing:
+		if self.DEBUG and self.SDR_Testing and self.SDR_Compensation_Test:
 			Best_Volume = App.compare.SDR_Volumes(type, source, model['Compensation'], self.song_output_path, self.Gdrive)
 
 			if model['Compensation'] != Best_Volume:  model['Compensation'] = Best_Volume

@@ -21,7 +21,7 @@ librosa
 #****  Inference  ****
 
 numpy
-scipy
+scipy < 1.23.0
 
 #****  Utils  ****
 

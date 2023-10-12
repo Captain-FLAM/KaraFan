@@ -9,6 +9,8 @@ import os, csv, glob
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
+Running = False
+
 def Run(params, Auto_Start):
 
 	import App.settings, App.inference, App.sys_info, App.progress
@@ -19,7 +21,7 @@ def Run(params, Auto_Start):
 	DEV_MODE = params['I_AM_A_DEVELOPER']
 
 	width  = '670px'
-	height = '760px'
+	height = '600px'
 
 	# Set the font size when running on your PC
 	font = '14px'
@@ -100,8 +102,7 @@ def Run(params, Auto_Start):
 	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	# OPTIONS
-	speed_vocal		= widgets.SelectionSlider(value = config['OPTIONS']['speed_vocal'], options = App.settings.Options['Speed'], readout=True, style=font_input) 
-	speed_music		= widgets.SelectionSlider(value = config['OPTIONS']['speed_music'], options = App.settings.Options['Speed'], readout=True, style=font_input) 
+	speed			= widgets.SelectionSlider(value = config['OPTIONS']['speed'], options = App.settings.Options['Speed'], readout=True, style=font_input) 
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, layout={'margin':'0 0 0 10px'}, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
 	# BONUS
@@ -153,8 +154,7 @@ def Run(params, Auto_Start):
 				separator,
 				widgets.VBox([
 					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
-					widgets.HBox([ Label("Speed Vocals", 301), speed_vocal ]),
-					widgets.HBox([ Label("Speed Music", 301),  speed_music ]),
+					widgets.HBox([ Label("Speed", 301), speed ]),
 #					widgets.HBox([ Label("Overlap MDX v3", 302), overlap_MDXv3 ]),
 					widgets.HBox([ Label("Chunk Size", 303), chunk_size ]),
 				]),
@@ -192,8 +192,8 @@ help_index[2][2] = "Normalize input audio files to avoid clipping and get better
 help_index[2][3] = "Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
 help_index[2][4] = "Repair music with <b>A.I</b> models.<br>Use it if you hear missing instruments, but ... it will take <b>longer time</b> also !<br>If you hear too much <b>vocal bleedings in Music Final</b>, change Models or <b>DON\'T use it</b> !!";\
 help_index[2][5] = "Pass Music trough an <b>A.I</b> model to remove <b>Vocals Bleedings</b>.<br>If you want to keep SFX in music, don\'t use it or use only : « <b>Soft</b> » !";\
-help_index[2][6] = "Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Inst HQ 3</b> » and ... test by yourself ! 😉<br>... You are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!";\
-help_index[3][1] = "Fastest : extract in 1 pass with <b>NO</b> SRS and <b>NO</b> Denoise (weak noise added by MDX models)<br>Fast & Normal : 3 & 7 passes with <b>DENOISE</b> (the same option as in <b>UVR 5</b> 😉)<br>Slowest : is the best quality, but it will take hours to process !! 😝";\
+help_index[2][6] = "Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Instrum HQ 3</b> » and « <b>Instrum 3</b> » but ... <b>test</b> by yourself ! 😉<br>... You are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!";\
+help_index[3][1] = "Fastest : extract in 1 pass with <b>NO</b> SRS and <b>NO</b> Denoise (<b>only</b> for Testing)<br>All others are multi-passes with <b>DENOISE</b> (the same option as in <b>UVR 5</b> 😉)<br>Slowest : is the best quality, but it will take hours to process !! 😝";\
 help_index[3][2] = "MDX version 3 overlap. (default : 8)";\
 help_index[3][3] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
 help_index[4][1] = "On <b>Colab</b> : KaraFan will KILL your session at end of « Processongs », to save your credits !!<br>On <b>your Laptop</b> : KaraFan will KILL your GPU, to save battery (and hot-less) !!<br>On <b>your PC</b> : KaraFan will KILL your GPU, anyway ... maybe it helps ? Try it !!";\
@@ -214,6 +214,8 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 	#*********************
 	
 	def on_Start_clicked(b):
+		global Running
+
 		HELP.value = '<div id="HELP"></div>'  # Clear HELP
 		msg = ""
 		if input_path.value == "":
@@ -263,8 +265,7 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			'instru_2': instru_2.value,
 		}
 		config['OPTIONS'] = {
-			'speed_vocal': speed_vocal.value,
-			'speed_music': speed_music.value,
+			'speed': speed.value,
 #			'overlap_MDXv3': overlap_MDXv3.value,
 			'chunk_size': chunk_size.value,
 		}
@@ -302,7 +303,10 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 						params['input'].append(file_path)
 		
 		# Start processing
-		CONSOLE.clear_output();  App.inference.Process(params, config)
+		if not Running:
+			Running = True
+			CONSOLE.clear_output();  App.inference.Process(params, config)
+			Running = False
 
 		# Refresh Google Drive files cache
 #		if isColab:
@@ -320,8 +324,7 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		bleedings.value		= App.settings.Defaults['PROCESS']['bleedings']
 		instru_1.value		= App.settings.Defaults['PROCESS']['instru_1']
 		instru_2.value		= App.settings.Defaults['PROCESS']['instru_2']
-		speed_vocal.value	= App.settings.Defaults['OPTIONS']['speed_vocal']
-		speed_music.value	= App.settings.Defaults['OPTIONS']['speed_music']
+		speed.value			= App.settings.Defaults['OPTIONS']['speed']
 		
 	def on_SysInfo_clicked(b):
 		font_size = '13px' if isColab == True else '12px'
@@ -426,7 +429,7 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 		# else:
 		# 	input_warning.layout.visibility = 'hidden'
 
-		# 	widgets.HBox([ widgets.HTML('<div class="option-label" style="color:#999">Your Final path</div>'), output_info ]),
+		# 	widgets.HBox([ widgets.HTML('<div style="color:#999">Your Final path</div>'), output_info ]),
 		
 		# name = "[ NAME of FILES ]"
 		# if is_file:

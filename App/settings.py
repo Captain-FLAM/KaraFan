@@ -25,8 +25,7 @@ Defaults = {
 		'instru_2': "Instrum 3",
 	},
 	'OPTIONS': {
-		'speed_vocal': "Fast",
-		'speed_music': "Medium",
+		'speed': "Medium",
 #		'overlap_MDXv3': 8,
 		'chunk_size': 500000,
 	},
@@ -36,12 +35,12 @@ Defaults = {
 		'DEBUG': False,
 		'GOD_MODE': False,
 		'TEST_MODE': False,
-		'large_gpu': True,
+		'large_gpu': False,
 	},
 }
 Options = {
 	'Output_format': [("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
-    'REPAIR_MUSIC': [("DON'T !!", "NO"), ("Maximum Mix", 'Max'), ("Average Mix", 'Average')],
+    'REPAIR_MUSIC': [("DON'T !!", "NO REPAIR"), ("Maximum Mix", 'Max'), ("Average Mix", 'Average')],
     'Bleedings': ["NO", "Soft", "Medium", "Hard"],
 	'Speed': ['Fastest', 'Fast', 'Medium', 'Slow', 'Slowest'],
 }
@@ -73,10 +72,8 @@ def Load(Gdrive, isColab):
 		config['PROCESS']['REPAIR_MUSIC'] = Defaults['PROCESS']['REPAIR_MUSIC']
 	if  config['PROCESS']['bleedings'] not in Options['Bleedings']:
 		config['PROCESS']['bleedings'] = Defaults['PROCESS']['bleedings']
-	if  config['OPTIONS']['speed_vocal'] not in Options['Speed']:
-		config['OPTIONS']['speed_vocal'] = Defaults['OPTIONS']['speed_vocal']
-	if  config['OPTIONS']['speed_music'] not in Options['Speed']:
-		config['OPTIONS']['speed_music'] = Defaults['OPTIONS']['speed_music']
+	if  config['OPTIONS']['speed'] not in Options['Speed']:
+		config['OPTIONS']['speed'] = Defaults['OPTIONS']['speed']
 		
 	return config
 

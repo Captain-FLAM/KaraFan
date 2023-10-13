@@ -367,7 +367,9 @@ def Run(params, Auto_Start):
 			if path != input_path.value:  input_path.value = path
 			
 			if os.path.isdir(os.path.join(Gdrive, path)):
-				HELP.value = '<div id="HELP"><div style="color: #c00000"><b>Your input is a folder path :</b><br>ALL audio files inside this folder will be separated by a Batch processing !</div></div>'
+				HELP.value = '<div id="HELP"><span style="color: #c00000"><b>Your input is a folder path :</b><br>ALL audio files inside this folder will be separated by a Batch processing !</span></div>'
+			else:
+				HELP.value = '<div id="HELP"></div>'
 		
 		on_GOD_MODE_change(change)
 		

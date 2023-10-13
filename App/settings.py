@@ -46,12 +46,12 @@ Options = {
 }
 Help_Dico = {
 	'input':		"- IF « Input » is a folder path, ALL audio files inside this folder will be separated by a Batch processing.<br>- Else, only the selected audio file will be processed.",
-	'output':		"« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »",
+	'output':		"« Output folder » will be created based on the file's name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »",
 	'format':		"Choose your prefered audio format to save audio files.",
 	'normalize': 	"Normalize input audio files to avoid clipping and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !",
 	'MDX_vocal':	"Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »",
 	'repair':		"Repair music with <b>A.I</b> models.<br>Use it if you hear missing instruments, but ... <b>ALL models</b> will carry more or less <b>Vocal bleedings in Music Final</b> !!",
-	'bleedings':	"Pass Music trough an <b>A.I</b> model to remove <b>Vocals Bleedings</b>.<br>If you want to keep <b>SFX</b> or hear missing instruments in music, don\'t use it !",
+	'bleedings':	"Pass Music trough an <b>A.I</b> model to remove <b>Vocals Bleedings</b>.<br>If you want to keep <b>SFX</b> or hear missing instruments in music, don't use it !",
 	'MDX_music':	"Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Instrum HQ 3</b> » and « <b>Instrum 3</b> » but ... <b>test</b> by yourself ! 😉<br>... You are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!",
 	'speed':		"Fastest : extract in 1 pass with <b>NO</b> SRS and <b>NO</b> Denoise (<b>only</b> for Testing)<br>All others are multi-passes with <b>DENOISE</b> (the same option as in <b>UVR 5</b> 😉)<br>Slowest : is the best quality, but it will take hours to process !! 😝",
 #	'MDX23c':		"MDX version 3 overlap. (default : 8)",
@@ -59,7 +59,7 @@ Help_Dico = {
 	'kill_end':		"On <b>Colab</b> : KaraFan will KILL your session at end of « Processongs », to save your credits !!<br>On <b>your Laptop</b> : KaraFan will KILL your GPU, to save battery (and hot-less) !!<br>On <b>your PC</b> : KaraFan will KILL your GPU, anyway ... maybe it helps ? Try it !!",
 	'previews':		"Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)",
 	'debug':		"IF checked, it will save all intermediate audio files to compare in your <b>Audacity</b>.",
-	'god_mode':		"Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !",
+	'god_mode':		"Give you the GOD's POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You'll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !",
 #	'large_gpu':	"It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.",
 #	'reprocess':	"With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music",
 }

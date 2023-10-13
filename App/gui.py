@@ -54,7 +54,7 @@ def Run(params, Auto_Start):
 </style>'))
 	
 	def Label(text, index):
-		return widgets.HTML(f'<div class="option-label" onmouseenter="show_help({index})">{text}</div>')
+		return widgets.HTML(f'<div class="option-label" onmouseenter="show_help(\'{index}\')">{text}</div>')
 	
 	# Get local version
 	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
@@ -407,10 +407,12 @@ def Run(params, Auto_Start):
 	#**  FINAL  **
 	#*************
 
-	CONSOLE.append_display_data(HTML(str(App.settings.Help_Dico)))
 	javascript = '\
 <script type="application/javascript">\
-	var help_index = ' + str(App.settings.Help_Dico) + ';'
+	var help_index = {};'
+	
+	for index in App.settings.Help_Dico.keys():
+		javascript += f'\n	help_index["{index}"] = "{App.settings.Help_Dico[index]}";'
 
 	# Correct the bug on Google Colab (no titles at all !!)
 	if isColab:

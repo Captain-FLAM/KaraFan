@@ -88,6 +88,8 @@ def SDR(song_output_path, output_format, Gdrive, elapsed_time):
 
 			Scores[type].append(song_score)
 
+	print("\n")
+	
 	# TODO : Use for batch SDR with multiple songs
 	# for type in Scores:
 	# 	if len(Scores[type]) > 0:

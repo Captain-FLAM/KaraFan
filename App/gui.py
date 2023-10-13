@@ -25,12 +25,8 @@ def Run(params, Auto_Start):
 
 	# Set the font size when running on your PC
 	font = '14px'
-	font_small = '13px'
 
-	# Set the font size when running on Colab
-	if isColab:
-		font = '15px';
-		font_small = '13px'
+	if isColab:  font = '15px';
 
 	font_input = {'font_size': font}
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
@@ -48,7 +44,6 @@ def Run(params, Auto_Start):
 #output-body .progress-bar-success, .progress-bar-success { background-color: lightblue}\
 .option-label { font-size: '+ font +'; width: 135px }\
 .path-info { font-size: '+ font +'; font-weight: bold }\
-.path-warning { font-size: '+ font_small +'; font-style: italic; color: #c00000; margin: -3px 0 5px 0 }\
 #HELP { font-size: '+ font +'; background-color: #ffffd2; border: solid 1px #333; width: 100%; height: 63px; line-height: 1.2 }\
 #HELP > div { margin: 5px 10px }\
 .console { font: normal '+ font +' monospace; line-height: 1.6 }\
@@ -136,34 +131,34 @@ def Run(params, Auto_Start):
 			layout = panel_layout,
 			children = [
 				widgets.VBox([
-					widgets.HBox([ Label("Input X file or PATH", 101), input_path ]),
-					widgets.HBox([ Label("Output PATH", 102), output_path ]),
+					widgets.HBox([ Label("Input X file or PATH", 'input'), input_path ]),
+					widgets.HBox([ Label("Output PATH", 'output'), output_path ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("Output Format", 201), output_format, Label("&nbsp; Normalize input", 202), normalize ]),
-					widgets.HBox([ Label("MDX Vocals", 203),	vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Btn_Reset,					vocals_3, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Label("Output Format", 'format'),	output_format, Label("&nbsp; Normalize input", 'normalize'), normalize ]),
+					widgets.HBox([ Label("MDX Vocals", 'MDX_vocal'),	vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Btn_Reset,							vocals_3, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("Repair Music &nbsp;▶️", 204), REPAIR_MUSIC ]),
-					widgets.HBox([ Label("Clean Bleedings", 205),		 bleedings, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
-					widgets.HBox([ Label("MDX Music", 206), 	instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("Repair Music &nbsp;▶️", 'repair'), REPAIR_MUSIC ]),
+					widgets.HBox([ Label("Clean Bleedings", 'bleedings'), bleedings, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
+					widgets.HBox([ Label("MDX Music", 'MDX_music'), 	instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
 					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
-					widgets.HBox([ Label("Speed", 301), speed ]),
-#					widgets.HBox([ Label("Overlap MDX v3", 302), overlap_MDXv3 ]),
-					widgets.HBox([ Label("Chunk Size", 303), chunk_size ]),
+					widgets.HBox([ Label("Speed", 'speed'), speed ]),
+#					widgets.HBox([ Label("Overlap MDX v3", 'MDX23c'), overlap_MDXv3 ]),
+					widgets.HBox([ Label("Chunk Size", 'chunks'), chunk_size ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("This is the END ...", 401), KILL_on_END, Label("Show Previews", 402), PREVIEWS ]),
-					widgets.HBox([ Label("DEBUG Mode", 403), DEBUG, Label("GOD Mode", 404), GOD_MODE ]),
-					# , Label('Large GPU', 406), large_gpu ]),
-########					widgets.HBox([ Label("RE-Process ▶️▶️", 407), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
+					widgets.HBox([ Label("This is the END ...", 'kill_end'), KILL_on_END, Label("Show Previews", 'previews'), PREVIEWS ]),
+					widgets.HBox([ Label("DEBUG Mode", 'debug'), DEBUG, Label("GOD Mode", 'god_mode'), GOD_MODE ]),
+#					, Label('Large GPU', 'large_gpu'), large_gpu ]),
+#					widgets.HBox([ Label("RE-Process ▶️▶️", 'reprocess'), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
 				]),
 				separator,
 				widgets.HBox([Btn_Start], layout={'width':'100%', 'justify_content':'center'}),
@@ -182,27 +177,6 @@ def Run(params, Auto_Start):
 				sys_info
 			]),
 	]
-	display(HTML('\
-<script type="application/javascript">\
-var help_index = []; help_index[1] = []; help_index[2] = []; help_index[3] = []; help_index[4] = [];\
-help_index[1][1] = "- IF « Input » is a folder path, ALL audio files inside this folder will be separated by a Batch processing.<br>- Else, only the selected audio file will be processed.";\
-help_index[1][2] = "« Output folder » will be created based on the file\'s name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »";\
-help_index[2][1] = "Choose your prefered audio format to save audio files.";\
-help_index[2][2] = "Normalize input audio files to avoid clipping and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !";\
-help_index[2][3] = "Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »";\
-help_index[2][4] = "Repair music with <b>A.I</b> models.<br>Use it if you hear missing instruments, but ... it will take <b>longer time</b> also !<br>If you hear too much <b>vocal bleedings in Music Final</b>, change Models or <b>DON\'T use it</b> !!";\
-help_index[2][5] = "Pass Music trough an <b>A.I</b> model to remove <b>Vocals Bleedings</b>.<br>If you want to keep SFX in music, don\'t use it or use only : « <b>Soft</b> » !";\
-help_index[2][6] = "Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Instrum HQ 3</b> » and « <b>Instrum 3</b> » but ... <b>test</b> by yourself ! 😉<br>... You are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!";\
-help_index[3][1] = "Fastest : extract in 1 pass with <b>NO</b> SRS and <b>NO</b> Denoise (<b>only</b> for Testing)<br>All others are multi-passes with <b>DENOISE</b> (the same option as in <b>UVR 5</b> 😉)<br>Slowest : is the best quality, but it will take hours to process !! 😝";\
-help_index[3][2] = "MDX version 3 overlap. (default : 8)";\
-help_index[3][3] = "Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !";\
-help_index[4][1] = "On <b>Colab</b> : KaraFan will KILL your session at end of « Processongs », to save your credits !!<br>On <b>your Laptop</b> : KaraFan will KILL your GPU, to save battery (and hot-less) !!<br>On <b>your PC</b> : KaraFan will KILL your GPU, anyway ... maybe it helps ? Try it !!";\
-help_index[4][2] = "Shows an audio player for each saved file. For impatients people ! 😉<br><br>(Preview first 60 seconds with quality of MP3 - VBR 192 kbps)";\
-help_index[4][3] = "IF checked, it will save all intermediate audio files to compare in your <b>Audacity</b>.";\
-help_index[4][4] = "Give you the GOD\'s POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You\'ll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !";\
-help_index[4][6] = "It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.";\
-help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music";\
-</script>'))
 
 	# Bug in VS Code : titles NEEDS to be set AFTER children
 	tab.titles = titles
@@ -308,12 +282,6 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			CONSOLE.clear_output();  App.inference.Process(params, config)
 			Running = False
 
-		# Refresh Google Drive files cache
-#		if isColab:
-#			from google.colab import drive
-#			drive.flush_and_unmount(stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
-#			drive.mount("/content/Gdrive", stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
-
 
 	def on_Btn_Reset_clicked(b):
 		vocals_1.value		= App.settings.Defaults['PROCESS']['vocals_1']
@@ -380,6 +348,9 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 	
 	def on_input_change(change):
 
+		if HELP.value.find("ERROR") != -1:
+			HELP.value = '<div id="HELP"></div>'  # Clear HELP
+
 		# DO NOT USE os.path.normpath() :
 		# it will remove the last separator in real-time --> impossible to type it in the input field !
 		
@@ -395,10 +366,16 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			
 			if path != input_path.value:  input_path.value = path
 			
-		on_GOD_MODE_change(change);  update_paths_info()
+			if os.path.isdir(os.path.join(Gdrive, path)):
+				HELP.value = '<div id="HELP"><div style="color: #c00000"><b>Your input is a folder path :</b><br>ALL audio files inside this folder will be separated by a Batch processing !</div></div>'
+		
+		on_GOD_MODE_change(change)
 		
 	def on_output_change(change):
 			
+		if HELP.value.find("ERROR") != -1:
+			HELP.value = '<div id="HELP"></div>'  # Clear HELP
+
 		path = change['new']
 		if path != "":
 			path = path.replace('/', os.path.sep).replace('\\', os.path.sep)
@@ -411,32 +388,6 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 			
 			if path != output_path.value:  output_path.value = path
 		
-		update_paths_info()
-	
-	def update_paths_info():
-
-		if HELP.value.find("ERROR") != -1:
-			HELP.value = '<div id="HELP"></div>'  # Clear HELP
-
-		# msg = ""
-		# path	= os.path.join(Gdrive, path)
-		# is_dir	= os.path.isdir(path)
-		# is_file	= os.path.isfile(path)
-		
-		# if path != "":
-		# 	input_warning	= widgets.HTML('<div class="path-warning">Your input is a folder path :<br>ALL audio files inside this folder will be separated by a Batch processing !</div>')
-		# 	input_warning.layout.visibility = 'visible' if input_path.value != "" and is_dir else 'hidden'
-		# else:
-		# 	input_warning.layout.visibility = 'hidden'
-
-		# 	widgets.HBox([ widgets.HTML('<div style="color:#999">Your Final path</div>'), output_info ]),
-		
-		# name = "[ NAME of FILES ]"
-		# if is_file:
-		# 	name = os.path.splitext(os.path.basename(path))[0]
-
-		# output_info.value = f'<div class="path-info">{Gdrive}{os.path.sep}{output_path.value} {os.path.sep} {name} {os.path.sep}</div>'
-
 	def on_GOD_MODE_change(change):
 		path = os.path.join(Gdrive, input_path.value)
 		disable = not (os.path.isfile(path) and DEBUG.value and GOD_MODE.value)
@@ -456,8 +407,10 @@ help_index[4][7] = "With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available wi
 	#**  FINAL  **
 	#*************
 
+	CONSOLE.append_display_data(HTML(str(App.settings.Help_Dico)))
 	javascript = '\
-<script type="application/javascript">'
+<script type="application/javascript">\
+	var help_index = ' + str(App.settings.Help_Dico) + ';'
 
 	# Correct the bug on Google Colab (no titles at all !!)
 	if isColab:
@@ -471,7 +424,7 @@ function show_titles() {\
 	# Add HELP
 	javascript += '\
 function show_help(index) {\
-	document.getElementById("HELP").innerHTML = "<div>"+ help_index[parseInt(index / 100)][index % 10] +"</div>";\
+	document.getElementById("HELP").innerHTML = "<div>"+ help_index[index] +"</div>";\
 }\
 /* ... wait until the form is loaded */\
 (function loop() {\

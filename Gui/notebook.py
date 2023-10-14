@@ -13,7 +13,7 @@ Running = False
 
 def Run(params, Auto_Start):
 
-	import App.settings, App.inference, App.sys_info, App.progress
+	import App.settings, App.inference, App.sys_info, Gui.progress
 
 	Gdrive = params['Gdrive']
 	Project = params['Project']
@@ -64,7 +64,7 @@ def Run(params, Auto_Start):
 	config = App.settings.Load(Gdrive, isColab)
 
 	# Fill Models dropdowns
-	vocals = ["----"]; instru = ["----"]; filters = ["----"]
+	vocals = ["----"]; instru = ["----"]
 	with open(os.path.join(Project, "App", "Models_DATA.csv")) as csvfile:
 		reader = csv.DictReader(csvfile)
 		for row in reader:
@@ -85,15 +85,13 @@ def Run(params, Auto_Start):
 	input_path		= widgets.Text(config['PATHS']['input'], continuous_update=True, style=font_input)
 	output_path		= widgets.Text(config['PATHS']['output'], continuous_update=True, style=font_input)
 	# PROCESS
-	output_format	= widgets.Dropdown(value = config['PROCESS']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'150px'}, style=font_input)
-	normalize		= widgets.Checkbox((config['PROCESS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	output_format	= widgets.Dropdown(value = config['PATHS']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'150px'}, style=font_input)
+	normalize		= widgets.Checkbox((config['PATHS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_3		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	vocals_4		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	Btn_Reset		= widgets.Button(description='🌀', tooltip="Reset to Defaults !!", layout={'width':'45px', 'margin':'0 94px 0 0'}, style={'button_color':'#eee'})
-	REPAIR_MUSIC	= widgets.Dropdown(value = config['PROCESS']['REPAIR_MUSIC'], options = App.settings.Options['REPAIR_MUSIC'], layout = {'width':'200px'}, style=font_input)
-	bleedings		= widgets.Dropdown(options = App.settings.Options['Bleedings'], layout = {'width':'200px'}, style=font_input)
 	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	# OPTIONS
@@ -118,7 +116,7 @@ def Run(params, Auto_Start):
 	Progress_Bar	= widgets.IntProgress(value=0, min=0, max=10, orientation='horizontal', bar_style='info', layout={'width':'370px', 'height':'25px'})  # style={'bar_color': 'maroon'})
 	Progress_Text	= widgets.HTML(layout={'width':'300px', 'margin':'0 0 0 15px'})
 	# +
-	Progress		= App.progress.Bar(Progress_Bar, Progress_Text)  # Class for Progress Bar
+	Progress		= Gui.progress.Bar(Progress_Bar, Progress_Text)  # Class for Progress Bar
 
 	# TAB 3
 	sys_info		= widgets.HTML()
@@ -133,18 +131,13 @@ def Run(params, Auto_Start):
 				widgets.VBox([
 					widgets.HBox([ Label("Input X file or PATH", 'input'), input_path ]),
 					widgets.HBox([ Label("Output PATH", 'output'), output_path ]),
+					widgets.HBox([ Label("Output Format", 'format'), output_format, Label("&nbsp; Normalize input", 'normalize'), normalize ]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("Output Format", 'format'),	output_format, Label("&nbsp; Normalize input", 'normalize'), normalize ]),
-					widgets.HBox([ Label("MDX Vocals", 'MDX_vocal'),	vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Btn_Reset,							vocals_3, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-				]),
-				separator,
-				widgets.VBox([
-					widgets.HBox([ Label("Repair Music &nbsp;▶️", 'repair'), REPAIR_MUSIC ]),
-					widgets.HBox([ Label("Clean Bleedings", 'bleedings'), bleedings, widgets.HTML('<span style="font-size:18px">&nbsp; ♒</span>') ]),
-					widgets.HBox([ Label("MDX Music", 'MDX_music'), 	instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("Extract Vocals", 'MDX_vocal'),	vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Btn_Reset,								vocals_3, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Label("Clean Bleedings", 'MDX_music'), 	instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
@@ -210,9 +203,6 @@ def Run(params, Auto_Start):
 		and vocals_3.value == "----" and vocals_4.value == "----":
 			msg += "You HAVE TO select at least one model for Vocals !<br>"
 		
-		if REPAIR_MUSIC.value and instru_1.value == "----" and instru_2.value == "----":
-			msg += "You HAVE TO select at least one model for Instrumentals !<br>"
-
 		if msg != "":
 			msg = "ERROR !!<br>"+ msg
 			HELP.value = '<div id="HELP"><div style="color: #f00">'+ msg +'</div></div>'
@@ -233,8 +223,6 @@ def Run(params, Auto_Start):
 			'vocals_2': vocals_2.value,
 			'vocals_3': vocals_3.value,
 			'vocals_4': vocals_4.value,
-			'REPAIR_MUSIC': REPAIR_MUSIC.value,
-			'bleedings': bleedings.value,
 			'instru_1': instru_1.value,
 			'instru_2': instru_2.value,
 		}
@@ -288,8 +276,6 @@ def Run(params, Auto_Start):
 		vocals_2.value		= App.settings.Defaults['PROCESS']['vocals_2']
 		vocals_3.value		= App.settings.Defaults['PROCESS']['vocals_3']
 		vocals_4.value		= App.settings.Defaults['PROCESS']['vocals_4']
-		REPAIR_MUSIC.value	= App.settings.Defaults['PROCESS']['REPAIR_MUSIC']
-		bleedings.value		= App.settings.Defaults['PROCESS']['bleedings']
 		instru_1.value		= App.settings.Defaults['PROCESS']['instru_1']
 		instru_2.value		= App.settings.Defaults['PROCESS']['instru_2']
 		speed.value			= App.settings.Defaults['OPTIONS']['speed']

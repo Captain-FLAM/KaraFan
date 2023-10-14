@@ -43,8 +43,9 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 	fade_out		= np.linspace(1.0, 0.0, fade_duration)
 	fade_in			= np.linspace(0.0, 1.0, fade_duration)
 
-	start = 0; end = 0; audio_length = audio_in.shape[1]
+	start = 0; end = 0
 	audio = audio_in.copy()
+	audio_length = audio_in.shape[1]
 
 	for i in range(0, audio_length, window_frame):
 		
@@ -52,19 +53,18 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 		RMS = np.max(librosa.amplitude_to_db(librosa.feature.rms(y=audio[:, i:(i + window_frame)], frame_length=window_frame, hop_length=window_frame)))
 		# print(f"RMS : {RMS}")
 		if RMS < threshold_db:
+			end = i + window_frame
 			# Last part (in case of silence at the end)
-			if i == audio_length - window_frame:
-				end = i + window_frame
+			if i >= audio_length - window_frame:
 				if end - start > min_size:
 					# Fade out
 					if start > fade_duration:
 						audio[:, start:(start + fade_duration)] *= fade_out
 						start += fade_duration
 
-					# Clean in between
-					audio[:, start:end] = 0.0
-			else:
-				end = i + window_frame
+					# Clean last part
+					audio[:, start:audio_length] = 0.0
+					break
 		else:
 			# Clean the "min_size" samples found
 			if end - start > min_size:

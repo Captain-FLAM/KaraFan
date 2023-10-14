@@ -11,21 +11,19 @@ Defaults = {
 	'PATHS': {
 		'input': "Music",
 		'output': "Results",
-	},
-	'PROCESS': {
 		'output_format': "FLAC",
 		'normalize': False,
+	},
+	'PROCESS': {
 		'vocals_1': "Kim Vocal 2",
 		'vocals_2': "Voc FT",
 		'vocals_3': "----",
 		'vocals_4': "----",
-		'REPAIR_MUSIC': "Max",
-		'bleedings': "Soft",
-		'instru_1': "Instrum HQ 3",
-		'instru_2': "Instrum 3",
+		'instru_1': "Instrum 3",
+		'instru_2': "Instrum Main",
 	},
 	'OPTIONS': {
-		'speed': "Medium",
+		'speed': "Slow",
 #		'overlap_MDXv3': 8,
 		'chunk_size': 500000,
 	},
@@ -40,8 +38,6 @@ Defaults = {
 }
 Options = {
 	'Output_format': [("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
-    'REPAIR_MUSIC': [("DON'T !!", "NO REPAIR"), ("Maximum Mix", 'Max'), ("Average Mix", 'Average')],
-    'Bleedings': ["NO", "Soft", "Medium", "Hard"],
 	'Speed': ['Fastest', 'Fast', 'Medium', 'Slow', 'Slowest'],
 }
 Help_Dico = {
@@ -50,9 +46,7 @@ Help_Dico = {
 	'format':		"Choose your prefered audio format to save audio files.",
 	'normalize': 	"Normalize input audio files to avoid clipping and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !",
 	'MDX_vocal':	"Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »",
-	'repair':		"Repair music with <b>A.I</b> models.<br>Use it if you hear missing instruments, but ... <b>ALL models</b> will carry more or less <b>Vocal bleedings in Music Final</b> !!",
-	'bleedings':	"Pass Music trough an <b>A.I</b> model to remove <b>Vocals Bleedings</b>.<br>If you want to keep <b>SFX</b> or hear missing instruments in music, don't use it !",
-	'MDX_music':	"Make an Ensemble of instrumental extractions for repairing at the end of process.<br>Best combination : « <b>Instrum HQ 3</b> » and « <b>Instrum 3</b> » but ... <b>test</b> by yourself ! 😉<br>... You are warned : <b>ALL</b> instrumental models can carry <b>vocal bleedings</b> in final result !!",
+	'MDX_music':	"Pass Vocals trough <b>A.I</b> model to remove <b>Music Bleedings</b>.<br>DON'T use « <b>Instrum HQ 3</b> » as it catchs too much vocals !!",
 	'speed':		"Fastest : extract in 1 pass with <b>NO</b> SRS and <b>NO</b> Denoise (<b>only</b> for Testing)<br>All others are multi-passes with <b>DENOISE</b> (the same option as in <b>UVR 5</b> 😉)<br>Slowest : is the best quality, but it will take hours to process !! 😝",
 #	'MDX23c':		"MDX version 3 overlap. (default : 8)",
 	'chunks':		"Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !",
@@ -85,12 +79,8 @@ def Load(Gdrive, isColab):
 		config.read_dict(Defaults)
 		Save(Gdrive, isColab, config)
 	
-	if  config['PROCESS']['output_format'] not in [x[1] for x in Options['Output_format']]:
-		config['PROCESS']['output_format'] = Defaults['PROCESS']['output_format']
-	if  config['PROCESS']['REPAIR_MUSIC'] not in [x[1] for x in Options['REPAIR_MUSIC']]:
-		config['PROCESS']['REPAIR_MUSIC'] = Defaults['PROCESS']['REPAIR_MUSIC']
-	if  config['PROCESS']['bleedings'] not in Options['Bleedings']:
-		config['PROCESS']['bleedings'] = Defaults['PROCESS']['bleedings']
+	if  config['PATHS']['output_format'] not in [x[1] for x in Options['Output_format']]:
+		config['PATHS']['output_format'] = Defaults['PATHS']['output_format']
 	if  config['OPTIONS']['speed'] not in Options['Speed']:
 		config['OPTIONS']['speed'] = Defaults['OPTIONS']['speed']
 		

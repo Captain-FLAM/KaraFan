@@ -9,7 +9,7 @@ This project is **open to all goodwill**.
 
 Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made this project possible.
 
-KaraFan works with **Google Colab** or if you have a decent GPU, **on Your PC** !!
+KaraFan works **on Your PC** if you have a decent GPU or with **Google Colab** !!
 
 ## 💲 DONATE
 

@@ -30,7 +30,7 @@ def Run(params, Auto_Start):
 
 	font_input = {'font_size': font}
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
-	checkbox_layout = {'width': '50px', 'max_width': '50px' }
+	checkbox_layout = {'width': '30px', 'max_width': '30px' }
 	max_width = str(int(width.replace('px','')) - 18) + 'px'  # = border + Left and Right "panel_layout" padding
 	console_max_height = str(int(height.replace('px','')) - 20) + 'px'
 
@@ -43,7 +43,7 @@ def Run(params, Auto_Start):
 #output-body .lm-TabBar-tabLabel, .lm-TabBar-tabLabel { font-size: 16px; padding-top: 5px }\
 #output-body .progress-bar-success, .progress-bar-success { background-color: lightblue}\
 .option-label { font-size: '+ font +'; width: 135px }\
-.path-info { font-size: '+ font +'; font-weight: bold }\
+.short-label { font-size: '+ font +' }\
 #HELP { font-size: '+ font +'; background-color: #ffffd2; border: solid 1px #333; width: 100%; height: 63px; line-height: 1.2 }\
 #HELP > div { margin: 5px 10px }\
 .console { font: normal '+ font +' monospace; line-height: 1.6 }\
@@ -53,8 +53,8 @@ def Run(params, Auto_Start):
 .SDR { display: inline-block; line-height: 1 }\
 </style>'))
 	
-	def Label(text, index):
-		return widgets.HTML(f'<div class="option-label" onmouseenter="show_help(\'{index}\')">{text}</div>')
+	def Label(text, index, short = False):
+		return widgets.HTML('<div class="'+ ('short' if short else 'option') + f'-label" onmouseenter="show_help(\'{index}\')">{text}</div>')
 	
 	# Get local version
 	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
@@ -64,7 +64,7 @@ def Run(params, Auto_Start):
 	config = App.settings.Load(Gdrive, isColab)
 
 	# Fill Models dropdowns
-	vocals = ["----"]; instru = ["----"]
+	vocals = ["----"]; instru = ["----"]; filters = ["----"]
 	with open(os.path.join(Project, "App", "Models_DATA.csv")) as csvfile:
 		reader = csv.DictReader(csvfile)
 		for row in reader:
@@ -81,19 +81,22 @@ def Run(params, Auto_Start):
 
 	# TAB 1
 	separator		= widgets.HTML('<div style="border-bottom: dashed 1px #000; margin: 5px 0 5px 0; width: 100%">')
-	# PATHS
-	input_path		= widgets.Text(config['PATHS']['input'], continuous_update=True, style=font_input)
-	output_path		= widgets.Text(config['PATHS']['output'], continuous_update=True, style=font_input)
+	# AUDIO
+	input_path		= widgets.Text(config['AUDIO']['input'], continuous_update=True, style=font_input)
+	output_path		= widgets.Text(config['AUDIO']['output'], continuous_update=True, style=font_input)
+	output_format	= widgets.Dropdown(value = config['AUDIO']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'150px'}, style=font_input)
+	normalize		= widgets.Checkbox((config['AUDIO']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	silent			= widgets.Dropdown(value = config['AUDIO']['silent'], options = App.settings.Options['Silent'], layout = {'width':'100px'}, style=font_input)
 	# PROCESS
-	output_format	= widgets.Dropdown(value = config['PATHS']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'150px'}, style=font_input)
-	normalize		= widgets.Checkbox((config['PATHS']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
-	vocals_1		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
-	vocals_2		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
-	vocals_3		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
-	vocals_4		= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
+	vocal_1			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
+	vocal_2			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
+	vocal_3			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
+	vocal_4			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
+	bleed_1			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	bleed_2			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	Btn_Reset		= widgets.Button(description='🌀', tooltip="Reset to Defaults !!", layout={'width':'45px', 'margin':'0 94px 0 0'}, style={'button_color':'#eee'})
-	instru_1		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
-	instru_2		= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	music_1			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	music_2			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	# OPTIONS
 	speed			= widgets.SelectionSlider(value = config['OPTIONS']['speed'], options = App.settings.Options['Speed'], readout=True, style=font_input) 
 	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, layout={'margin':'0 0 0 10px'}, style=font_input)
@@ -131,13 +134,18 @@ def Run(params, Auto_Start):
 				widgets.VBox([
 					widgets.HBox([ Label("Input X file or PATH", 'input'), input_path ]),
 					widgets.HBox([ Label("Output PATH", 'output'), output_path ]),
-					widgets.HBox([ Label("Output Format", 'format'), output_format, Label("&nbsp; Normalize input", 'normalize'), normalize ]),
+					widgets.HBox([
+						Label("Output Format", 'format'), output_format,
+						Label("&nbsp; Normalize input &nbsp;", 'normalize', short=True), normalize,
+						Label("&nbsp; Silent &nbsp;", 'silent', short=True), silent
+					]),
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("Extract Vocals", 'MDX_vocal'),	vocals_1, vocals_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Btn_Reset,								vocals_3, vocals_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
-					widgets.HBox([ Label("Clean Bleedings", 'MDX_music'), 	instru_1, instru_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("Extract Vocals", 'MDX_vocal'),	vocal_1, vocal_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Btn_Reset,								vocal_3, vocal_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
+					widgets.HBox([ Label("Clean Bleedings", 'MDX_bleed'), 	bleed_1, bleed_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("Repair Music", 'MDX_music'),		music_1, music_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
 				]),
 				separator,
 				widgets.VBox([
@@ -199,8 +207,8 @@ def Run(params, Auto_Start):
 			if not os.path.isdir(path):
 				msg += "Your Output is not a valid folder !<br>You MUST set it to an existing folder path.<br>"
 		
-		if vocals_1.value == "----" and vocals_2.value == "----" \
-		and vocals_3.value == "----" and vocals_4.value == "----":
+		if vocal_1.value == "----" and vocal_2.value == "----" \
+		and vocal_3.value == "----" and vocal_4.value == "----":
 			msg += "You HAVE TO select at least one model for Vocals !<br>"
 		
 		if msg != "":
@@ -212,19 +220,22 @@ def Run(params, Auto_Start):
 		output_path.value = os.path.normpath(output_path.value)
 
 		# Save config
-		config['PATHS'] = {
+		config['AUDIO'] = {
 			'input': input_path.value,
 			'output': output_path.value,
-		}
-		config['PROCESS'] = {
 			'output_format': output_format.value,
 			'normalize': normalize.value,
-			'vocals_1': vocals_1.value,
-			'vocals_2': vocals_2.value,
-			'vocals_3': vocals_3.value,
-			'vocals_4': vocals_4.value,
-			'instru_1': instru_1.value,
-			'instru_2': instru_2.value,
+			'silent': silent.value,
+		}
+		config['PROCESS'] = {
+			'vocal_1': vocal_1.value,
+			'vocal_2': vocal_2.value,
+			'vocal_3': vocal_3.value,
+			'vocal_4': vocal_4.value,
+			'bleed_1': bleed_1.value,
+			'bleed_2': bleed_2.value,
+			'music_1': music_1.value,
+			'music_2': music_2.value,
 		}
 		config['OPTIONS'] = {
 			'speed': speed.value,
@@ -272,12 +283,14 @@ def Run(params, Auto_Start):
 
 
 	def on_Btn_Reset_clicked(b):
-		vocals_1.value		= App.settings.Defaults['PROCESS']['vocals_1']
-		vocals_2.value		= App.settings.Defaults['PROCESS']['vocals_2']
-		vocals_3.value		= App.settings.Defaults['PROCESS']['vocals_3']
-		vocals_4.value		= App.settings.Defaults['PROCESS']['vocals_4']
-		instru_1.value		= App.settings.Defaults['PROCESS']['instru_1']
-		instru_2.value		= App.settings.Defaults['PROCESS']['instru_2']
+		vocal_1.value		= App.settings.Defaults['PROCESS']['vocal_1']
+		vocal_2.value		= App.settings.Defaults['PROCESS']['vocal_2']
+		vocal_3.value		= App.settings.Defaults['PROCESS']['vocal_3']
+		vocal_4.value		= App.settings.Defaults['PROCESS']['vocal_4']
+		bleed_1.value		= App.settings.Defaults['PROCESS']['bleed_1']
+		bleed_2.value		= App.settings.Defaults['PROCESS']['bleed_2']
+		music_1.value		= App.settings.Defaults['PROCESS']['music_1']
+		music_2.value		= App.settings.Defaults['PROCESS']['music_2']
 		speed.value			= App.settings.Defaults['OPTIONS']['speed']
 		
 	def on_SysInfo_clicked(b):
@@ -444,12 +457,14 @@ function show_help(index) {\
 	on_input_change({'new': input_path.value})
 	on_output_change({'new': output_path.value})
 
-	if config['PROCESS']['vocals_1'] in vocals:		vocals_1.value = config['PROCESS']['vocals_1']
-	if config['PROCESS']['vocals_2'] in vocals:		vocals_2.value = config['PROCESS']['vocals_2']
-	if config['PROCESS']['vocals_3'] in vocals:		vocals_3.value = config['PROCESS']['vocals_3']
-	if config['PROCESS']['vocals_4'] in vocals:		vocals_4.value = config['PROCESS']['vocals_4']
-	if config['PROCESS']['instru_1'] in instru:		instru_1.value = config['PROCESS']['instru_1']
-	if config['PROCESS']['instru_2'] in instru:		instru_2.value = config['PROCESS']['instru_2']
+	if config['PROCESS']['vocal_1'] in vocals:		vocal_1.value = config['PROCESS']['vocal_1']
+	if config['PROCESS']['vocal_2'] in vocals:		vocal_2.value = config['PROCESS']['vocal_2']
+	if config['PROCESS']['vocal_3'] in vocals:		vocal_3.value = config['PROCESS']['vocal_3']
+	if config['PROCESS']['vocal_4'] in vocals:		vocal_4.value = config['PROCESS']['vocal_4']
+	if config['PROCESS']['bleed_1'] in instru:		bleed_1.value = config['PROCESS']['bleed_1']
+	if config['PROCESS']['bleed_2'] in instru:		bleed_2.value = config['PROCESS']['bleed_2']
+	if config['PROCESS']['music_1'] in instru:		music_1.value = config['PROCESS']['music_1']
+	if config['PROCESS']['music_2'] in instru:		music_2.value = config['PROCESS']['music_2']
 
 	# DEBUG : Auto-start processing on execution
 	if Auto_Start:  on_Start_clicked(None)

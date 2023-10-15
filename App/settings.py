@@ -8,22 +8,25 @@ import os, configparser
 
 # Default values
 Defaults = {
-	'PATHS': {
+	'AUDIO': {
 		'input': "Music",
-		'output': "Results",
+		'output': "Music",
 		'output_format': "FLAC",
 		'normalize': False,
+		'silent': "45",
 	},
 	'PROCESS': {
-		'vocals_1': "Kim Vocal 2",
-		'vocals_2': "Voc FT",
-		'vocals_3': "----",
-		'vocals_4': "----",
-		'instru_1': "Instrum 3",
-		'instru_2': "Instrum Main",
+		'vocal_1': "Kim Vocal 2",
+		'vocal_2': "Voc FT",
+		'vocal_3': "----",
+		'vocal_4': "----",
+		'bleed_1': "Instrum 3",
+		'bleed_2': "Instrum Main",
+		'music_1': "Instrum 3",
+		'music_2': "----",
 	},
 	'OPTIONS': {
-		'speed': "Slow",
+		'speed': "Medium",
 #		'overlap_MDXv3': 8,
 		'chunk_size': 500000,
 	},
@@ -38,15 +41,18 @@ Defaults = {
 }
 Options = {
 	'Output_format': [("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320 kbps", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
+	'Silent': [("NONE", "0"), ("- 45 dB", "45"), ("- 50 dB", "50"), ("- 55 dB", "55"), ("- 60 dB", "60")],
 	'Speed': ['Fastest', 'Fast', 'Medium', 'Slow', 'Slowest'],
 }
 Help_Dico = {
 	'input':		"- IF « Input » is a folder path, ALL audio files inside this folder will be separated by a Batch processing.<br>- Else, only the selected audio file will be processed.",
 	'output':		"« Output folder » will be created based on the file's name without extension.<br>For example : if your audio input is named : « 01 - Bohemian Rhapsody<b>.MP3</b> »,<br>then output folder will be named : « 01 - Bohemian Rhapsody »",
 	'format':		"Choose your prefered audio format to save audio files.",
-	'normalize': 	"Normalize input audio files to avoid clipping and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !",
+	'normalize': 	"Normalize input audio files to avoid <b>clipping</b> and get better results.<br>Normally, <b>you do not have</b> to use this option !!<br>Only for weak or loud songs !",
+	'silent':		"Make silent the parts of audio where dynamic range (RMS) goes below threshold.<br>Don't misundertand : this function is NOT a noise reduction !<br>Its behavior is to clean the final audios from « silent parts » (below -XX dB).",
 	'MDX_vocal':	"Make an Ensemble of extractions with Vocals selected models.<br><br>Best combination : « <b>Kim Vocal 2</b> » and « <b>Voc FT</b> »",
-	'MDX_music':	"Pass Vocals trough <b>A.I</b> model to remove <b>Music Bleedings</b>.<br>DON'T use « <b>Instrum HQ 3</b> » as it catchs too much vocals !!",
+	'MDX_bleed':	"Pass Vocals trough <b>A.I</b> model to remove <b>Music Bleedings</b>.<br><br>DON'T use « <b>Instrum HQ 3</b> » as it catchs too much vocals !!",
+	'MDX_music':	"Repair music with <b>A.I</b> models, Use it if you hear missing instruments, but ...<br>DON'T use « <b>Instrum HQ 3</b> » as it adds too much <b>vocal bleedings</b> in final music ! 😉<b>... and : ALL models</b> will carry more or less <b>Vocal bleedings</b> in Music Final !!",
 	'speed':		"Fastest : extract in 1 pass with <b>NO</b> SRS and <b>NO</b> Denoise (<b>only</b> for Testing)<br>All others are multi-passes with <b>DENOISE</b> (the same option as in <b>UVR 5</b> 😉)<br>Slowest : is the best quality, but it will take hours to process !! 😝",
 #	'MDX23c':		"MDX version 3 overlap. (default : 8)",
 	'chunks':		"Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !",
@@ -79,8 +85,10 @@ def Load(Gdrive, isColab):
 		config.read_dict(Defaults)
 		Save(Gdrive, isColab, config)
 	
-	if  config['PATHS']['output_format'] not in [x[1] for x in Options['Output_format']]:
-		config['PATHS']['output_format'] = Defaults['PATHS']['output_format']
+	if  config['AUDIO']['output_format'] not in [x[1] for x in Options['Output_format']]:
+		config['AUDIO']['output_format'] = Defaults['AUDIO']['output_format']
+	if  config['AUDIO']['silent'] not in [x[1] for x in Options['Silent']]:
+		config['AUDIO']['silent'] = Defaults['AUDIO']['silent']
 	if  config['OPTIONS']['speed'] not in Options['Speed']:
 		config['OPTIONS']['speed'] = Defaults['OPTIONS']['speed']
 		

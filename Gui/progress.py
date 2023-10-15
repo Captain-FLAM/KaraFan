@@ -18,7 +18,7 @@ class Bar:
 		# Utilisez les widgets de barre de progression et de boîte de texte fournis
 		self.progress_bar  = progress_bar
 		self.progress_text = progress_text
-		self.progress_text.value = "[00:00:00] - &nbsp;&nbsp;0% - 0/0 - 0.00 sec. / " + unit
+		self.progress_text.value = "[00:00:00] - &nbsp;&nbsp;0% - 0/0 - 0.00 sec./ " + unit
 
 	def reset(self, total, unit=''):
 		self.value = 0
@@ -29,7 +29,7 @@ class Bar:
 		self.units_time = time.time()
 
 		elapsed_time = time.time() - self.start_time
-		self.progress_text.value = f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - &nbsp;&nbsp;0% - 0/{self.total} - 0.00 sec. / {self.unit}"
+		self.progress_text.value = f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - &nbsp;&nbsp;0% - 0/{self.total} - 0.00 sec./ {self.unit}"
 
 	def update(self, increment=1):
 		self.value += increment
@@ -52,4 +52,4 @@ class Bar:
 		elif percent < 100:	percent = f"&nbsp;{percent}"
 
 		download = " MB" if self.unit == "MB" else ""
-		self.progress_text.value = f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - {percent}% - {self.value}/{self.total}{download} - {time_per_unit:.2f} sec. / {self.unit}"
+		self.progress_text.value = f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - {percent}% - {self.value}/{self.total}{download} - {time_per_unit:.2f} sec./ {self.unit}"

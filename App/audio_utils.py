@@ -39,7 +39,7 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 
 	min_size		= int(1.000 * sample_rate)  # 1000 ms
 	window_frame	= int(0.010 * sample_rate)  #   10 ms
-	fade_duration	= int(0.250 * sample_rate)  #  250 ms
+	fade_duration	= int(0.600 * sample_rate)  #  600 ms
 	fade_out		= np.linspace(1.0, 0.0, fade_duration)
 	fade_in			= np.linspace(0.0, 1.0, fade_duration)
 

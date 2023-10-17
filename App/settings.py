@@ -16,7 +16,7 @@ Defaults = {
 		'silent': "50",
 	},
 	'PROCESS': {
-		'vocal_1': "MDX23C - 8K FFT",
+		'vocal_1': "MDX23C 8K FFT",
 		'vocal_2': "----",
 		'vocal_3': "----",
 		'vocal_4': "----",

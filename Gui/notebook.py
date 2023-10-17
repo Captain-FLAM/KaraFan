@@ -64,15 +64,18 @@ def Run(params, Auto_Start):
 	config = App.settings.Load(Gdrive, isColab)
 
 	# Fill Models dropdowns
-	vocals = ["----"]; instru = ["----"]; filters = ["----"]
+	vocals = ["----"]; instru = ["----"]
 	with open(os.path.join(Project, "App", "Models_DATA.csv")) as csvfile:
 		reader = csv.DictReader(csvfile)
 		for row in reader:
 			if row['Use'] == "x":
+				# New fine-tuned MDX23C (less vocal bleedings in music)
+				if row['Name'] == "MDX23C 8K FFT - v2" and not os.path.isfile(os.path.join(Gdrive, "KaraFan_user", "Models", "MDX23C-8KFFT-InstVoc_HQ_2.ckpt")):
+					continue
 				# ignore "Other" stems
 				if row['Stem'] == "Instrumental":	instru.append(row['Name'])
 				elif row['Stem'] == "Vocals":		vocals.append(row['Name'])
-
+	
 	# KaraFan Title
 	display(HTML('<div style="font-size: 24px; font-weight: bold; margin: 15px 0">KaraFan - version '+ Version +'</div>'))
 	

@@ -37,9 +37,9 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 	- clean the final audio files from residues of "silent parts"
 	"""
 
-	min_size		= int(1.000 * sample_rate)  # 1000 ms
+	min_size		= int(0.500 * sample_rate)  #  500 ms
 	window_frame	= int(0.010 * sample_rate)  #   10 ms
-	fade_duration	= int(0.600 * sample_rate)  #  600 ms
+	fade_duration	= int(0.100 * sample_rate)  #  100 ms
 	fade_out		= np.linspace(1.0, 0.0, fade_duration)
 	fade_in			= np.linspace(0.0, 1.0, fade_duration)
 

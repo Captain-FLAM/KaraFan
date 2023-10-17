@@ -11,99 +11,28 @@
 #   https://github.com/Captain-FLAM/KaraFan
 
 
-import os, gc, sys, csv, time, requests, io, base64
-import regex as re
-import numpy as np
-import onnxruntime as ort
-import torch, torch.nn as nn
+import os, gc, sys, csv, time, requests, io, base64, torch
+import regex as re, numpy as np, onnxruntime as ort
 
 import librosa, soundfile as sf
 from pydub import AudioSegment
 
-# ONLY for MDX23C models
-#  import yaml
-#  from ml_collections import ConfigDict
+# for MDX23C models
+import yaml
+from ml_collections import ConfigDict
 
-import ipywidgets as widgets
 from IPython.display import display, HTML
 
-# from tqdm.auto import tqdm  # Auto : Progress Bar in GUI with ipywidgets
-# from tqdm.contrib import DummyTqdmFile
-
-import App.settings, App.audio_utils, App.compare
-
-# from App.tfc_tdf_v3 import TFC_TDF_net
+import App.settings, App.audio_utils, App.compare, App.tfc_tdf
 
 isColab = False
 KILL_on_END = False
-
-class Conv_TDF_net_trim_model(nn.Module):
-
-	def __init__(self, device, target_stem, neuron_blocks, model_params, hop=1024):
-
-		super(Conv_TDF_net_trim_model, self).__init__()
-		
-		self.dim_c = 4
-		self.dim_f = model_params['dim_F_set']
-		self.dim_t = 2 ** model_params['dim_T_set']
-		self.n_fft = model_params['N_FFT_scale']
-		self.hop = hop
-		self.n_bins = self.n_fft // 2 + 1
-		self.chunk_size = hop * (self.dim_t - 1)
-		self.window = torch.hann_window(window_length=self.n_fft, periodic=True).to(device)
-		self.target_stem = target_stem
-
-		out_c = self.dim_c * 4 if target_stem == '*' else self.dim_c
-		self.freq_pad = torch.zeros([1, out_c, self.n_bins - self.dim_f, self.dim_t]).to(device)
-		
-  		# Only used by "forward()" method
-		# self.n = neuron_blocks // 2
-
-	def stft(self, x):
-		x = x.reshape([-1, self.chunk_size])
-		x = torch.stft(x, n_fft=self.n_fft, hop_length=self.hop, window=self.window, center=True, return_complex=True)
-		x = torch.view_as_real(x)
-		x = x.permute([0, 3, 1, 2])
-		x = x.reshape([-1, 2, 2, self.n_bins, self.dim_t]).reshape([-1, self.dim_c, self.n_bins, self.dim_t])
-		return x[:, :, :self.dim_f]
-
-	def istft(self, x, freq_pad=None):
-		freq_pad = self.freq_pad.repeat([x.shape[0], 1, 1, 1]) if freq_pad is None else freq_pad
-		x = torch.cat([x, freq_pad], -2)
-		x = x.reshape([-1, 2, 2, self.n_bins, self.dim_t]).reshape([-1, 2, self.n_bins, self.dim_t])
-		x = x.permute([0, 2, 3, 1])
-		x = x.contiguous()
-		x = torch.view_as_complex(x)
-		x = torch.istft(x, n_fft=self.n_fft, hop_length=self.hop, window=self.window, center=True)
-		return x.reshape([-1, 2, self.chunk_size])
-
-	# Not used : only for training Models !
-	#
-	# def forward(self, x):
-	# 	x = self.first_conv(x)
-	# 	x = x.transpose(-1, -2)
-	#
-	# 	ds_outputs = []
-	# 	for i in range(self.n):
-	# 		x = self.ds_dense[i](x)
-	# 		ds_outputs.append(x)
-	# 		x = self.ds[i](x)
-	#
-	# 	x = self.mid_dense(x)
-	# 	for i in range(self.n):
-	# 		x = self.us[i](x)
-	# 		x *= ds_outputs[-i - 1]
-	# 		x = self.us_dense[i](x)
-	#
-	# 	x = x.transpose(-1, -2)
-	# 	x = self.final_conv(x)
-	# 	return x
 
 def get_models(device, model_params, stem):
 	# ??? NOT so simple ... ???
 	# FFT = 7680  --> Narrow Band
 	# FFT = 6144  --> FULL Band
-	model = Conv_TDF_net_trim_model(
+	model = App.tfc_tdf.Conv_TDF_net_trim_model(
 		device,
 		# I suppose you can use '*' to get both vocals and instrum, with the new MDX23C model ...
 		'vocals' if stem == 'Vocals' else 'instrum',
@@ -112,84 +41,53 @@ def get_models(device, model_params, stem):
 	)
 	return [model]
 
-# def demix_base_mdxv3(config, model, mix, device, overlap):
-# 	mix = torch.tensor(mix, dtype=torch.float32)
-# 	try:
-# 		S = model.num_target_instruments
-# 	except Exception as e:
-# 		S = model.module.num_target_instruments
+def demix_base_mdxv3(mix, model, device, config, overlap_MDX23, Progress):
+		
+		mix = torch.tensor(mix, dtype=torch.float32)
+		try:
+			S = model.num_target_instruments
+		except Exception as e:
+			S = model.module.num_target_instruments
+		
+		mdx_window_size = config.inference.dim_t
+		
+		# batch_size = config.inference.batch_size
+		batch_size = 1
+		C = config.audio.hop_length * (mdx_window_size - 1)
+		H = C // overlap_MDX23
+		L = mix.shape[1]
+		pad_size = H - (L - C) % H
+		mix = torch.cat([torch.zeros(2, C - H, dtype=torch.float32), mix, torch.zeros(2, pad_size + C - H, dtype=torch.float32)], 1)
+		mix = mix.to(device)
 
-# 	mdx_window_size = config.inference.dim_t
-	
-# 	# batch_size = config.inference.batch_size
-# 	batch_size = 1
-# 	C = config.audio.hop_length * (mdx_window_size - 1)
-	
-# 	H = C // overlap
-# 	L = mix.shape[1]
-# 	pad_size = H - (L - C) % H
-# 	mix = torch.cat([torch.zeros(2, C - H), mix, torch.zeros(2, pad_size + C - H)], 1)
-# 	mix = mix.to(device)
+		chunks = mix.unfold(1, C, H).transpose(0, 1)
 
-# 	chunks = []
-# 	i = 0
-# 	while i + C <= mix.shape[1]:
-# 		chunks.append(mix[:, i:i + C])
-# 		i += H
-# 	chunks = torch.stack(chunks)
+		batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
 
-# 	batches = []
-# 	i = 0
-# 	while i < len(chunks):
-# 		batches.append(chunks[i:i + batch_size])
-# 		i = i + batch_size
+		Progress.reset(len(batches), unit="Step")
 
-# 	X = torch.zeros(S, 2, C - H) if S > 1 else torch.zeros(2, C - H)
-# 	X = X.to(device)
+		X = torch.zeros(S, *mix.shape, dtype=torch.float32).to(device) if S > 1 else torch.zeros_like(mix, dtype=torch.float32)
 
-# 	with torch.cuda.amp.autocast():
-# 		with torch.no_grad():
-# 			for batch in tqdm(batches, ncols=60):
-# 				# self.running_inference_progress_bar(len(batches))
-# 				x = model(batch)
-# 				for w in x:
-# 					a = X[..., :-(C - H)]
-# 					b = X[..., -(C - H):] + w[..., :(C - H)]
-# 					c = w[..., (C - H):]
-# 					X = torch.cat([a, b, c], -1)
+		with torch.cuda.amp.autocast(dtype=torch.float32):  # BUG fix : float16 by default !!
+			with torch.no_grad():
+				cnt = 0
+				for batch in batches:
 
-# 	estimated_sources = X[..., C - H:-(pad_size + C - H)] / overlap
+					x = model(batch)
+					x[torch.isnan(x)] = 0.0  # Replace "NaN" by zeros, just by security ...
 
-# 	if S > 1:
-# 		return {k: v for k, v in zip(config.training.instruments, estimated_sources.cpu().numpy())}
-	
-# 	est_s = estimated_sources.cpu().numpy()
-# 	return est_s
+					for w in x:
+						X[..., cnt * H : (cnt * H) + C] += w
+						cnt += 1
+				
+					Progress.update()
 
-# def demix_full_mdx23c(mix, device, overlap):
-# 	model_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "Models")
-
-# 	remote_url_mdxv3 = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/MDX23C_D1581.ckpt'
-# 	remote_url_conf = 'https://raw.githubusercontent.com/Anjok07/ultimatevocalremovergui/new-patch-3-20/models/MDX_Net_Models/model_data/mdx_c_configs/model_2_stem_061321.yaml'
-# 	if not os.path.isfile(os.path.join(model_folder, 'MDX23C_D1581.ckpt')):
-# 		torch.hub.download_url_to_file(remote_url_mdxv3, os.path.join(model_folder, 'MDX23C_D1581.ckpt'))
-# 	if not os.path.isfile(os.path.join(model_folder, 'model_2_stem_061321.yaml')):
-# 		torch.hub.download_url_to_file(remote_url_conf, os.path.join(model_folder, 'model_2_stem_061321.yaml'))
-
-# 	with open(os.path.join(model_folder, 'model_2_stem_061321.yaml')) as f:
-# 		config = ConfigDict(yaml.load(f, Loader=yaml.FullLoader))
-
-# 	model = TFC_TDF_net(config)
-# 	model.load_state_dict(torch.load(os.path.join(model_folder, 'MDX23C_D1581.ckpt')))
-# 	device = torch.device(device)
-# 	model = model.to(device)
-# 	model.eval()
-
-# 	sources = demix_base_mdxv3(config, model, mix, device, overlap)
-# 	del model
-# 	gc.collect()
-
-# 	return sources
+		estimated_sources = X[..., C - H:-(pad_size + C - H)] / overlap_MDX23
+		
+		if S > 1:
+			return {k: v for k, v in zip(config.training.instruments, estimated_sources.cpu().numpy())}
+		else:
+			return estimated_sources.cpu().numpy()
 
 def demix_base(mix, device, models, infer_session):
 	sources = []
@@ -221,7 +119,7 @@ def demix_base(mix, device, models, infer_session):
 				_ort = infer_session
 				stft_res = model.stft(mix_waves)
 				res = _ort.run(None, {'input': stft_res.cpu().numpy()})[0]
-				ten = torch.tensor(res)
+				ten = torch.tensor(res, dtype=torch.float32)
 				tar_waves = model.istft(ten.to(device))
 				tar_waves = tar_waves.cpu()
 				tar_signal = tar_waves[:, :, trim:-trim].transpose(0, 1).reshape(2, -1).numpy()[:, :-pad]
@@ -246,7 +144,6 @@ class MusicSeparationModel:
 		self.output_format		= config['AUDIO']['output_format']
 		self.normalize			= (config['AUDIO']['normalize'].lower() == "true")
 		self.silent				= - int(config['AUDIO']['silent'])
-#		self.overlap_MDXv3		= int(config['OPTIONS']['overlap_MDXv3'])
 		self.chunk_size			= int(config['OPTIONS']['chunk_size'])
 		self.PREVIEWS			= (config['BONUS']['PREVIEWS'].lower() == "true")
 		self.DEBUG				= (config['BONUS']['DEBUG'].lower() == "true")
@@ -268,28 +165,38 @@ class MusicSeparationModel:
 		else:
 			self.providers = ["CUDAExecutionProvider"]
 
+		# MDX23C 8K
+		self.MDX23_overlap = 1
+		with open(os.path.join(params['Project'], "App", "model_2_stem_full_band_8k.yaml")) as file:
+			self.MDX23_config = ConfigDict(yaml.load(file, Loader=yaml.FullLoader))
+
 		# Set BigShifts from Speed option (last +X is for SRS Low : 1 pass, or not for "x0")
 		match config['OPTIONS']['speed']:
 			case 'Fastest':
 				self.Quality_Vocal = { 'CSV': "x0", 'BigShifts': 1, 'BigShifts_SRS': 0 } # 1 + 0 + 0 = 1 pass
 				self.Quality_Bleed = { 'CSV': "x0", 'BigShifts': 1, 'BigShifts_SRS': 0 }
 				self.Quality_Music = { 'CSV': "x0", 'BigShifts': 1, 'BigShifts_SRS': 0 } # + 1  = 2 pass
+				self.MDX23_overlap = 1
 			case 'Fast':
 				self.Quality_Vocal = { 'CSV': "x1", 'BigShifts': 1, 'BigShifts_SRS': 1 } # 1 + 1 + 1 = 3 pass
 				self.Quality_Bleed = { 'CSV': "x1", 'BigShifts': 1, 'BigShifts_SRS': 0 }
 				self.Quality_Music = { 'CSV': "x1", 'BigShifts': 1, 'BigShifts_SRS': 0 } # + 1  = 4 pass
+				self.MDX23_overlap = 2
 			case 'Medium':
 				self.Quality_Vocal = { 'CSV': "x2", 'BigShifts': 1, 'BigShifts_SRS': 3 } # 1 + 3 + 1 = 5 pass
 				self.Quality_Bleed = { 'CSV': "x2", 'BigShifts': 2, 'BigShifts_SRS': 0 }
 				self.Quality_Music = { 'CSV': "x2", 'BigShifts': 2, 'BigShifts_SRS': 0 } # + 2  = 7 pass
+				self.MDX23_overlap = 4
 			case 'Slow':
 				self.Quality_Vocal = { 'CSV': "x3", 'BigShifts': 2, 'BigShifts_SRS': 3 } # 2 + 3 + 1 = 6 pass
 				self.Quality_Bleed = { 'CSV': "x3", 'BigShifts': 2, 'BigShifts_SRS': 0 }
 				self.Quality_Music = { 'CSV': "x3", 'BigShifts': 3, 'BigShifts_SRS': 0 } # + 3  = 9 pass
+				self.MDX23_overlap = 6
 			case 'Slowest':
 				self.Quality_Vocal = { 'CSV': "x4", 'BigShifts': 2, 'BigShifts_SRS': 4 } # 2 + 4 + 1 = 7 pass
 				self.Quality_Bleed = { 'CSV': "x4", 'BigShifts': 2, 'BigShifts_SRS': 0 }
 				self.Quality_Music = { 'CSV': "x4", 'BigShifts': 4, 'BigShifts_SRS': 0 } # + 4  = 11 pass
+				self.MDX23_overlap = 8
 		
 		self.Compensation_Vocal_ENS = 1.0
 		self.Compensation_Music_SUB = 1.0
@@ -306,42 +213,38 @@ class MusicSeparationModel:
 			for row in reader:
 				# ignore "Other" stems for now !
 				name = row['Name']
-				if name == "":  continue
+				if name == "" or name == "Name" or row['Use'] == "":  continue
 
 				# IMPORTANT : Volume Compensations are specific for each model !!!
 				# Empirical values to get the best SDR !
 				# TODO : Need to be checked against each models combinations !!
 
-				match name:
-					# Set Volume Compensation from Quality option for "Ensembles"
-					#  ->  MANDATORY to be set in CSV !!
-					case "VOCAL_ENS_x2":
-						if len(self.models['vocal']) == 2:	self.Compensation_Vocal_ENS = float(row['Comp_' + self.Quality_Vocal['CSV']])
-					case "VOCAL_ENS_x3":
-						if len(self.models['vocal']) > 2:	self.Compensation_Vocal_ENS = float(row['Comp_' + self.Quality_Vocal['CSV']])
-					case "MUSIC_SUB_x2":  # 2 VOCALS !
-						if len(self.models['vocal']) == 2:	self.Compensation_Music_SUB = float(row['Comp_' + self.Quality_Vocal['CSV']])
-					case "MUSIC_SUB_x3":  # 3 VOCALS !
-						if len(self.models['vocal']) > 2:	self.Compensation_Music_SUB = float(row['Comp_' + self.Quality_Vocal['CSV']])
-					case "MUSIC_ENS_x2":
-						if len(self.models['music']) == 2:	self.Compensation_Music_ENS = float(row['Comp_' + self.Quality_Music['CSV']])
-					case _:
-						if name == config['PROCESS']['vocal_1'] or name == config['PROCESS']['vocal_2'] \
-						or name == config['PROCESS']['vocal_3'] or name == config['PROCESS']['vocal_4']:
-							row['Compensation'] = 1.0 if row['Comp_' + self.Quality_Vocal['CSV']] == "" else float(row['Comp_' + self.Quality_Vocal['CSV']])
-							self.models['vocal'].append(row)
-						elif name == config['PROCESS']['music_1'] or name == config['PROCESS']['music_2']:
-							row['Compensation'] = 1.0 if row['Comp_' + self.Quality_Music['CSV']] == "" else float(row['Comp_' + self.Quality_Music['CSV']])
-							self.models['music'].append(row)
-						
-						# Special case for "Bleedings Filter"
-						# --> it's a Music model, so look at "self.Quality_Music" for references !!
-						if name == config['PROCESS']['bleed_1'] or name == config['PROCESS']['bleed_2']:
-							if self.Quality_Bleed['CSV'] in ["x0", "x1"]:
-								row['Compensation'] = 1.0 if row['Comp_x1'] == "" else float(row['Comp_x1'])
-							else:
-								row['Compensation'] = 1.0 if row['Comp_x3'] == "" else float(row['Comp_x3'])
-							self.models['bleed'].append(row)
+				# Set Volume Compensation from Quality option for "Ensembles"
+				#  ->  MANDATORY to be set in CSV !!
+				compensation = float(row['Comp_' + self.Quality_Vocal['CSV']])
+
+				if name == "VOCAL_ENS_x2"   and len(self.models['vocal']) == 2:	self.Compensation_Vocal_ENS = compensation
+				elif name == "VOCAL_ENS_x3" and len(self.models['vocal']) > 2:	self.Compensation_Vocal_ENS = compensation
+				elif name == "MUSIC_SUB_x1" and len(self.models['vocal']) == 1:	self.Compensation_Music_SUB = compensation  # only 1 VOCAL !
+				elif name == "MUSIC_SUB_x2" and len(self.models['vocal']) == 2:	self.Compensation_Music_SUB = compensation  # 2 VOCALS !
+				elif name == "MUSIC_SUB_x3" and len(self.models['vocal']) > 2:	self.Compensation_Music_SUB = compensation  # 3 VOCALS !
+				elif name == "MUSIC_ENS_x2" and len(self.models['music']) == 2:
+					self.Compensation_Music_ENS = float(row['Comp_' + self.Quality_Music['CSV']])
+				else:
+					if name == config['PROCESS']['vocal_1'] or name == config['PROCESS']['vocal_2'] \
+					or name == config['PROCESS']['vocal_3'] or name == config['PROCESS']['vocal_4']:
+						row['Compensation'] = compensation
+						self.models['vocal'].append(row)
+
+					elif name == config['PROCESS']['music_1'] or name == config['PROCESS']['music_2']:
+						row['Compensation'] = float(row['Comp_' + self.Quality_Music['CSV']])
+						self.models['music'].append(row)
+					
+					# Special case for "Bleedings Filter"
+					# --> it's a Music model, so look at "self.Quality_Music" for references !!
+					if name == config['PROCESS']['bleed_1'] or name == config['PROCESS']['bleed_2']:
+						row['Compensation'] = float(row['Comp_x1']) if self.Quality_Bleed['CSV'] in ["x0", "x1"] else float(row['Comp_x3'])
+						self.models['bleed'].append(row)
 
 		# Download Models to :
 		models_path	= os.path.join(self.Gdrive, "KaraFan_user", "Models")
@@ -354,7 +257,7 @@ class MusicSeparationModel:
 				model['dim_T_set']		= int(model['dim_T_set'])
 
 				model['PATH'] = Download_Model(model, models_path, self.CONSOLE, self.Progress)
-		
+					
 		# Load Models
 		if self.large_gpu: 
 			print("Large GPU mode is enabled : Loading models now...")
@@ -496,7 +399,7 @@ class MusicSeparationModel:
 				
 				bleed_ensemble = App.audio_utils.Make_Ensemble('Max', bleed_extracts)
 				
-				self.Save_Audio("2 - "+ self.AudioFiles[2] +" - Ensemble", bleed_ensemble)
+				if self.DEBUG:  self.Save_Audio("2 - "+ self.AudioFiles[2] +" - Ensemble", bleed_ensemble)
 
 			vocal_final = vocal_ensemble - bleed_ensemble
 
@@ -551,7 +454,7 @@ class MusicSeparationModel:
 
 				music_ensemble = music_ensemble * self.Compensation_Music_ENS
 
-				self.Save_Audio("3 - "+ self.AudioFiles[3] +" - Ensemble", music_ensemble)
+				if self.DEBUG:  self.Save_Audio("3 - "+ self.AudioFiles[3] +" - Ensemble", music_ensemble)
 
 			del music_extracts;  gc.collect()
 
@@ -562,10 +465,6 @@ class MusicSeparationModel:
 		# 5 - FINAL saving
 		
 		print("► Save Vocals FINAL !")
-
-		# Better SDR : chouïa, chouïa ... (+0.0003 SDR)
-		vocal_final = App.audio_utils.Pass_filter('highpass', 20, vocal_final, self.sample_rate, order = 100)
-		vocal_final = App.audio_utils.Pass_filter('lowpass', 17000, vocal_final, self.sample_rate, order = 4)
 
 		# Apply silence filter
 		vocal_final = App.audio_utils.Silent(vocal_final, self.sample_rate)
@@ -617,125 +516,143 @@ class MusicSeparationModel:
 		match type:
 			case 'Vocal':	quality = self.Quality_Vocal;  text = 'Extract Vocals'
 			case 'Music':	quality = self.Quality_Music;  text = 'Extract Music'
-			case 'Bleed':	quality = self.Quality_Bleed;  text = 'Clean Vocal Bleedings'
+			case 'Bleed':	quality = self.Quality_Bleed;  text = 'Clean Bleedings'
 		
 		text	  = f'► {text} with "{name}"'
 		denoise   = (quality['CSV'] != "x0")
 
-		if not self.large_gpu:
-			# print(f'Large GPU is disabled : Loading model "{name}" now...')
-			self.Load_MDX(model)
-		
-		mdx_model = self.MDX[name]['model']
-		inference = self.MDX[name]['inference']
+		if name.startswith("MDX23C"):
+			device = torch.device(self.device)
+			mdx23 = App.tfc_tdf.TFC_TDF_net(self.MDX23_config)
+			mdx23.load_state_dict(torch.load(model['PATH']))
+			mdx23 = mdx23.to(device)
+			mdx23.eval()
 
-		bigshifts = quality['BigShifts']
-		
-		if denoise:
-			print(f"{text} ({quality['BigShifts']} pass)")
-			source = 0.5 * -self.demix_full(-audio, mdx_model, inference, bigshifts)[0]
-			source += 0.5 * self.demix_full( audio, mdx_model, inference, bigshifts)[0]
-		else:
-			# ONLY 1 Pass, for testing purposes
-			print(f"{text} ({quality['BigShifts']} pass) - <b>NO Denoise !</b>")
-			source = self.demix_full(audio, mdx_model, inference, bigshifts)[0]
-
-		# Automatic SRS
-		if quality['BigShifts_SRS'] > 0:
-
-			bigshifts = quality['BigShifts_SRS']
-
-			# 1 - High SRS
-
-			if model['Cut_OFF'] > 0 and model['Name'] != "Vocal Main":  # Exception !!
-
-				# This is mandatory, I don't know why, but without this,
-				# the sample rate DOWN doesn't fit the MDX model Band
-				# and produce noise in High Frequencies !! (??)
-				# @ 510 Hz -> there is less noise, but badder SDR ?!?!
-				# TODO : Test with 14600 Hz models cut-off
-				# 
-				delta = 810 if type == 'Vocal' else 1220 # Hz
-
-				audio_SRS = App.audio_utils.Change_sample_rate(audio, 'DOWN', self.original_cutoff, model['Cut_OFF'] + delta)
-				
-				# Limit audio to the same frequency cut-off than MDX model : To avoid SRS noise !! (That helps a little bit)
-				audio_SRS = App.audio_utils.Pass_filter('lowpass', model['Cut_OFF'], audio_SRS, self.sample_rate, order = 100)
-
-				# DEBUG
-				# self.Save_Audio(type + " - SRS REAL - High", audio_SRS)
-
-				if denoise:
-					print(f"{text} -> SRS High ({bigshifts} pass)")
-					
-					source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
-						-self.demix_full(-audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
-					
-					source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
-						self.demix_full( audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
-				else:
-					# ONLY 1 Pass, for testing purposes
-					print(f"{text} -> SRS High ({bigshifts} pass) - <b>NO Denoise !</b>")
-					source_SRS = App.audio_utils.Change_sample_rate(
-						self.demix_full(audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
-
-				# Check if source_SRS is same size than source
-				source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
-
-				if type == 'Vocal':
-					source = App.audio_utils.Make_Ensemble('Max', [source, source_SRS])
-				else:
-					# OLD formula --> from Jarredou
-					
-					# vocals = Linkwitz_Riley_filter(vocals.T, 12000, 'lowpass') + Linkwitz_Riley_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
-					# *3/4 = Dynamic SRS personal taste of "Jarredou", to avoid too much SRS noise
-					# He also told me that 12 Khz cut-off was setted for MDX23C model, but now I use the REAL cut-off of MDX models !
-
-					# Avec cutoff = 17.4khz & -60dB d'atténuation et ordre = 12 --> cut freq = 16000 hz (-1640)
-					# cut_freq = 14000 # Hz
-					# # cut_freq = 7500 # Hz
-					# # if model['Name'] == "Kim Instrum":  cut_freq = 12000 # Hz
-					source = App.audio_utils.Linkwitz_Riley_filter('lowpass',  14400, source,     self.sample_rate, order=6) + \
-							 App.audio_utils.Linkwitz_Riley_filter('highpass', 14400, source_SRS, self.sample_rate, order=6)
-
-				# # new multiband ensemble
-				# vocals_low = lr_filter((weights[0] * vocals_mdxb1.T + weights[1] * vocals3.T + weights[2] * vocals_mdxb2.T) / weights.sum(), 12000, 'lowpass', order=12)
-				# vocals_mid = lr_filter(lr_filter((2 * vocals_mdxb2.T + 2 * vocals_SRS.T + vocals_demucs.T) / 5, 16500, 'lowpass', order=24), 12000, 'highpass', order=12)
-				# vocals_high = lr_filter((vocals_demucs.T + vocals_SRS.T) / 2, 16500, 'highpass', order=24)
-				# vocals = (vocals_low + vocals_mid + vocals_high) * 1.0074
-				
-			# 2 - Low SRS -> Bigshifts only 1 pass, else bad SDR
+			# ONLY 1 Pass, with this model !
+			print(f"{text} (Overlap : {self.MDX23_overlap})")
+			source = demix_base_mdxv3(audio, mdx23, device, self.MDX23_config, self.MDX23_overlap, self.Progress)['Vocals']
 			
-			if type == 'Vocal':
-				
-				cut_freq = 18550 # Hz
+			# Check if source is same size than audio
+			source = librosa.util.fix_length(source, size = audio.shape[-1])
 
-				audio_SRS = App.audio_utils.Change_sample_rate(audio, 'UP', self.original_cutoff, cut_freq)
-				
-				# Limit audio to frequency cut-off (That helps a little bit)
-				audio_SRS = App.audio_utils.Pass_filter('lowpass', model['Cut_OFF'], audio_SRS, self.sample_rate, order = 100)
+			mdx23 = mdx23.cpu(); del mdx23; gc.collect(); torch.cuda.empty_cache()
+		else:
+			if not self.large_gpu:
+				# print(f'Large GPU is disabled : Loading model "{name}" now...')
+				self.Load_MDX(model)
+			
+			mdx_model = self.MDX[name]['model']
+			inference = self.MDX[name]['inference']
 
-				# DEBUG
-				# self.Save_Audio(type + " - SRS REAL - Low", audio_SRS)
-
+			bigshifts = quality['BigShifts']
+			
+			if denoise:
+				print(f"{text} ({quality['BigShifts']} pass)")
+				source  = 0.5 * -self.demix_full(-audio, mdx_model, inference, bigshifts)[0]
+				source += 0.5 *  self.demix_full( audio, mdx_model, inference, bigshifts)[0]
+			else:
 				# ONLY 1 Pass, for testing purposes
-				if denoise:
-					print(f"{text} -> SRS Low (1 pass)")
+				print(f"{text} ({quality['BigShifts']} pass) - <b>NO Denoise !</b>")
+				source = self.demix_full(audio, mdx_model, inference, bigshifts)[0]
+
+			# Automatic SRS (for not FULL-BAND models !)
+			if quality['BigShifts_SRS'] > 0:
+
+				bigshifts = quality['BigShifts_SRS']
+
+				# 1 - High SRS
+
+				if model['Cut_OFF'] > 0 and model['Name'] != "Vocal Main":  # Exception !!
+
+					# This is mandatory, I don't know why, but without this,
+					# the sample rate DOWN doesn't fit the MDX model Band
+					# and produce noise in High Frequencies !! (??)
+					# @ 510 Hz -> there is less noise, but badder SDR ?!?!
+					# TODO : Test with 14600 Hz models cut-off
+					# 
+					delta = 810 if type == 'Vocal' else 1220 # Hz
+
+					audio_SRS = App.audio_utils.Change_sample_rate(audio, 'DOWN', self.original_cutoff, model['Cut_OFF'] + delta)
 					
-					source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
-						-self.demix_full(-audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
+					# Limit audio to the same frequency cut-off than MDX model : To avoid SRS noise !! (That helps a little bit)
+					audio_SRS = App.audio_utils.Pass_filter('lowpass', model['Cut_OFF'], audio_SRS, self.sample_rate, order = 100)
 
-					source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
-						self.demix_full( audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
-				else:
-					print(f"{text} -> SRS Low (1 pass) - <b>NO Denoise !</b>")
-					source_SRS = App.audio_utils.Change_sample_rate(
-						self.demix_full(audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
+					# DEBUG
+					# self.Save_Audio(type + " - SRS REAL - High", audio_SRS)
 
-				# Check if source_SRS is same size than source
-				source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
+					if denoise:
+						print(f"{text} -> SRS High ({bigshifts} pass)")
+						
+						source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
+							-self.demix_full(-audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
+						
+						source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
+							self.demix_full( audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
+					else:
+						# ONLY 1 Pass, for testing purposes
+						print(f"{text} -> SRS High ({bigshifts} pass) - <b>NO Denoise !</b>")
+						source_SRS = App.audio_utils.Change_sample_rate(
+							self.demix_full(audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
 
-				source = App.audio_utils.Make_Ensemble('Max', [source, source_SRS])
+					# Check if source_SRS is same size than source
+					source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
+
+					if type == 'Vocal':
+						source = App.audio_utils.Make_Ensemble('Max', [source, source_SRS])
+					else:
+						# OLD formula --> from Jarredou
+						
+						# vocals = Linkwitz_Riley_filter(vocals.T, 12000, 'lowpass') + Linkwitz_Riley_filter((3 * vocals_SRS.T) / 4, 12000, 'highpass')
+						# *3/4 = Dynamic SRS personal taste of "Jarredou", to avoid too much SRS noise
+						# He also told me that 12 Khz cut-off was setted for MDX23C model, but now I use the REAL cut-off of MDX models !
+
+						# Avec cutoff = 17640 hz & -60dB d'atténuation et ordre = 12 --> cut freq = 16000 hz (-1640)
+						# cut_freq = 14400 # Hz
+						# # cut_freq = 7500 # Hz
+						# # if model['Name'] == "Kim Instrum":  cut_freq = 12000 # Hz
+						source = App.audio_utils.Linkwitz_Riley_filter('lowpass',  16000, source,     self.sample_rate, order=12) + \
+								App.audio_utils.Linkwitz_Riley_filter('highpass', 16000, source_SRS, self.sample_rate, order=12)
+
+					# # new multiband ensemble
+					# vocals_low = lr_filter((weights[0] * vocals_mdxb1.T + weights[1] * vocals3.T + weights[2] * vocals_mdxb2.T) / weights.sum(), 12000, 'lowpass', order=12)
+					# vocals_mid = lr_filter(lr_filter((2 * vocals_mdxb2.T + 2 * vocals_SRS.T + vocals_demucs.T) / 5, 16500, 'lowpass', order=24), 12000, 'highpass', order=12)
+					# vocals_high = lr_filter((vocals_demucs.T + vocals_SRS.T) / 2, 16500, 'highpass', order=24)
+					# vocals = (vocals_low + vocals_mid + vocals_high) * 1.0074
+					
+				# 2 - Low SRS -> Bigshifts only 1 pass, else bad SDR
+				
+				if type == 'Vocal':
+					
+					cut_freq = 18550 # Hz
+
+					audio_SRS = App.audio_utils.Change_sample_rate(audio, 'UP', self.original_cutoff, cut_freq)
+					
+					# Limit audio to frequency cut-off (That helps a little bit)
+					audio_SRS = App.audio_utils.Pass_filter('lowpass', model['Cut_OFF'], audio_SRS, self.sample_rate, order = 100)
+
+					# DEBUG
+					# self.Save_Audio(type + " - SRS REAL - Low", audio_SRS)
+
+					# ONLY 1 Pass, for testing purposes
+					if denoise:
+						print(f"{text} -> SRS Low (1 pass)")
+						
+						source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
+							-self.demix_full(-audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
+
+						source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
+							self.demix_full( audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
+					else:
+						print(f"{text} -> SRS Low (1 pass) - <b>NO Denoise !</b>")
+						source_SRS = App.audio_utils.Change_sample_rate(
+							self.demix_full(audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
+
+					# Check if source_SRS is same size than source
+					source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
+
+					source = App.audio_utils.Make_Ensemble('Max', [source, source_SRS])
+
+			if not self.large_gpu:  self.Kill_MDX(name)
 
 		# DEBUG : Test different values for SDR Volume Compensation
 		if type != 'Bleed' and self.DEBUG and self.SDR_Testing and self.SDR_Compensation_Test:
@@ -747,8 +664,6 @@ class MusicSeparationModel:
 
 		# TODO
 		# source = App.audio_utils.Remove_High_freq_Noise(source, model['Cut_OFF'])
-
-		if not self.large_gpu:  self.Kill_MDX(name)
 
 		return source
 	
@@ -923,15 +838,6 @@ class MusicSeparationModel:
 
 		shifts  = [x * demix_seconds for x in range(bigshifts)]
 		
-		# Kept in case of Colab policy change for using GUI
-		# and we need back to old "stdout" redirection
-		#
-		# with self.CONSOLE if self.CONSOLE else stdout_redirect_tqdm() as output:
-			# dynamic_ncols is mandatory for stdout_redirect_tqdm()
-			# for shift in tqdm(shifts, file=output, ncols=40, unit="Pass", mininterval=1.0, dynamic_ncols=True):
-
-		# with self.CONSOLE if self.CONSOLE else stdout_redirect_tqdm() as output:
-		
 		self.Progress.reset(len(shifts), unit="Pass")
 
 		for shift in shifts:
@@ -991,18 +897,7 @@ def Download_Model(model, models_path, CONSOLE = None, PROGRESS = None):
 				
 				with open(file_path, 'wb') as file:
 
-					# Kept in case of Colab policy change for using GUI
-					# and we need back to old "stdout" redirection
-					#
-					# with CONSOLE if CONSOLE else stdout_redirect_tqdm() as output:
-					#	with tqdm(
-					#		file=output, total=total_size,
-					#		unit='B', unit_scale=True, unit_divisor=1024,
-					#		ncols=40, dynamic_ncols=True, mininterval=1.0
-					#	) as bar:
-
 					for data in response.iter_content(chunk_size=1048576):
-						# bar.update(len(data))
 						PROGRESS.update()
 						file.write(data)
 			else:
@@ -1036,23 +931,6 @@ class CustomPrint:
 
 	def flush(self):
 		pass
-
-# Kept in case of Colab policy change for using GUI
-# and we need back to old "stdout" redirection
-#
-# Redirect "Print" with tqdm progress bar
-# @contextlib.contextmanager
-# def stdout_redirect_tqdm():
-# 	orig_out_err = sys.stdout, sys.stderr
-# 	try:
-# 		sys.stdout, sys.stderr = map(DummyTqdmFile, orig_out_err)
-# 		yield orig_out_err[0]
-# 	# Relay exceptions
-# 	except Exception as exc:
-# 		raise exc
-# 	# Always restore sys.stdout/err if necessary
-# 	finally:
-# 		sys.stdout, sys.stderr = orig_out_err
 
 
 def Process(params, config):

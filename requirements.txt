@@ -17,9 +17,9 @@ resampy
 
 onnxruntime-gpu
 
-# ONLY for MDX23C models
-# ml_collections
-# yaml
+# for MDX23C models
+ml_collections
+PyYAML
 
 #****  MP3 Tags (for future use)  ****
 

@@ -1,14 +1,54 @@
 #!python3.10
 
 #   MIT License - Copyright (c) 2023 - ZFTurbo & Jarredou
-#
-#   https://github.com/ZFTurbo/MVSEP-MDX23-music-separation-model
-#   https://github.com/jarredou/MVSEP-MDX23-Colab_v2/
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from functools import partial
+
+#   https://github.com/jarredou/MVSEP-MDX23-Colab_v2/
+
+class Conv_TDF_net_trim_model(nn.Module):
+
+	def __init__(self, device, target_stem, neuron_blocks, model_params, hop=1024):
+
+		super(Conv_TDF_net_trim_model, self).__init__()
+		
+		self.dim_c = 4
+		self.dim_f = model_params['dim_F_set']
+		self.dim_t = model_params['dim_T_set']
+		self.n_fft = model_params['N_FFT_scale']
+		self.hop = hop
+		self.n_bins = self.n_fft // 2 + 1
+		self.chunk_size = hop * (self.dim_t - 1)
+		self.window = torch.hann_window(window_length=self.n_fft, periodic=True).to(device)
+		self.target_stem = target_stem
+
+		out_c = self.dim_c * 4 if target_stem == '*' else self.dim_c
+		self.freq_pad = torch.zeros([1, out_c, self.n_bins - self.dim_f, self.dim_t]).to(device)
+		
+		# Only used by "forward()" method for training !
+		# self.n = neuron_blocks // 2
+
+	def stft(self, x):
+		x = x.reshape([-1, self.chunk_size])
+		x = torch.stft(x, n_fft=self.n_fft, hop_length=self.hop, window=self.window, center=True, return_complex=True)
+		x = torch.view_as_real(x)
+		x = x.permute([0, 3, 1, 2])
+		x = x.reshape([-1, 2, 2, self.n_bins, self.dim_t]).reshape([-1, self.dim_c, self.n_bins, self.dim_t])
+		return x[:, :, :self.dim_f]
+
+	def istft(self, x, freq_pad=None):
+		freq_pad = self.freq_pad.repeat([x.shape[0], 1, 1, 1]) if freq_pad is None else freq_pad
+		x = torch.cat([x, freq_pad], -2)
+		x = x.reshape([-1, 2, 2, self.n_bins, self.dim_t]).reshape([-1, 2, self.n_bins, self.dim_t])
+		x = x.permute([0, 2, 3, 1])
+		x = x.contiguous()
+		x = torch.view_as_complex(x)
+		x = torch.istft(x, n_fft=self.n_fft, hop_length=self.hop, window=self.window, center=True)
+		return x.reshape([-1, 2, self.chunk_size])
+
+#   https://github.com/ZFTurbo/MVSEP-MDX23-music-separation-model
 
 class STFT:
 	def __init__(self, config):
@@ -107,8 +147,10 @@ class TFC_TDF(nn.Module):
 		return x
 
 class TFC_TDF_net(nn.Module):
+	
 	def __init__(self, config):
 		super().__init__()
+		
 		self.config = config
 		norm = get_norm(norm_type=config.model.norm)
 		act = get_act(act_type=config.model.act)

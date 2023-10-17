@@ -99,7 +99,6 @@ def Run(params, Auto_Start):
 	music_2			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	# OPTIONS
 	speed			= widgets.SelectionSlider(value = config['OPTIONS']['speed'], options = App.settings.Options['Speed'], readout=True, style=font_input) 
-	# overlap_MDXv3	= widgets.IntSlider(int(config['OPTIONS']['overlap_MDXv3']), min=2, max=40, step=2, layout={'margin':'0 0 0 10px'}, style=font_input)
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
 	# BONUS
 	KILL_on_END		= widgets.Checkbox((config['BONUS']['KILL_on_END'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
@@ -151,7 +150,6 @@ def Run(params, Auto_Start):
 				widgets.VBox([
 					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
 					widgets.HBox([ Label("Speed", 'speed'), speed ]),
-#					widgets.HBox([ Label("Overlap MDX v3", 'MDX23c'), overlap_MDXv3 ]),
 					widgets.HBox([ Label("Chunk Size", 'chunks'), chunk_size ]),
 				]),
 				separator,
@@ -239,7 +237,6 @@ def Run(params, Auto_Start):
 		}
 		config['OPTIONS'] = {
 			'speed': speed.value,
-#			'overlap_MDXv3': overlap_MDXv3.value,
 			'chunk_size': chunk_size.value,
 		}
 		config['BONUS'] = {
@@ -283,6 +280,7 @@ def Run(params, Auto_Start):
 
 
 	def on_Btn_Reset_clicked(b):
+		silent.value		= App.settings.Defaults['AUDIO']['silent']
 		vocal_1.value		= App.settings.Defaults['PROCESS']['vocal_1']
 		vocal_2.value		= App.settings.Defaults['PROCESS']['vocal_2']
 		vocal_3.value		= App.settings.Defaults['PROCESS']['vocal_3']

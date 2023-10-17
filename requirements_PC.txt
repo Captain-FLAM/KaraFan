@@ -9,11 +9,6 @@
 ipywidgets
 wxPython
 
-# Kept in case of Colab policy change for using GUI
-# and we need back to old "stdout" redirection
-#
-# tqdm
-
 #****  Audio  ****
 
 soundfile

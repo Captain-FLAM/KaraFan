@@ -6,6 +6,26 @@
 
 import librosa, numpy as np
 from scipy import signal
+from pydub import AudioSegment
+
+def Load_Audio(file, sample_rate):
+	sound = AudioSegment.from_file(file)
+
+	# Convert to 44100 Hz if needed (for MDX models)
+	if sound.frame_rate != sample_rate:  AudioSegment.set_frame_rate(sound, sample_rate)
+
+	# Convert mono to stereo (if needed)
+	if sound.channels == 1:  AudioSegment.set_channels(sound, 2)
+
+	# Convert AudioSegment to numpy
+	channel_sounds = sound.split_to_mono()
+	samples = [s.get_array_of_samples() for s in channel_sounds]
+
+	fp_arr = np.array(samples).T.astype(np.float32)
+	fp_arr /= np.iinfo(samples[0].typecode).max
+	
+	del sound
+	return fp_arr.T, sample_rate
 
 def Normalize(audio):
 	"""
@@ -51,7 +71,6 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 		
 		# TODO : Maybe use S=audio (Spectrogram) instead of y=audio ??
 		RMS = np.max(librosa.amplitude_to_db(librosa.feature.rms(y=audio[:, i:(i + window_frame)], frame_length=window_frame, hop_length=window_frame)))
-		# print(f"RMS : {RMS}")
 		if RMS < threshold_db:
 			end = i + window_frame
 			# Last part (in case of silence at the end)
@@ -69,6 +88,8 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 			# Clean the "min_size" samples found
 			if end - start > min_size:
 
+				# print(f"RMS : {RMS} / start : {start} / end : {end}")
+
 				# Fade out
 				if start > fade_duration:
 					audio[:, start:(start + fade_duration)] *= fade_out
@@ -83,7 +104,7 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 				audio[:, start:end] = 0.0
 
 			start = i
-
+			
 	return audio
 
 # Linkwitz-Riley filter

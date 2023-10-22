@@ -10,7 +10,6 @@ configparse
 
 #****  Audio  ****
 
-pydub
 resampy
 
 #****  Inference  ****

@@ -60,8 +60,8 @@ def SDR(song_output_path, output_format, Gdrive, elapsed_time):
 	References		= {"instrum": None, "vocals": None}
 
 	Results = ""
-	References["instrum"], _ = sf.read(os.path.join(MultiSong, song_name[-3:] + '_instrum.flac'))  # Get only the number of the song
-	References["vocals"], _  = sf.read(os.path.join(MultiSong, song_name[-3:] + '_vocals.flac'))
+	References["instrum"], _ = sf.read(os.path.join(MultiSong, song_name[-3:] + '_instrum.flac'), dtype='float32')  # Get only the number of the song
+	References["vocals"], _  = sf.read(os.path.join(MultiSong, song_name[-3:] + '_vocals.flac'), dtype='float32')
 
 	Extracted_files = sorted(Extracted_files)
 
@@ -78,7 +78,7 @@ def SDR(song_output_path, output_format, Gdrive, elapsed_time):
 
 		if type == "others":  continue  # Skip Others
 
-		estimate, _	= sf.read(extract)
+		estimate, _	= sf.read(extract, dtype='float32')
 		song_score	= calculate(References[type], estimate)[0]
 
 		pad = 40 - len(file_name)
@@ -110,8 +110,8 @@ def SDR(song_output_path, output_format, Gdrive, elapsed_time):
 
 # def Spectrograms(audio_file1, audio_file2):
 	
-# 	audio1, _ = sf.read(audio_file1, sr=None, mono=False)
-# 	audio2, _ = sf.read(audio_file2, sr=None, mono=False)
+# 	audio1, _ = sf.read(audio_file1, sr=None, mono=False, dtype='float32')
+# 	audio2, _ = sf.read(audio_file2, sr=None, mono=False, dtype='float32')
 
 # 	# Convertir les signaux audio en spectrogrammes
 # 	spec1 = librosa.stft(audio1.T, n_fft=4096, hop_length=1024)

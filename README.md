@@ -13,16 +13,12 @@ Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made th
 
 ## 💲 DONATE
 
-If you want to encourage me to give more time to improve this project :
+### If you like this software & wish to encourage me :
 
 [![](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20Coffee%20for%20Morning&emoji=:☕&slug=Captain_FLAM&button_colour=c69d8a&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=FFDD00)](https://www.buymeacoffee.com/Captain_FLAM) &nbsp;
-[![](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20Beer%20for%20the%20Night&emoji=🍺&slug=Captain_FLAM&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/Captain_FLAM)  
-[![](https://img.buymeacoffee.com/button-api/?text=Become%20my%20Best%20Friend%20....%20&emoji=😘&slug=Captain_FLAM&button_colour=f4007a&font_colour=ffffff&font_family=Arial&outline_colour=ffffff&coffee_colour=FFDD00)](https://www.buymeacoffee.com/Captain_FLAM/membership) &nbsp;
-[![](https://img.buymeacoffee.com/button-api/?text=I%20also%20have%20a%20Dreams%20List%20!&emoji=🎁&slug=Captain_FLAM&button_colour=ddd0ca&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=FFDD00)](https://www.buymeacoffee.com/Captain_FLAM/wishlist)
+[![](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20Beer%20for%20the%20Night&emoji=🍺&slug=Captain_FLAM&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/Captain_FLAM)
 
-You can become one of my patrons :
-
-[![Patreon](https://img.shields.io/badge/Donate-Patreon-red.svg?style=for-the-badge)](https://www.patreon.com/Captain_FLAM/membership)
+[![](https://img.shields.io/badge/Become_my-Patreon_for_only_5_$_%2F_month-red.svg?style=for-the-badge)](https://www.patreon.com/Captain_FLAM/membership) &nbsp; [![](https://img.shields.io/badge/..._or_Help_me-to_Buy_a_PC_instead_of_a_Beer-blue.svg?style=for-the-badge)](https://www.buymeacoffee.com/Captain_FLAM/membership)
 
 And if you have some Bitcoins (or cryptos) that you don't know what to do with,  
 click here to send me an email, I'll give you my wallet address :

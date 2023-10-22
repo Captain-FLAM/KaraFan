@@ -4,28 +4,63 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import librosa, numpy as np
+import os, librosa, subprocess, tempfile, soundfile as sf, numpy as np
 from scipy import signal
-from pydub import AudioSegment
 
 def Load_Audio(file, sample_rate):
-	sound = AudioSegment.from_file(file)
+
+	audio, sr = sf.read(file, dtype='float32')
+	audio = audio.T
 
 	# Convert to 44100 Hz if needed (for MDX models)
-	if sound.frame_rate != sample_rate:  AudioSegment.set_frame_rate(sound, sample_rate)
+	if sr != sample_rate:
+		audio = librosa.resample(audio, orig_sr = sr, target_sr = sample_rate, res_type = 'kaiser_best', axis=1, fix=True)
 
 	# Convert mono to stereo (if needed)
-	if sound.channels == 1:  AudioSegment.set_channels(sound, 2)
+	if audio.ndim == 1:
+		audio = np.asfortranarray([audio, audio])
 
-	# Convert AudioSegment to numpy
-	channel_sounds = sound.split_to_mono()
-	samples = [s.get_array_of_samples() for s in channel_sounds]
+	return audio, sample_rate
 
-	fp_arr = np.array(samples).T.astype(np.float32)
-	fp_arr /= np.iinfo(samples[0].typecode).max
-	
-	del sound
-	return fp_arr.T, sample_rate
+def Save_Audio(file_path, audio, sample_rate, output_format, cut_off, ffmpeg):
+
+	if output_format == 'PCM_16' or output_format == 'FLOAT':
+		sf.write(file_path + '.wav',  audio.T, sample_rate, format='wav', subtype = output_format)
+	else:
+		# Create a temporary file
+		temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+
+		if output_format == 'FLAC':
+			sf.write(temp, audio.T, sample_rate, format='wav', subtype='FLOAT')
+			ffmpeg = f'"{ffmpeg}" -y -i "{temp.name}" -codec:a flac -compression_level 5 -ch_mode mid_side -frame_size {sample_rate} -lpc_type cholesky -lpc_passes 1 -exact_rice_parameters 1 "{file_path}.flac"'
+
+		elif output_format == 'MP3':
+			# TODO : Correct the BUG of Lame encoder which modify the length of audio results (~ +30 ms on short song, -30 ms on long song) ?!?!
+
+			# about VBR/CBR/ABR		: https://trac.ffmpeg.org/wiki/Encode/MP3
+			# about ffmpeg wrapper	: http://ffmpeg.org/ffmpeg-codecs.html#libmp3lame-1
+			# recommended settings	: https://wiki.hydrogenaud.io/index.php?title=LAME#Recommended_encoder_settings
+
+			# 320k is mandatory, else there is a weird cutoff @ 16khz with VBR parameters = ['-q','0'] !!
+			# (equivalent to lame "-V0" - 220-260 kbps , 245 kbps average)
+			# And also, parameters = ['-joint_stereo', '0'] (Separated stereo channels)
+			# is WORSE than "Joint Stereo" for High Frequencies !
+			# So let's use it by default for MP3 encoding !!
+
+			sf.write(temp, audio.T, sample_rate, format='wav', subtype='PCM_16')
+			ffmpeg = f'"{ffmpeg}" -y -i "{temp.name}" -codec:a libmp3lame -b:a 320k -q:a 0 -joint_stereo 1 -cutoff {cut_off} "{file_path}.mp3"'
+
+		try:
+			subprocess.run(ffmpeg, shell=True, text=True, capture_output=True, check=True)
+
+		except subprocess.CalledProcessError as e:
+			if e.returncode == 127:
+				print('WARNING : "\nFFmpeg" is not installed on your system !!\n')
+			else:
+				print("Error :\n" + e.stderr + "\n" + e.stdout)
+
+		temp.close()
+		os.remove(temp.name)
 
 def Normalize(audio):
 	"""

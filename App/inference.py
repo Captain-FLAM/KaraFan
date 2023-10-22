@@ -11,11 +11,10 @@
 #   https://github.com/Captain-FLAM/KaraFan
 
 
-import os, gc, sys, csv, time, requests, io, base64, torch
+import os, gc, sys, csv, time, platform, requests, shutil, torch
 import regex as re, numpy as np, onnxruntime as ort
 
-import librosa, soundfile as sf
-from pydub import AudioSegment
+import librosa, tempfile
 
 # for MDX23C models
 import yaml
@@ -141,30 +140,32 @@ class MusicSeparationModel:
 		self.CONSOLE  = params['CONSOLE']
 		self.Progress = params['Progress']
 
-		self.output_format		= config['AUDIO']['output_format']
 		self.normalize			= (config['AUDIO']['normalize'].lower() == "true")
+		self.output_format		= config['AUDIO']['output_format']
 		self.silent				= - int(config['AUDIO']['silent'])
+		self.infra_bass			= (config['AUDIO']['infra_bass'].lower() == "true")
 		self.chunk_size			= int(config['OPTIONS']['chunk_size'])
-		self.PREVIEWS			= (config['BONUS']['PREVIEWS'].lower() == "true")
 		self.DEBUG				= (config['BONUS']['DEBUG'].lower() == "true")
 		self.GOD_MODE			= (config['BONUS']['GOD_MODE'].lower() == "true")
 		self.large_gpu			= (config['BONUS']['large_gpu'].lower() == "true")
 
+		self.device = 'cpu'
 		self.output = os.path.join(self.Gdrive, config['AUDIO']['output'])
 		
-		self.device = 'cpu'
+		if params['isColab']:
+			self.ffmpeg = "/bin/ffmpeg"
+		else:
+			self.ffmpeg = os.path.join(params['Gdrive'], "KaraFan_user", "ffmpeg") + (".exe" if platform.system() == 'Windows' else "")
+		
 		if torch.cuda.is_available():  self.device = 'cuda:0'
 		
 		if self.device == 'cpu':
+			self.providers = ["CPUExecutionProvider"]
 			print('<div style="font-size:18px;font-weight:bold;color:#ff0040;">Warning ! CPU is used instead of GPU for processing.<br>Processing will be very slow !!</div>')
 		else:
+			self.providers = ["CUDAExecutionProvider"]
 			print('<div style="font-size:18px;font-weight:bold;color:#00b32d;">It\'s OK -> GPU is used for processing !!</div>')
 		
-		if self.device == 'cpu':
-			self.providers = ["CPUExecutionProvider"]
-		else:
-			self.providers = ["CUDAExecutionProvider"]
-
 		# MDX23C 8K
 		self.MDX23_overlap = 1
 		with open(os.path.join(params['Project'], "Data", "model_2_stem_full_band_8k.yaml")) as file:
@@ -287,9 +288,9 @@ class MusicSeparationModel:
 	# ****    This is the MAGIC RECIPE , the heart of KaraFan !!    ****
 	# ******************************************************************
 
-	def SEPARATE(self, file, BATCH_MODE):
+	def SEPARATE(self, audio_file, BATCH_MODE):
 
-		name = os.path.splitext(os.path.basename(file))[0]
+		name = os.path.splitext(os.path.basename(audio_file))[0]
 		
 		#*************************************************
 		#****        DEBUG  ->  for DEVELOPERS        ****
@@ -313,23 +314,22 @@ class MusicSeparationModel:
 		start_time = time.time()
 
 		self.BATCH_MODE = BATCH_MODE
-		if self.CONSOLE:	print("Go with : <b>" + name + "</b>")
-		else:				print("Go with : " + name)
-
 		self.song_output_path = os.path.join(self.output, name)
 		
+		# Delete previous files
 		if os.path.exists(self.song_output_path):
-			# Delete previous files
 			if not self.GOD_MODE:
-				print("► No GOD MODE : Delete previous files ...")
+				print("► No GOD MODE : Re-process ALL files ...")
 				for file in os.listdir(self.song_output_path):
-					if file != "SDR_Results.txt":
+					if file != "SDR_Results.txt" and file.endswith(self.output_format):
 						os.remove(os.path.join(self.song_output_path, file))
 		else:
 			# Create a folder based on input audio file's name
 			os.makedirs(self.song_output_path)
 		
-		original_audio, self.sample_rate = App.audio_utils.Load_Audio(file, 44100)  # Resample to 44.1 Khz
+		print("Go with : <b>" + name + "</b>")
+
+		original_audio, self.sample_rate = App.audio_utils.Load_Audio(audio_file, 44100)  # Resample to 44.1 Khz
 		
 		# TODO : Get the cut-off frequency of the input audio
 		# self.original_cutoff = App.audio_utils.Find_Cut_OFF(original_audio, self.sample_rate)
@@ -480,6 +480,9 @@ class MusicSeparationModel:
 		
 		print("► Save Vocals FINAL !")
 
+		# Apply Infra Bass filter
+		if self.infra_bass:  vocal_final = App.audio_utils.Pass_filter('highpass', 18, vocal_final, self.sample_rate, order = 100)
+
 		# Apply silence filter
 		if self.silent > 0:  vocal_final = App.audio_utils.Silent(vocal_final, self.sample_rate, self.silent)
 
@@ -487,6 +490,9 @@ class MusicSeparationModel:
 
 		print("► Save Music FINAL !")
 		
+		# Apply Infra Bass filter
+		if self.infra_bass:  music_final = App.audio_utils.Pass_filter('highpass', 18, music_final, self.sample_rate, order = 100)
+
 		# Apply silence filter
 		if self.silent > 0:  music_final = App.audio_utils.Silent(music_final, self.sample_rate, self.silent)
 
@@ -503,8 +509,8 @@ class MusicSeparationModel:
 			print("----------------------------------------")
 			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, elapsed_time)
 		
-		if self.BATCH_MODE and not self.DEBUG and not self.PREVIEWS:
-			self.CONSOLE.clear_output()
+		# Clear screen between each song
+		if self.BATCH_MODE and not self.DEBUG:  self.CONSOLE.clear_output()
 		
 
 	def Extract_with_Model(self, type, audio, model):
@@ -725,9 +731,6 @@ class MusicSeparationModel:
 			print(filename + " --> Loading ...")
 			audio, _ = App.audio_utils.Load_Audio(file, self.sample_rate)
 			
-			# Preview Audio file
-			if self.PREVIEWS and self.CONSOLE:  self.Show_Preview(filename, audio)
-
 			return audio
 		
 		return None
@@ -753,79 +756,11 @@ class MusicSeparationModel:
 
 		if model_name != "":  filename += " - ("+ model_name +")"
 
-		match self.output_format:
-			case 'PCM_16':	filename += '.wav'
-			case 'FLOAT':	filename += '.wav'
-			case "FLAC":	filename += '.flac'
-			case 'MP3':		filename += '.mp3'
-
 		file = os.path.join(self.song_output_path, filename)
 		
-		# Save as WAV
-		match self.output_format:
-			case 'PCM_16':
-				sf.write(file, audio.T, self.sample_rate, subtype='PCM_16')
-			case 'FLOAT':
-				sf.write(file, audio.T, self.sample_rate, subtype='FLOAT')
-			case "FLAC":
-				sf.write(file, audio.T, self.sample_rate, format='flac', subtype='PCM_24')
-			case 'MP3':
-				# Convert audio to PCM_16 audio data (bytes)
-				audio_tmp = (audio.T * 32768).astype(np.int16)  # 2 ^15
+		App.audio_utils.Save_Audio(file, audio, self.sample_rate, self.output_format, self.original_cutoff, self.ffmpeg)
 
-				audio_segment = AudioSegment(
-					audio_tmp.tobytes(),
-					channels = 2,
-					frame_rate = self.sample_rate,
-					sample_width = 2  # sample width (in bytes)
-				)
-
-				# about VBR/CBR/ABR		: https://trac.ffmpeg.org/wiki/Encode/MP3
-				# about ffmpeg wrapper	: http://ffmpeg.org/ffmpeg-codecs.html#libmp3lame-1
-				# recommended settings	: https://wiki.hydrogenaud.io/index.php?title=LAME#Recommended_encoder_settings
-
-				# 320k is mandatory, else there is a weird cutoff @ 16khz with VBR parameters = ['-q','0'] !!
-				# (equivalent to lame "-V0" - 220-260 kbps , 245 kbps average)
-				# And also, parameters = ['-joint_stereo', '0'] (Separated stereo channels)
-				# is WORSE than "Joint Stereo" for High Frequencies !
-				# So let's use it by default for MP3 encoding !!
-
-				audio_segment.export(file, format='mp3', bitrate='320k', codec='libmp3lame')
-		
-		# Preview Audio file
-		if self.PREVIEWS and self.CONSOLE:  self.Show_Preview(filename, audio)
-
-	def Show_Preview(self, name, audio):
-
-		name = os.path.splitext(name)[0]
-		
-		with self.CONSOLE:
-			audio_mp3 = io.BytesIO()
-			audio_mp3.name = "Preview.mp3"
-			
-			# Get the first 60 seconds of the audio
-			audio = audio[:, :int(60.3 * self.sample_rate)]
-
-			# Convert audio to PCM_16 audio data (bytes)
-			audio_tmp = (audio.T * 32768).astype(np.int16)  # 2 ^15
-
-			audio_segment = AudioSegment(
-				audio_tmp.tobytes(),
-				channels = 2,
-				frame_rate = self.sample_rate,
-				sample_width = 2  # sample width (in bytes)
-			)
-
-			# audio_segment.export(audio_mp3, format='mp3', bitrate='192k', codec='libmp3lame')
-			audio_segment.export(audio_mp3, format='mp3', bitrate='192k', codec='libshine')
-			# audio_mp3.seek(0)
-
-			display(HTML(
-				'<div class="player"><div>'+ name +'</div><audio controls preload="metadata" src="data:audio/mp3;base64,' \
-				+ base64.b64encode(audio_mp3.getvalue()).decode('utf-8') +'"></audio></div>'))
-
-			# audio_mp3.close()
-
+	
 	def demix_full(self, mix, use_model, infer_session, bigshifts):
 		
 		results = []

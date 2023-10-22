@@ -4,7 +4,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, gc, subprocess, requests, shutil
+import os, gc, platform, requests, subprocess, tempfile, zipfile
 
 def Check_dependencies(isColab):
 
@@ -46,35 +46,48 @@ def Install(params):
 
 	if isColab:
 		Check_dependencies(True)
-
-		# Temporary fix for old KF version < 3.1
-
-		# Rename the folder
-		if os.path.exists(os.path.join(Gdrive, "KaraFan")):
-			os.rename(os.path.join(Gdrive, "KaraFan"), os.path.join(Gdrive, "KaraFan_user"))
-
-		# Delete everything except Config files & Models folder
-		folder = os.path.join(Gdrive, "KaraFan_user")
-		if os.path.exists(folder):
-			for file in os.listdir(folder):
-				item = os.path.join(folder, file)
-				if os.path.isfile(item):
-					if file != "Config_Colab.ini" and file != "Config_PC.ini":
-						os.remove(item)
-				elif os.path.isdir(item):
-					if file == "Models":
-						if os.path.exists(os.path.join(item, "_PARAMETERS_.csv")):
-							os.remove(os.path.join(item, "_PARAMETERS_.csv"))
-					elif file == "Multi_Song":
-						continue
-					else:
-						shutil.rmtree(item, ignore_errors=True)
 	
 	# Create missing folders
-	folder = os.path.join(Gdrive, "KaraFan_user")
-	os.makedirs(folder, exist_ok=True)
-	os.makedirs(os.path.join(folder, "Models"), exist_ok=True)
+	user_folder = os.path.join(Gdrive, "KaraFan_user")
+	os.makedirs(user_folder, exist_ok=True)
+	os.makedirs(os.path.join(user_folder, "Models"), exist_ok=True)
 
+	# Get FFmpeg from GitHub wiki
+	if not isColab:
+		ffmpeg = os.path.join(user_folder, "ffmpeg") + (".exe" if platform.system() == 'Windows' else "")
+
+		if not os.path.exists(ffmpeg):
+			print("Downloading FFmpeg... This will take few seconds...", end='')
+			try:
+				response = requests.get(Repository + '/wiki/FFmpeg/' + platform.system() + '.zip')
+				if response.status_code == requests.codes.ok:
+					# Create a temporary file
+					temp = tempfile.NamedTemporaryFile(suffix='.zip', delete=False)
+					temp.write(response.content)
+
+					# Unzip the temporary file
+					with zipfile.ZipFile(temp.name, 'r') as zip_ref:
+						zip_ref.extractall(user_folder)
+						zip_ref.close()
+
+					# Make it executable
+					if platform.platform() == 'Linux':
+						subprocess.run(["chmod", "777", ffmpeg], text=True, capture_output=True, check=True)
+
+					temp.close()
+					os.remove(temp.name)
+				else:
+					print("\nUnable to download FFmpeg from GitHub wiki !")
+					Exit_Notebook(isColab)
+			except ValueError as e:
+				print("\nError processing FFmpeg data :", e)
+				Exit_Notebook(isColab)
+			except requests.exceptions.ConnectionError as e:
+				print("\nConnection error while trying to fetch FFmpeg :", e)
+				Exit_Notebook(isColab)
+			
+			print("\rFFmpeg downloaded !                                     ") # Clean line
+			
 	# Auto-Magic update !
 	try:
 		response = requests.get(Version_url)
@@ -93,7 +106,7 @@ def Install(params):
 
 			warning = 'You have to download the new version manually from :\n'
 			warning += Repository
-			warning +='\n... and extract it in your KaraFan folder.\n'
+			warning +='\n... and extract it in your Project folder.\n'
 			warning +='Then, you have to "Restart" the notebook to use the new version of "KaraFan" !\n\n'
 			
 			if DEV_MODE:
@@ -128,6 +141,8 @@ def Exit_Notebook(isColab):
 	if isColab:
 		from google.colab import runtime
 		runtime.unassign()
+	else:
+		os._exit(0)
 
 
 if __name__ == '__main__':

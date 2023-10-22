@@ -22,15 +22,17 @@ def Run(params, Auto_Start):
 
 	width  = '670px'
 	height = '600px'
+	label_width = '135px'
 
 	# Set the font size when running on your PC
 	font = '14px'
+	font_help = '14px'
 
-	if isColab:  font = '15px';
+	if isColab:  font = '16px'; font_help = '15px'; height = '580px'; width = '700px'; label_width = '155px'
 
 	font_input = {'font_size': font}
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
-	checkbox_layout = {'width': '30px', 'max_width': '30px' }
+	checkbox_layout = {'width': '30px', 'max_width': '30px', 'margin': '5px 0 0 0' }
 	max_width = str(int(width.replace('px','')) - 18) + 'px'  # = border + Left and Right "panel_layout" padding
 	console_max_height = str(int(height.replace('px','')) - 20) + 'px'
 
@@ -42,14 +44,11 @@ def Run(params, Auto_Start):
 #output-body input, #output-body button, #output-body select, #output-body select > option, #output-body .widget-readout { font-size: '+ font +' }\
 #output-body .lm-TabBar-tabLabel, .lm-TabBar-tabLabel { font-size: 16px; padding-top: 5px }\
 #output-body .progress-bar-success, .progress-bar-success { background-color: lightblue}\
-.option-label { font-size: '+ font +'; width: 135px }\
+.option-label { font-size: '+ font +'; width: '+ label_width +' }\
 .short-label { font-size: '+ font +' }\
-#HELP { font-size: '+ font +'; background-color: #ffffd2; border: solid 1px #333; width: 100%; height: 63px; line-height: 1.2 }\
+#HELP { font-size: '+ font_help +'; background-color: #ffffd2; border: solid 1px #333; width: 100%; height: 63px; line-height: 1.2 }\
 #HELP > div { margin: 5px 10px }\
 .console { font: normal '+ font +' monospace; line-height: 1.6 }\
-.player { margin-bottom: 5px }\
-.player > div { min-width: 200px; display: inline-block; font: normal '+ font +' monospace }\
-.player > audio { vertical-align: middle }\
 .SDR { display: inline-block; line-height: 1 }\
 </style>'))
 	
@@ -87,10 +86,11 @@ def Run(params, Auto_Start):
 	separator		= widgets.HTML('<div style="border-bottom: dashed 1px #000; margin: 5px 0 5px 0; width: 100%">')
 	# AUDIO
 	input_path		= widgets.Text(config['AUDIO']['input'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
-	output_path		= widgets.Text(config['AUDIO']['output'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
-	output_format	= widgets.Dropdown(value = config['AUDIO']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'150px'}, style=font_input)
 	normalize		= widgets.Checkbox((config['AUDIO']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	output_path		= widgets.Text(config['AUDIO']['output'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
+	output_format	= widgets.Dropdown(value = config['AUDIO']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'153px'}, style=font_input)
 	silent			= widgets.Dropdown(value = config['AUDIO']['silent'], options = App.settings.Options['Silent'], layout = {'width':'100px'}, style=font_input)
+	infra_bass		= widgets.Checkbox((config['AUDIO']['infra_bass'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	# PROCESS
 	music_1			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	music_2			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
@@ -107,7 +107,6 @@ def Run(params, Auto_Start):
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
 	# BONUS
 	KILL_on_END		= widgets.Checkbox((config['BONUS']['KILL_on_END'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
-	PREVIEWS		= widgets.Checkbox((config['BONUS']['PREVIEWS'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
 	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
 	# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
@@ -141,11 +140,11 @@ def Run(params, Auto_Start):
 			children = [
 				widgets.VBox([
 					widgets.HBox([ Label("Input X file or PATH", 'input'), input_path, Label("&nbsp; Normalize input &nbsp;", 'normalize', short=True), normalize ]),
-						
 					widgets.HBox([ Label("Output PATH", 'output'), output_path ]),
 					widgets.HBox([
 						Label("Output Format", 'format'), output_format,
-						Label("&nbsp; Silent &nbsp;", 'silent', short=True), silent
+						Label("&nbsp; Silent &nbsp;", 'silent', short=True), silent,
+						Label("&nbsp; KILL Infra-Bass &nbsp; ", 'infra-bass', short=True), infra_bass
 					]),
 				]),
 				separator,
@@ -166,8 +165,8 @@ def Run(params, Auto_Start):
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("This is the END ...", 'kill_end'), KILL_on_END, Label("Show Previews", 'previews'), PREVIEWS ]),
 					widgets.HBox([ Label("DEBUG Mode", 'debug'), DEBUG, Label("GOD Mode", 'god_mode'), GOD_MODE ]),
+					widgets.HBox([ Label("This is the END ...", 'kill_end'), KILL_on_END ]),
 					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
 #					, Label('Large GPU', 'large_gpu'), large_gpu ]),
 #					widgets.HBox([ Label("RE-Process ▶️▶️", 'reprocess'), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
@@ -235,10 +234,11 @@ def Run(params, Auto_Start):
 		# Save config
 		config['AUDIO'] = {
 			'input': input_path.value,
+			'normalize': normalize.value,
 			'output': output_path.value,
 			'output_format': output_format.value,
-			'normalize': normalize.value,
 			'silent': silent.value,
+			'infra_bass': infra_bass.value,
 		}
 		config['PROCESS'] = {
 			'music_1': music_1.value,
@@ -258,7 +258,6 @@ def Run(params, Auto_Start):
 		}
 		config['BONUS'] = {
 			'KILL_on_END': KILL_on_END.value,
-			'PREVIEWS': PREVIEWS.value,
 			'DEBUG': DEBUG.value,
 			'GOD_MODE': GOD_MODE.value,
 			# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song

@@ -1,5 +1,5 @@
 
-import os, Gui.notebook
+import os, Gui.Notebook
 
 def Start(params):
 	
@@ -30,4 +30,4 @@ def Start(params):
 	# file = os.path.join(song_output_path, "2 - Music extract - (Instrum HQ 3).flac")
 	# if os.path.isfile(file):  os.remove(file)
 
-	Gui.notebook.Run(params, Auto_Start)  # Auto-run processing on execution for DEBUG
+	Gui.Notebook.Run(params, Auto_Start)  # Auto-run processing on execution for DEBUG

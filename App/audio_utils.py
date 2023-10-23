@@ -62,11 +62,11 @@ def Save_Audio(file_path, audio, sample_rate, output_format, cut_off, ffmpeg):
 		temp.close()
 		os.remove(temp.name)
 
-def Normalize(audio):
+def Normalize(audio, threshold_db = -1.0):
 	"""
 	Normalize audio to -1.0 dB peak amplitude
 	This is mandatory for SOME audio files because every process is based on RMS dB levels.
-	(Volumes Compensations & audio Substractions)
+	(Models processing, Volumes Compensations & audio Substractions)
 	"""
 	audio = audio.T
 	
@@ -76,7 +76,7 @@ def Normalize(audio):
 	# Normalize audio peak amplitude to -1.0 dB
 	max_peak = np.max(np.abs(audio))
 	if max_peak > 0.0:
-		max_db = 10 ** (-1.0 / 20)  # Convert -1.0 dB to linear scale
+		max_db = 10 ** (threshold_db / 20)  # Convert -1.0 dB to linear scale
 		audio /= max_peak
 		audio *= max_db
 
@@ -92,9 +92,9 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 	- clean the final audio files from residues of "silent parts"
 	"""
 
-	min_size		= int(0.500 * sample_rate)  #  500 ms
-	window_frame	= int(0.010 * sample_rate)  #   10 ms
-	fade_duration	= int(0.400 * sample_rate)  #  400 ms
+	min_size		= int(1.000 * sample_rate)  # 1000 ms
+	window_frame	= int(0.500 * sample_rate)  #  500 ms
+	fade_duration	= int(0.300 * sample_rate)  #  300 ms
 	fade_out		= np.linspace(1.0, 0.0, fade_duration)
 	fade_in			= np.linspace(0.0, 1.0, fade_duration)
 

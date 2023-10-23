@@ -140,9 +140,9 @@ class MusicSeparationModel:
 		self.CONSOLE  = params['CONSOLE']
 		self.Progress = params['Progress']
 
-		self.normalize			= (config['AUDIO']['normalize'].lower() == "true")
+		self.normalize			= int(config['AUDIO']['normalize'])
 		self.output_format		= config['AUDIO']['output_format']
-		self.silent				= - int(config['AUDIO']['silent'])
+		self.silent				= int(config['AUDIO']['silent'])
 		self.infra_bass			= (config['AUDIO']['infra_bass'].lower() == "true")
 		self.chunk_size			= int(config['OPTIONS']['chunk_size'])
 		self.DEBUG				= (config['BONUS']['DEBUG'].lower() == "true")
@@ -339,13 +339,12 @@ class MusicSeparationModel:
 		print(f"{original_audio.shape[1] // 44100} sec. - Rate : {self.sample_rate} Hz / Cut-OFF : {self.original_cutoff} Hz")
 		
 		# ****  START PROCESSING  ****
-
-		if self.normalize:
+		if self.normalize < 0:
 			normalized = self.Check_Already_Processed(0)
 
 			if normalized is None:
 				print("► Normalizing audio")
-				normalized = App.audio_utils.Normalize(original_audio)
+				normalized = App.audio_utils.Normalize(original_audio, self.normalize)
 
 				self.Save_Audio(0, normalized)
 		else:
@@ -484,7 +483,7 @@ class MusicSeparationModel:
 		if self.infra_bass:  vocal_final = App.audio_utils.Pass_filter('highpass', 18, vocal_final, self.sample_rate, order = 100)
 
 		# Apply silence filter
-		if self.silent > 0:  vocal_final = App.audio_utils.Silent(vocal_final, self.sample_rate, self.silent)
+		if self.silent < 0:  vocal_final = App.audio_utils.Silent(vocal_final, self.sample_rate, self.silent)
 
 		self.Save_Audio(6, vocal_final)
 
@@ -494,7 +493,7 @@ class MusicSeparationModel:
 		if self.infra_bass:  music_final = App.audio_utils.Pass_filter('highpass', 18, music_final, self.sample_rate, order = 100)
 
 		# Apply silence filter
-		if self.silent > 0:  music_final = App.audio_utils.Silent(music_final, self.sample_rate, self.silent)
+		if self.silent < 0:  music_final = App.audio_utils.Silent(music_final, self.sample_rate, self.silent)
 
 		self.Save_Audio(7, music_final)
 

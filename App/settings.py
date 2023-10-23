@@ -10,10 +10,10 @@ import os, configparser
 Defaults = {
 	'AUDIO': {
 		'input': "Music",
-		'normalize': False,
+		'normalize': "0",
 		'output': "Music",
 		'output_format': "FLAC",
-		'silent': "50",
+		'silent': "-50",
 		'infra_bass': True,
 	},
 	'PROCESS': {
@@ -41,8 +41,9 @@ Defaults = {
 	},
 }
 Options = {
+	'Normalize': [("NONE", "0"), ("- 1 dB", "-1"), ("- 3 dB", "-3"), ("- 6 dB", "-6")],
 	'Output_format': [("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320K", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
-	'Silent': [("NONE", "0"), ("- 45 dB", "45"), ("- 50 dB", "50"), ("- 55 dB", "55"), ("- 60 dB", "60")],
+	'Silent': [("NONE", "0"), ("- 45 dB", "-45"), ("- 50 dB", "-50"), ("- 55 dB", "-55"), ("- 60 dB", "-60")],
 	'Speed': ['Fastest', 'Fast', 'Medium', 'Slow', 'Slowest'],
 }
 Help_Dico = {
@@ -137,6 +138,8 @@ def Load(Gdrive, isColab):
 		config.read_dict(Defaults)
 		Save(Gdrive, isColab, config)
 	
+	if  config['AUDIO']['normalize'] not in [x[1] for x in Options['Normalize']]:
+		config['AUDIO']['normalize'] = Defaults['AUDIO']['normalize']
 	if  config['AUDIO']['output_format'] not in [x[1] for x in Options['Output_format']]:
 		config['AUDIO']['output_format'] = Defaults['AUDIO']['output_format']
 	if  config['AUDIO']['silent'] not in [x[1] for x in Options['Silent']]:
@@ -150,6 +153,6 @@ def Save(Gdrive, isColab, config):
 	
 	file = os.path.join(Gdrive, "KaraFan_user", "Config_Colab.ini" if isColab else "Config_PC.ini")
 
-	with open(file, 'w') as config_file:
+	with open(file, 'w', encoding='utf-8') as config_file:
 		config.write(config_file)
 	

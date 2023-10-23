@@ -9,18 +9,17 @@ This project is **open to all goodwill**.
 
 Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made this project possible.
 
-KaraFan works **on Your PC** (if you have a decent **Nvidia GPU**) or with **Google Colab**.
+KaraFan works **on Your PC** (Windows, Linux, Mac OSX), if you have a decent **Nvidia GPU**.
+KaraFan works with **Google Colab**.
 
-## 💲 DONATE
-
-### And if you like this software & wish to encourage me :
+# 💲 And if you like this software :
 
 [![ko-fi](images/ko-fi.png)](https://ko-fi.com/captain_flam)
 
 If you own some Bitcoins (or cryptos) that you don't know what to do with,  
 click here to send me an email, I'll give you my wallet address :
 
-## [![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)](mailto:Captain_FLAM@gmx.fr) 😍
+[![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)](mailto:Captain_FLAM@gmx.fr) 😍
 
 You can reach me by [email](https://github.com/Captain-FLAM) or Join all of us on the [dedicated channel on Discord](https://discord.com/channels/708579735583588363/1162265179271200820) ![Discord](images/discord.svg)
 
@@ -37,7 +36,6 @@ You can reach me by [email](https://github.com/Captain-FLAM) or Join all of us o
 - 📆 [History](#-history)
 - 🦄 [Near Future](#-near-future)
 - 😍 [Wall of Fame](#-wall-of-fame)
-- 📝 [Todo List](#-todo-list)
 - 💗 [Special Thanks To...](#-special-thanks-to)
 - 📜 [LICENSE](#-license)
 
@@ -131,24 +129,8 @@ you can make a donation or become one of my patrons :
 
 My beloved Patrons & Donators :
 
-
-- ### Your name here !!
-
-~
-
----
-
-# 📝 TODO LIST
-
-My brain is overheating ! 😵
-
-- [X] Add more MDX Models.
-- [X] Add a TEST option to quickly do only 1 pass on audio files for testing purposes.
-- [ ] Add a « STOP » button to kill Colab background processes that consume your credits !!
-- [ ] Get weak voices with A.I. models with a pre-amplification of low parts of the spectrum.
-- [ ] Automatic fine-tuning of volume compensation for each song (am I Crazy ??).
-- [ ] Separate Choirs from Vocals (very hard challenge !)
-- [ ] etc ... etc ... etc ...  
+- ### **Greg music Friends**
+- ### Your name here ... ?
 
 ~
 
@@ -160,14 +142,18 @@ All these wonderful people without whom this project would not have been possibl
 
 ✔️ [Jarredou](https://github.com/jarredou/MVSEP-MDX23-Colab_v2/) - For his multiples **Colab** sharing, for his really helpful hand on Discord, and from whom **I've stolen ALL the code** of inference.py to create my own GUI with it !! 👼
 
-✔️ [Deton 24](https://github.com/deton24/MVSEP-MDX23-Colab_v2.1) - For helping hand and for his very BIG documentation about Music Separation, that you can find **[HERE ! Read it !!](https://docs.google.com/document/d/17fjNvJzj8ZGSer7c7OFe_CNfUKbAxEh_OBv94ZdRG5c/edit)**  
-✔️ [Bas Curtiz](https://www.youtube.com/@bascurtiz) - For his Youtube video : [Tips &amp; Tricks - Inverting](https://www.youtube.com/watch?v=FBMOWcDDxIs) that confort my FIRST intuition (after thousands tests 😛) about the importance of cascading the models to improve the quality of the results.  
+✔️ [Deton 24](https://github.com/deton24/MVSEP-MDX23-Colab_v2.1) - For helping hand and for his very BIG documentation about Music Separation, that you can find [**HERE ! Read it !!**](https://docs.google.com/document/d/17fjNvJzj8ZGSer7c7OFe_CNfUKbAxEh_OBv94ZdRG5c/edit)  
+✔️ [Bas Curtiz](https://www.youtube.com/@bascurtiz) - For his Youtube video : [Tips &amp; Tricks - Inverting](https://www.youtube.com/watch?v=FBMOWcDDxIs) that confort my FIRST intuition (after thousands tests 😛) about the importance of cascading the models to improve the quality of the results.
+
+✔️ [Anjok07](https://github.com/Anjok07) & Aufr33 - for having trained **all the MDX-Net AI models** that KaraFan uses.  
+✔️ [Roman Solovyev (aka ZFTurbo)](https://github.com/ZFTurbo) - for having trained the last BEST model : « **MDX23 - 8K FFT** » - (with some assistance from Aufr33 & Anjok).  
+✔️ [Kimberley Jensen](https://github.com/KimberleyJensen) - for having trained Kim MDX-Net AI models, especially « **Kim Vocal 2** » (that won the 3rd place in the « MDX-C 2022 » challenge)  
+
+✔️ [Anjok07](https://github.com/Anjok07) & [DilanBoskan](https://github.com/DilanBoskan) & Aufr33 - Authors of [**Ultimate Vocal Remover GUI**](https://github.com/Anjok07/ultimatevocalremovergui) from where ZFTurbo has stolen some parts of code to create his own... 🙄  
 ✔️ [Roman Solovyev (aka ZFTurbo)](https://github.com/ZFTurbo) - For sharing [his code](https://github.com/ZFTurbo/MVSEP-MDX23-music-separation-model) that serve as base to Jarredou & Deton 24 to create their own code.  
 And it's also the creator of [MVSEP.com](https://mvsep.com/en), where you can follow the **SDR** evolution of the MDX models : [Quality Checker](https://mvsep.com/quality_checker/multisong_leaderboard?sort=instrum) !
 
-✔️ [Kuielab](https://github.com/kuielab) - Developed the original MDX-Net AI code  
-✔️ [Anjok07](https://github.com/Anjok07) & [DilanBoskan](https://github.com/DilanBoskan) - Authors of [Ultimate Vocal Remover GUI](https://github.com/Anjok07/ultimatevocalremovergui) from where ZFTurbo has stolen some parts of code to create his own... 🙄  
-✔️ [Kimberley Jensen](https://github.com/KimberleyJensen) - Training the MDX-Net AI models, especially « Kim Vocal 2 » (that won the 3rd place in the « MDX-C 2022 » challenge)  
+✔️ [Kuielab](https://github.com/kuielab) - Who have developed the original MDX-Net AI code.  
 ✔️ [Facebook Research Demucs](https://github.com/facebookresearch/demucs) - For giving me the first steps & the desire to start this project ...
 
 We are all standing on the shoulders of giants !

@@ -86,7 +86,7 @@ def Run(params, Auto_Start):
 	separator		= widgets.HTML('<div style="border-bottom: dashed 1px #000; margin: 5px 0 5px 0; width: 100%">')
 	# AUDIO
 	input_path		= widgets.Text(config['AUDIO']['input'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
-	normalize		= widgets.Checkbox((config['AUDIO']['normalize'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	normalize		= widgets.Dropdown(value = config['AUDIO']['normalize'], options = App.settings.Options['Normalize'], layout = {'width':'70px'}, style=font_input)
 	output_path		= widgets.Text(config['AUDIO']['output'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
 	output_format	= widgets.Dropdown(value = config['AUDIO']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'153px'}, style=font_input)
 	silent			= widgets.Dropdown(value = config['AUDIO']['silent'], options = App.settings.Options['Silent'], layout = {'width':'100px'}, style=font_input)
@@ -139,7 +139,7 @@ def Run(params, Auto_Start):
 			layout = panel_layout,
 			children = [
 				widgets.VBox([
-					widgets.HBox([ Label("Input X file or PATH", 'input'), input_path, Label("&nbsp; Normalize input &nbsp;", 'normalize', short=True), normalize ]),
+					widgets.HBox([ Label("Input X file or PATH", 'input'), input_path, Label("&nbsp; Normalize &nbsp;", 'normalize', short=True), normalize ]),
 					widgets.HBox([ Label("Output PATH", 'output'), output_path ]),
 					widgets.HBox([
 						Label("Output Format", 'format'), output_format,

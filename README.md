@@ -13,11 +13,11 @@ KaraFan works **on Your PC** (if you have a decent **Nvidia GPU**) or with **Goo
 
 ## 💲 DONATE
 
-<big><big>**And if you like this software & wish to encourage me :**</big></big>
+### And if you like this software & wish to encourage me :
 
 [![ko-fi](images/ko-fi.png)](https://ko-fi.com/captain_flam)
 
-And if you have some Bitcoins (or cryptos) that you don't know what to do with,  
+If you own some Bitcoins (or cryptos) that you don't know what to do with,  
 click here to send me an email, I'll give you my wallet address :
 
 ## [![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)](mailto:Captain_FLAM@gmx.fr) 😍

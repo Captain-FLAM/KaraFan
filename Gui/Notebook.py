@@ -88,7 +88,7 @@ def Run(params, Auto_Start):
 	input_path		= widgets.Text(config['AUDIO']['input'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
 	normalize		= widgets.Dropdown(value = config['AUDIO']['normalize'], options = App.settings.Options['Normalize'], layout = {'width':'70px'}, style=font_input)
 	output_path		= widgets.Text(config['AUDIO']['output'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
-	output_format	= widgets.Dropdown(value = config['AUDIO']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':'153px'}, style=font_input)
+	output_format	= widgets.Dropdown(value = config['AUDIO']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':('145px' if isColab else '153px')}, style=font_input)
 	silent			= widgets.Dropdown(value = config['AUDIO']['silent'], options = App.settings.Options['Silent'], layout = {'width':'100px'}, style=font_input)
 	infra_bass		= widgets.Checkbox((config['AUDIO']['infra_bass'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	# PROCESS

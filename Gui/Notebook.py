@@ -4,21 +4,22 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, csv, glob
+import os, csv
 
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
 Running = False
 
-def Run(params, Auto_Start):
+def Run(params):
 
-	import App.settings, App.inference, App.sys_info, Gui.progress
+	import App.settings, App.inference, App.sys_info, Gui.Progress
 
 	Gdrive = params['Gdrive']
 	Project = params['Project']
 	isColab = params['isColab']
 	DEV_MODE = params['I_AM_A_DEVELOPER']
+	Auto_Start = params['Auto_Start']
 
 	width  = '670px'
 	height = '600px'
@@ -68,7 +69,7 @@ def Run(params, Auto_Start):
 		reader = csv.DictReader(csvfile)
 		for row in reader:
 			if row['Use'] == "x":
-				# New fine-tuned MDX23C (less vocal bleedings in music)
+				# New fine-tuned MDX23C (less vocal bleedings in music ??)
 				if row['Name'] == "MDX23C 8K FFT - v2" and not os.path.isfile(os.path.join(Gdrive, "KaraFan_user", "Models", "MDX23C-8KFFT-InstVoc_HQ_2.ckpt")):
 					continue
 				# ignore "Other" stems
@@ -77,20 +78,22 @@ def Run(params, Auto_Start):
 				elif row['Stem'] == "Vocals":		vocals.append(row['Name'])
 	
 	# KaraFan Title
-	display(HTML('<div style="font-size: 24px; font-weight: bold; margin: 15px 0">KaraFan - version '+ Version +'</div>'))
+	display(HTML('<div style="font-size: 24px; font-weight: bold; margin: 15px 0">KaraFan - '+ Version +'</div>'))
 	
 	# TABS
 	titles = ["☢️ Settings", "♾️ Progress", "❓ System Info"]
 
 	# TAB 1
 	separator		= widgets.HTML('<div style="border-bottom: dashed 1px #000; margin: 5px 0 5px 0; width: 100%">')
+	
 	# AUDIO
 	input_path		= widgets.Text(config['AUDIO']['input'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
-	normalize		= widgets.Dropdown(value = config['AUDIO']['normalize'], options = App.settings.Options['Normalize'], layout = {'width':'70px'}, style=font_input)
 	output_path		= widgets.Text(config['AUDIO']['output'], continuous_update=True, layout = {'width':'310px'}, style=font_input)
-	output_format	= widgets.Dropdown(value = config['AUDIO']['output_format'], options = App.settings.Options['Output_format'], layout = {'width':('145px' if isColab else '153px')}, style=font_input)
+	normalize		= widgets.Dropdown(value = config['AUDIO']['normalize'], options = App.settings.Options['Normalize'], layout = {'width':'70px'}, style=font_input)
+	output_format	= widgets.Dropdown(value = config['AUDIO']['output_format'], options = App.settings.Options['Format'], layout = {'width':('145px' if isColab else '153px')}, style=font_input)
 	silent			= widgets.Dropdown(value = config['AUDIO']['silent'], options = App.settings.Options['Silent'], layout = {'width':'100px'}, style=font_input)
 	infra_bass		= widgets.Checkbox((config['AUDIO']['infra_bass'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	
 	# PROCESS
 	music_1			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	music_2			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
@@ -102,18 +105,18 @@ def Run(params, Auto_Start):
 	bleed_4			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	bleed_5			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	bleed_6			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	
 	# OPTIONS
 	speed			= widgets.SelectionSlider(value = config['OPTIONS']['speed'], options = App.settings.Options['Speed'], readout=True, style=font_input) 
 	chunk_size		= widgets.IntSlider(int(config['OPTIONS']['chunk_size']), min=100000, max=1000000, step=100000, readout_format = ',d', style=font_input)
+	
 	# BONUS
+	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
+	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
 	KILL_on_END		= widgets.Checkbox((config['BONUS']['KILL_on_END'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
-	DEBUG			= widgets.Checkbox((config['BONUS']['DEBUG'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
-	GOD_MODE		= widgets.Checkbox((config['BONUS']['GOD_MODE'].lower() == "true"), indent=False, continuous_update=True, style=font_input, layout=checkbox_layout)
 	# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 	# large_gpu		= widgets.Checkbox((config['BONUS']['large_gpu'].lower() == "true"), indent=False, style=font_input, layout=checkbox_layout)
-	Btn_Del_Vocals	= widgets.Button(description='Vocals', button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
-	Btn_Del_Music	= widgets.Button(description='Music',  button_style='danger', layout={'width':'80px', 'margin':'0 20px 0 0'})
-	# +
+	
 	Btn_Preset_1	= widgets.Button(description='1️⃣', tooltip="Preset 1", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
 	Btn_Preset_2	= widgets.Button(description='2️⃣', tooltip="Preset 2", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
 	Btn_Preset_3	= widgets.Button(description='3️⃣', tooltip="Preset 3", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
@@ -123,10 +126,10 @@ def Run(params, Auto_Start):
 
 	# TAB 2
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
-	Progress_Bar	= widgets.IntProgress(value=0, min=0, max=10, orientation='horizontal', bar_style='info', layout={'width':'370px', 'height':'25px'})  # style={'bar_color': 'maroon'})
+	Progress_Bar	= widgets.IntProgress(value=0, min=0, max=100, orientation='horizontal', bar_style='info', layout={'width':'370px', 'height':'25px'})  # style={'bar_color': 'maroon'})
 	Progress_Text	= widgets.HTML(layout={'width':'300px', 'margin':'0 0 0 15px'})
 	# +
-	Progress		= Gui.progress.Bar(Progress_Bar, Progress_Text)  # Class for Progress Bar
+	Progress_combo	= Gui.Progress.Bar(Progress_Bar, Progress_Text)  # Class for Progress Bar
 
 	# TAB 3
 	sys_info		= widgets.HTML()
@@ -144,7 +147,7 @@ def Run(params, Auto_Start):
 					widgets.HBox([
 						Label("Output Format", 'format'), output_format,
 						Label("&nbsp; Silent &nbsp;", 'silent', short=True), silent,
-						Label("&nbsp; KILL Infra-Bass &nbsp; ", 'infra-bass', short=True), infra_bass
+						Label("&nbsp; KILL Infra-Bass &nbsp; ", 'infra_bass', short=True), infra_bass
 					]),
 				]),
 				separator,
@@ -169,7 +172,6 @@ def Run(params, Auto_Start):
 					widgets.HBox([ Label("This is the END ...", 'kill_end'), KILL_on_END ]),
 					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
 #					, Label('Large GPU', 'large_gpu'), large_gpu ]),
-#					widgets.HBox([ Label("RE-Process ▶️▶️", 'reprocess'), Btn_Del_Vocals, Btn_Del_Music ], layout={'margin':'15px 0 0 0'}),
 				]),
 				separator,
 				widgets.HBox([
@@ -201,7 +203,7 @@ def Run(params, Auto_Start):
 	#**  Buttons Click  **
 	#*********************
 	
-	def on_Start_clicked(b):
+	def on_Btn_Start_clicked(b):
 		global Running
 
 		HELP.value = '<div id="HELP"></div>'  # Clear HELP
@@ -232,37 +234,39 @@ def Run(params, Auto_Start):
 		output_path.value = os.path.normpath(output_path.value)
 
 		# Save config
-		config['AUDIO'] = {
-			'input': input_path.value,
-			'normalize': normalize.value,
-			'output': output_path.value,
-			'output_format': output_format.value,
-			'silent': silent.value,
-			'infra_bass': infra_bass.value,
-		}
-		config['PROCESS'] = {
-			'music_1': music_1.value,
-			'music_2': music_2.value,
-			'vocal_1': vocal_1.value,
-			'vocal_2': vocal_2.value,
-			'bleed_1': bleed_1.value,
-			'bleed_2': bleed_2.value,
-			'bleed_3': bleed_3.value,
-			'bleed_4': bleed_4.value,
-			'bleed_5': bleed_5.value,
-			'bleed_6': bleed_6.value,
-		}
-		config['OPTIONS'] = {
-			'speed': speed.value,
-			'chunk_size': chunk_size.value,
-		}
-		config['BONUS'] = {
-			'KILL_on_END': KILL_on_END.value,
-			'DEBUG': DEBUG.value,
-			'GOD_MODE': GOD_MODE.value,
-			# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
-			# 'large_gpu': large_gpu.value,
-			'large_gpu': False,
+		config = {
+			'AUDIO': {
+				'input':		input_path.value,
+				'output':		output_path.value,
+				'output_format': output_format.value,
+				'normalize':	normalize.value,
+				'silent':		silent.value,
+				'infra_bass':	infra_bass.value,
+			},
+			'PROCESS': {
+				'music_1': music_1.value,
+				'music_2': music_2.value,
+				'vocal_1': vocal_1.value,
+				'vocal_2': vocal_2.value,
+				'bleed_1': bleed_1.value,
+				'bleed_2': bleed_2.value,
+				'bleed_3': bleed_3.value,
+				'bleed_4': bleed_4.value,
+				'bleed_5': bleed_5.value,
+				'bleed_6': bleed_6.value,
+			},
+			'OPTIONS': {
+				'speed':		speed.value,
+				'chunk_size':	chunk_size.value,
+			},
+			'BONUS': {
+				'KILL_on_END':	KILL_on_END.value,
+				'DEBUG':		DEBUG.value,
+				'GOD_MODE':		GOD_MODE.value,
+				# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
+				# 'large_gpu': large_gpu.value,
+				'large_gpu':	False,
+			}
 		}
 		App.settings.Save(Gdrive, isColab, config)
 
@@ -272,22 +276,9 @@ def Run(params, Auto_Start):
 		if isColab:
 			display(HTML('<script type="application/javascript">show_titles();</script>'))
 
-		params['input']		= []
 		params['CONSOLE']	= CONSOLE
-		params['Progress']	= Progress
+		params['Progress']	= Progress_combo
 
-		real_input  = os.path.join(Gdrive, input_path.value)
-
-		if os.path.isfile(real_input):
-			params['input'].append(real_input)
-		else:
-			# Get all audio files inside the folder (NOT recursive !)
-			for file_path in sorted(glob.glob(os.path.join(real_input, "*.*")))[:]:
-				if os.path.isfile(file_path):
-					ext = os.path.splitext(file_path)[1].lower()
-					if ext == ".mp3" or ext == ".wav" or ext == ".flac":
-						params['input'].append(file_path)
-		
 		# Start processing
 		if not Running:
 			Running = True
@@ -295,46 +286,10 @@ def Run(params, Auto_Start):
 			Running = False
 
 
-	def on_SysInfo_clicked(b):
+	def on_Btn_SysInfo_clicked(b):
 		font_size = '13px' if isColab == True else '12px'
 		sys_info.value = ""
 		sys_info.value = App.sys_info.Get(font_size)
-
-	# Delete all vocals files extracted from THIS song
-	def on_Del_Vocals_clicked(b):
-
-		# Get the folder based on input audio file's name
-		name = os.path.splitext(os.path.basename(input_path.value))[0]
-
-		deleted = ""		
-		for file_path in sorted(glob.glob(os.path.join(Gdrive, output_path.value, name, "*.*")))[:]:
-			filename = os.path.basename(file_path)
-			if filename.startswith("4") or filename.startswith("5") or filename.startswith("6"):
-				os.remove(file_path);  deleted += filename + ", "
-		
-		if deleted != "":
-			deleted = deleted[:-2]  # Remove last ", "
-			HELP.value = '<div id="HELP">Files deleted : '+ deleted +'</div>'
-		else:
-			HELP.value = '<div id="HELP"><div style="color: #f00">No files to delete !</div></div>'
-
-	# Delete all music files extracted from THIS song
-	def on_Del_Music_clicked(b):
-
-		# Get the folder based on input audio file's name
-		name = os.path.splitext(os.path.basename(input_path.value))[0]
-		
-		deleted = ""
-		for file_path in sorted(glob.glob(os.path.join(Gdrive, output_path.value, name, "*.*")))[:]:
-			filename = os.path.basename(file_path)
-			if filename.startswith("2") or filename.startswith("3") or filename.startswith("4") or filename.startswith("5") or filename.startswith("6"):
-				os.remove(file_path);  deleted += filename + ", "
-		
-		if deleted != "":
-			deleted = deleted[:-2]  # Remove last ", "
-			HELP.value = '<div id="HELP">Files deleted : '+ deleted +'</div>'
-		else:
-			HELP.value = '<div id="HELP"><div style="color: #f00">No files to delete !</div></div>'
 
 	def on_Btn_Preset_1_clicked(b):
 		music_1.value		= App.settings.Presets[0]['music_1']
@@ -385,14 +340,12 @@ def Run(params, Auto_Start):
 		bleed_6.value		= App.settings.Presets[3]['bleed_6']
 		
 	# Link Buttons to functions
-	Btn_Del_Vocals.on_click(on_Del_Vocals_clicked)
-	Btn_Del_Music.on_click(on_Del_Music_clicked)
 	Btn_Preset_1.on_click(on_Btn_Preset_1_clicked)
 	Btn_Preset_2.on_click(on_Btn_Preset_2_clicked)
 	Btn_Preset_3.on_click(on_Btn_Preset_3_clicked)
 	Btn_Preset_4.on_click(on_Btn_Preset_4_clicked)
-	Btn_Start.on_click(on_Start_clicked)
-	Btn_SysInfo.on_click(on_SysInfo_clicked)
+	Btn_Start.on_click(on_Btn_Start_clicked)
+	Btn_SysInfo.on_click(on_Btn_SysInfo_clicked)
 
 	#**************
 	#**  Events  **
@@ -413,8 +366,8 @@ def Run(params, Auto_Start):
 			if path.find(Gdrive) != -1:
 				path = path.replace(Gdrive, "")  # Remove Gdrive path from "input"
 			
-			# BUG signaled by Jarredou : remove the first separator
-			if path[0] == os.path.sep:  path = path[1:]
+				# BUG signaled by Jarredou : remove the first separator
+				if path[0] == os.path.sep:  path = path[1:]
 			
 			if path != input_path.value:  input_path.value = path
 			
@@ -422,8 +375,6 @@ def Run(params, Auto_Start):
 				HELP.value = '<div id="HELP"><span style="color: #c00000"><b>Your input is a folder path :</b><br>ALL audio files inside this folder will be separated by a Batch processing !</span></div>'
 			else:
 				HELP.value = '<div id="HELP"></div>'
-		
-		on_GOD_MODE_change(change)
 		
 	def on_output_change(change):
 			
@@ -437,25 +388,14 @@ def Run(params, Auto_Start):
 			if path.find(Gdrive) != -1:
 				path = path.replace(Gdrive, "")  # Remove Gdrive path from "output"
 
-			# BUG signaled by Jarredou : remove the first separator
-			if path[0] == os.path.sep:  path = path[1:]
+				# BUG signaled by Jarredou : remove the first separator
+				if path[0] == os.path.sep:  path = path[1:]
 			
 			if path != output_path.value:  output_path.value = path
 		
-	def on_GOD_MODE_change(change):
-		path = os.path.join(Gdrive, input_path.value)
-		disable = not (os.path.isfile(path) and DEBUG.value and GOD_MODE.value)
-		Btn_Del_Vocals.disabled = disable
-		Btn_Del_Music.disabled  = disable
-
-	def on_DEBUG_change(change):
-		on_GOD_MODE_change(change)
-
 	# Link Events to functions
 	input_path.observe(on_input_change, names='value')
 	output_path.observe(on_output_change, names='value')
-	DEBUG.observe(on_DEBUG_change, names='value')
-	GOD_MODE.observe(on_GOD_MODE_change, names='value')
 
 	#*************
 	#**  FINAL  **
@@ -522,4 +462,4 @@ function show_help(index) {\
 	if config['PROCESS']['bleed_6'] in instru:		bleed_6.value = config['PROCESS']['bleed_6']
 
 	# DEBUG : Auto-start processing on execution
-	if Auto_Start:  on_Start_clicked(None)
+	if Auto_Start:  on_Btn_Start_clicked(None)

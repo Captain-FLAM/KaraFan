@@ -11,10 +11,8 @@
 #   https://github.com/Captain-FLAM/KaraFan
 
 
-import os, gc, sys, csv, time, platform, requests, shutil, torch
-import regex as re, numpy as np, onnxruntime as ort
-
-import librosa, tempfile
+import os, gc, glob, sys, csv, time, platform, regex, requests, torch, librosa
+import numpy as np, onnxruntime as ort, wx.html as html
 
 # for MDX23C models
 import yaml
@@ -140,14 +138,16 @@ class MusicSeparationModel:
 		self.CONSOLE  = params['CONSOLE']
 		self.Progress = params['Progress']
 
-		self.normalize			= int(config['AUDIO']['normalize'])
 		self.output_format		= config['AUDIO']['output_format']
+		# Integers
+		self.normalize			= int(config['AUDIO']['normalize'])
 		self.silent				= int(config['AUDIO']['silent'])
-		self.infra_bass			= (config['AUDIO']['infra_bass'].lower() == "true")
 		self.chunk_size			= int(config['OPTIONS']['chunk_size'])
-		self.DEBUG				= (config['BONUS']['DEBUG'].lower() == "true")
-		self.GOD_MODE			= (config['BONUS']['GOD_MODE'].lower() == "true")
-		self.large_gpu			= (config['BONUS']['large_gpu'].lower() == "true")
+		# Booleans
+		self.infra_bass			= config['AUDIO']['infra_bass']
+		self.DEBUG				= config['BONUS']['DEBUG']
+		self.GOD_MODE			= config['BONUS']['GOD_MODE']
+		self.large_gpu			= config['BONUS']['large_gpu']
 
 		self.device = 'cpu'
 		self.output = os.path.join(self.Gdrive, config['AUDIO']['output'])
@@ -161,10 +161,10 @@ class MusicSeparationModel:
 		
 		if self.device == 'cpu':
 			self.providers = ["CPUExecutionProvider"]
-			print('<div style="font-size:18px;font-weight:bold;color:#ff0040;">Warning ! CPU is used instead of GPU for processing.<br>Processing will be very slow !!</div>')
+			print('<div style="font-size:18px;color:#ff0040;"><b>Warning ! CPU is used instead of GPU for processing.<br>Processing will be very slow !!</b></div>')
 		else:
 			self.providers = ["CUDAExecutionProvider"]
-			print('<div style="font-size:18px;font-weight:bold;color:#00b32d;">It\'s OK -> GPU is used for processing !!</div>')
+			print('<div style="font-size:18px;color:#00b32d;"><b>It\'s OK -> GPU is used for processing !!</b></div>')
 		
 		# MDX23C 8K
 		self.MDX23_overlap = 1
@@ -253,7 +253,7 @@ class MusicSeparationModel:
 				model['dim_F_set']		= int(model['dim_F_set'])
 				model['dim_T_set']		= int(model['dim_T_set'])
 
-				model['PATH'] = Download_Model(model, models_path, self.CONSOLE, self.Progress)
+				model['PATH'] = Download_Model(model, models_path, self.Progress)
 					
 		# Load Models
 		if self.large_gpu: 
@@ -262,9 +262,6 @@ class MusicSeparationModel:
 			for stem in self.models:
 				for model in self.models[stem]:  self.Load_MDX(model)
 	
-		# In case of changes, don't forget to update the function in GUI !!
-		# - on_Del_Vocals_clicked()
-		# - on_Del_Music_clicked()
 		self.AudioFiles = [
 			"NORMALIZED",
 			"Music extract",
@@ -502,14 +499,18 @@ class MusicSeparationModel:
 		elapsed_time = time.time() - start_time
 		elapsed_time = f"Elapsed Time for <b>{name}</b> : {time.strftime('%H:%M:%S', time.gmtime(elapsed_time))} sec.<br>"
 		print(elapsed_time)
-		elapsed_time = re.sub(r"<.*?>", "", elapsed_time)   # Remove HTML tags
+		elapsed_time = regex.sub(r"<.*?>", "", elapsed_time)   # Remove HTML tags
 
 		if self.SDR_Testing:
 			print("----------------------------------------")
 			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, elapsed_time)
 		
 		# Clear screen between each song
-		if self.BATCH_MODE and not self.DEBUG:  self.CONSOLE.clear_output()
+		if self.BATCH_MODE and not self.DEBUG:
+			if type(self.CONSOLE) == html.HtmlWindow:
+				self.CONSOLE.SetPage("")
+			else:
+				self.CONSOLE.clear_output()
 		
 
 	def Extract_with_Model(self, type, audio, model):
@@ -814,11 +815,11 @@ class MusicSeparationModel:
 	
 	#----
 
-def Download_Model(model, models_path, CONSOLE = None, PROGRESS = None):
+def Download_Model(model, models_path, PROGRESS = None):
 	
 	name		= model['Name']
 	repo_file	= model['Repo_FileName']
-	filename	= re.sub(r"^(UVR-MDX-NET-|UVR_MDXNET_|\d_)*", "", repo_file)
+	filename	= regex.sub(r"^(UVR-MDX-NET-|UVR_MDXNET_|\d_)*", "", repo_file)
 	file_path	= os.path.join(models_path, filename)
 
 	if not os.path.isfile(file_path):
@@ -855,17 +856,27 @@ def Download_Model(model, models_path, CONSOLE = None, PROGRESS = None):
 class CustomPrint:
 	def __init__(self, console):
 		self.CONSOLE = console
+		self.wxwidgets = (type(console) == html.HtmlWindow)
 
 	def write(self, text):
-		if self.CONSOLE:
-			# We are in GUI
-			with self.CONSOLE:
-				display(HTML('<div class="console">'+ text +'</div>'))
+		if self.CONSOLE:  # We are in GUI
+			if self.wxwidgets:
+				if '<div' in text:
+					text = regex.sub(r'<div.*color:(.*);.*?>(.*)</div>', r'<font color="\1">\2</font>', text) # Convert to <font color="...">
+					
+				text = regex.sub(r'\n', '<br>', text)  # Convert \n to <br>
+
+				self.CONSOLE.AppendToPage(text)
+				self.CONSOLE.Update()
+				self.CONSOLE.ScrollLines(1)
+			else:
+				with self.CONSOLE:
+					display(HTML('<div class="console">'+ text +'</div>'))
 		else:
 			# We are in a terminal
-			text = re.sub(r"<br>", "\n", text)  # Convert <br> to \n
-			text = re.sub(r"&nbsp;", " ", text) # Replace &nbsp; by spaces
-			text = re.sub(r"<.*?>", "", text)   # Remove HTML tags
+			text = regex.sub(r"<br>", "\n", text)  # Convert <br> to \n
+			text = regex.sub(r"&nbsp;", " ", text) # Replace &nbsp; by spaces
+			text = regex.sub(r"<.*?>", "", text)   # Remove HTML tags
 			sys.__stdout__.write(text)
 
 	def flush(self):
@@ -878,22 +889,39 @@ def Process(params, config):
 
 	sys.stdout = CustomPrint(params['CONSOLE'])
 
-	if len(params['input']) == 0:
+	isColab		= params['isColab']
+	KILL_on_END	= config['BONUS']['KILL_on_END']
+
+	input  = config['AUDIO']['input']
+	inputs = []
+	if not input.startswith("/") and not input.startswith("\\") and input[1] != ":":
+		real_input  = os.path.join(params['Gdrive'], config['AUDIO']['input'])
+	else:
+		real_input = input
+
+	if os.path.isfile(real_input):
+		inputs.append(real_input)
+	else:
+		# Get all audio files inside the folder (NOT recursive !)
+		for file_path in sorted(glob.glob(os.path.join(real_input, "*.*")))[:]:
+			if os.path.isfile(file_path):
+				ext = os.path.splitext(file_path)[1].lower()
+				if ext == ".mp3" or ext == ".wav" or ext == ".flac":
+					inputs.append(file_path)
+
+	if len(inputs) == 0:
 		print('Error : You have NO file to process in your "input" folder !!');  return
 	
-	isColab		= params['isColab']
-	KILL_on_END	= (config['BONUS']['KILL_on_END'].lower() == "true")
-
 	model = None
 	model = MusicSeparationModel(params, config)
 
-	BATCH_MODE = len(params['input']) > 1
+	BATCH_MODE = len(inputs) > 1
 
 	# Process each audio file
-	for file in params['input']:
+	for file in inputs:
 		
 		if not os.path.isfile(file):
-			print('Error. No such file : {}. Please check path !'.format(file))
+			print(f'Error. No such file : {file}. Please check path !')
 			continue
 		
 		model.SEPARATE(file, BATCH_MODE)

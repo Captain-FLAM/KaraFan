@@ -1,4 +1,3 @@
-#!python3.10
 
 #   MIT License
 #

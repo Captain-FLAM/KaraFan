@@ -1,4 +1,3 @@
-#!python3.10
 
 #   MIT License - Copyright (c) 2023 - Captain FLAM
 #
@@ -37,21 +36,16 @@ def Install(params):
 		print("ERROR : Google Drive path is not valid !\n")
 		Exit_Notebook(isColab)
 	
-	# Get local version
-	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
-		Version = version_file.readline().replace("# Version", "").strip()
-
-	# For pip install
-	os.chdir(Project)
-
-	if isColab:
-		Check_dependencies(True)
-	
 	# Create missing folders
 	user_folder = os.path.join(Gdrive, "KaraFan_user")
 	os.makedirs(user_folder, exist_ok=True)
 	os.makedirs(os.path.join(user_folder, "Models"), exist_ok=True)
 
+	os.chdir(Project)  # For pip install
+
+	if isColab:
+		Check_dependencies(True)
+	
 	# Get FFmpeg from GitHub wiki
 	if not isColab:
 		ffmpeg = os.path.join(user_folder, "ffmpeg") + (".exe" if platform.system() == 'Windows' else "")
@@ -88,6 +82,10 @@ def Install(params):
 			
 			print("\rFFmpeg downloaded !                                     ") # Clean line
 			
+	# Get local version
+	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
+		Version = version_file.readline().replace("# Version", "").strip()
+
 	# Auto-Magic update !
 	try:
 		response = requests.get(Version_url)
@@ -116,10 +114,11 @@ def Install(params):
 					try:
 						subprocess.run(["git", "-C", Project, "pull"], text=True, capture_output=True, check=True)
 
+						Check_dependencies(isColab)
+
 						if isColab:
 							print('\n\nFOR NOW : you have to go AGAIN in Colab menu, "Runtime > Restart and Run all" to use the new version of "KaraFan" !\n\n')
 						else:
-							Check_dependencies(False)
 							print('\n\nFOR NOW : you have to "Restart" the notebook to use the new version of "KaraFan" !\n\n')
 
 						Exit_Notebook(isColab)

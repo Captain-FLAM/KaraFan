@@ -25,8 +25,9 @@ You can reach me by [email](https://github.com/Captain-FLAM) or Join all of us o
 
 # 🚀 INSTALL
 
-- on [**Your PC**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-on-PC)
-- in [**Google Colab**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-on-Colab)
+- on [**Your PC**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-PC-users) for Users
+- on [**Your PC**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-PC-devs) for Developers
+- &nbsp;in [**Google Colab**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-Colab)
 
 # 📖 Table of Contents
 

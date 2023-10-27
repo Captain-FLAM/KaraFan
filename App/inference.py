@@ -12,7 +12,7 @@
 
 
 import os, gc, glob, sys, csv, time, platform, regex, requests, torch, librosa
-import numpy as np, onnxruntime as ort, wx.html as html
+import numpy as np, onnxruntime as ort
 
 # for MDX23C models
 import yaml
@@ -132,11 +132,12 @@ def demix_base(mix, device, models, infer_session):
 
 class MusicSeparationModel:
 
-	def __init__(self, params, config):
+	def __init__(self, params, config, GUI):
 
-		self.Gdrive   = params['Gdrive']
-		self.CONSOLE  = params['CONSOLE']
-		self.Progress = params['Progress']
+		self.GUI		= GUI
+		self.Gdrive		= params['Gdrive']
+		self.CONSOLE	= params['CONSOLE']
+		self.Progress	= params['Progress']
 
 		self.output_format		= config['AUDIO']['output_format']
 		# Integers
@@ -308,11 +309,11 @@ class MusicSeparationModel:
 
 		#*************************************************
 
-		start_time = time.time()
-
 		self.BATCH_MODE = BATCH_MODE
 		self.song_output_path = os.path.join(self.output, name)
 		
+		self.Progress.reset(0, unit="Pass");  start_time = time.time()
+
 		# Delete previous files
 		if os.path.exists(self.song_output_path):
 			if not self.GOD_MODE:
@@ -507,7 +508,7 @@ class MusicSeparationModel:
 		
 		# Clear screen between each song
 		if self.BATCH_MODE and not self.DEBUG:
-			if type(self.CONSOLE) == html.HtmlWindow:
+			if self.GUI == 'wxwidgets':
 				self.CONSOLE.SetPage("")
 			else:
 				self.CONSOLE.clear_output()
@@ -528,9 +529,9 @@ class MusicSeparationModel:
 		match type:
 			case 'Music':			quality = self.Quality_Music;  text = 'Extract Music'
 			case 'Vocal':			quality = self.Quality_Vocal;  text = 'Extract Vocals'
-			case 'Bleed_Music':		quality = self.Quality_Bleed;  text = 'Remove Music Bleedings in Vocals'
-			case 'Bleed_Vocal':		quality = self.Quality_Bleed;  text = 'Remove Vocal Bleedings in Music'
-			case 'Remove_Music':	quality = self.Quality_Bleed;  text = 'Remove Music in Vocal Bleedings'
+			case 'Bleed_Music':		quality = self.Quality_Bleed;  text = 'Remove Music Bleedings'
+			case 'Bleed_Vocal':		quality = self.Quality_Bleed;  text = 'Vocal Bleedings in Music'
+			case 'Remove_Music':	quality = self.Quality_Bleed;  text = 'Music in Vocal Bleedings'
 		
 		text	  = f'► {text} with "{name}"'
 
@@ -854,16 +855,16 @@ def Download_Model(model, models_path, PROGRESS = None):
 
 # Redirect "Print" to the console widgets (or stdout)
 class CustomPrint:
-	def __init__(self, console):
-		self.CONSOLE = console
-		self.wxwidgets = (type(console) == html.HtmlWindow)
+	def __init__(self, console, GUI):
+		self.CONSOLE = console;  self.GUI = GUI
 
 	def write(self, text):
-		if self.CONSOLE:  # We are in GUI
-			if self.wxwidgets:
+		# Are we in GUI ?
+		if self.CONSOLE:
+			if self.GUI == 'wxwidgets':
 				if '<div' in text:
 					text = regex.sub(r'<div.*color:(.*);.*?>(.*)</div>', r'<font color="\1">\2</font>', text) # Convert to <font color="...">
-					
+
 				text = regex.sub(r'\n', '<br>', text)  # Convert \n to <br>
 
 				self.CONSOLE.AppendToPage(text)
@@ -883,14 +884,15 @@ class CustomPrint:
 		pass
 
 
-def Process(params, config):
+def Process(params, config, GUI):
 
 	global isColab, KILL_on_END
 
-	sys.stdout = CustomPrint(params['CONSOLE'])
-
+	# Only used for Exit_Notebook()
 	isColab		= params['isColab']
 	KILL_on_END	= config['BONUS']['KILL_on_END']
+
+	sys.stdout = CustomPrint(params['CONSOLE'], GUI)
 
 	input  = config['AUDIO']['input']
 	inputs = []
@@ -913,7 +915,7 @@ def Process(params, config):
 		print('Error : You have NO file to process in your "input" folder !!');  return
 	
 	model = None
-	model = MusicSeparationModel(params, config)
+	model = MusicSeparationModel(params, config, GUI)
 
 	BATCH_MODE = len(inputs) > 1
 

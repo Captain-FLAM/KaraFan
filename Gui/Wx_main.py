@@ -134,14 +134,14 @@ class KaraFanForm(Form):
 		# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 		# self.large_gpu.Value	= (self.config['BONUS']['large_gpu'].lower() == "true")
 		
-		self.HELP.SetPage(self.html_start +'<div style="color: #bbb">Hover your mouse over an option to get more informations.</div>'+ self.html_end)
+		self.HELP.SetPage(self.html_start +'<div style="color: #888">Hover your mouse over an option to get more informations.</div>'+ self.html_end)
 
 		# TAB 2
 		self.CONSOLE.SetPage("")
 		self.Progress_Bar.Value = 0
 		self.Progress_Text.SetLabel("")
 		# +
-		self.Progress_combo	= Gui.Progress.Bar(self.Progress_Bar, self.Progress_Text)  # Class for Progress Bar
+		self.Progress_combo	= Gui.Progress.Bar(self.Progress_Bar, self.Progress_Text, 'wxwidgets')  # Class for Progress Bar
 		# TAB 3
 		self.sys_info.SetPage("")
 
@@ -212,7 +212,7 @@ class KaraFanForm(Form):
 		# Start processing
 		if not Running:
 			Running = True
-			self.CONSOLE.SetPage("");  App.inference.Process(self.params, self.config)
+			self.CONSOLE.SetPage("");  App.inference.Process(self.params, self.config, 'wxwidgets')
 			Running = False
 	
 	def Form_OnClose(self, event):

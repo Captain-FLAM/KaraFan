@@ -122,14 +122,13 @@ def Run(params):
 	Btn_Preset_3	= widgets.Button(description='3️⃣', tooltip="Preset 3", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
 	Btn_Preset_4	= widgets.Button(description='4️⃣', tooltip="Preset 4", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
 	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'8px 0 12px 0'})
-	HELP			= widgets.HTML('<div id="HELP"></div>')
-
+	HELP			= widgets.HTML('<div id="HELP"><div style="color: #888">Hover your mouse over an option to get more informations.</div></div>')
 	# TAB 2
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
 	Progress_Bar	= widgets.IntProgress(value=0, min=0, max=100, orientation='horizontal', bar_style='info', layout={'width':'370px', 'height':'25px'})  # style={'bar_color': 'maroon'})
 	Progress_Text	= widgets.HTML(layout={'width':'300px', 'margin':'0 0 0 15px'})
 	# +
-	Progress_combo	= Gui.Progress.Bar(Progress_Bar, Progress_Text)  # Class for Progress Bar
+	Progress_combo	= Gui.Progress.Bar(Progress_Bar, Progress_Text, 'ipywidgets')  # Class for Progress Bar
 
 	# TAB 3
 	sys_info		= widgets.HTML()
@@ -282,7 +281,7 @@ def Run(params):
 		# Start processing
 		if not Running:
 			Running = True
-			CONSOLE.clear_output();  App.inference.Process(params, config)
+			CONSOLE.clear_output();  App.inference.Process(params, config, 'ipywidgets')
 			Running = False
 
 
@@ -403,10 +402,15 @@ def Run(params):
 
 	javascript = '\
 <script type="application/javascript">\
-	var help_index = {};'
+var help_index = {};'
 	
 	for index in App.settings.Help_Dico.keys():
-		javascript += f'\n	help_index["{index}"] = "{App.settings.Help_Dico[index]}";'
+		javascript += f'\nhelp_index["{index}"] = "{App.settings.Help_Dico[index]}";'
+
+	javascript += '\
+function show_help(index) {\
+	document.getElementById("HELP").innerHTML = "<div>"+ help_index[index] +"</div>";\
+}'
 
 	# Correct the bug on Google Colab (no titles at all !!)
 	if isColab:
@@ -416,17 +420,12 @@ function show_titles() {\
 	document.getElementById("tab-key-1").getElementsByClassName("lm-TabBar-tabLabel")[0].innerHTML = "'+ titles[1] +'";\
 	document.getElementById("tab-key-2").getElementsByClassName("lm-TabBar-tabLabel")[0].innerHTML = "'+ titles[2] +'";\
 }'
-
-	# Add HELP
+	
+	# Wait until the form is loaded !
 	javascript += '\
-function show_help(index) {\
-	document.getElementById("HELP").innerHTML = "<div>"+ help_index[index] +"</div>";\
-}\
-/* ... wait until the form is loaded */\
 (function loop() {\
 	setTimeout(() => {\
-		if (document.getElementById("tab-key-0") == null || document.getElementById("HELP") == null) { loop(); return; }\
-		document.getElementById("HELP").innerHTML = "<div style=\'color: #bbb\'>Hover your mouse over an option to get more informations.</div>";'
+		if (document.getElementById("tab-key-0") == null || document.getElementById("HELP") == null) { loop(); return; }'
 	
 	if isColab:
 		javascript += '\
@@ -446,9 +445,6 @@ function show_help(index) {\
 	display(HTML(javascript))
 
 	# Update controls after loading
-
-	on_input_change({'new': input_path.value})
-	on_output_change({'new': output_path.value})
 
 	if config['PROCESS']['music_1'] in instru:		music_1.value = config['PROCESS']['music_1']
 	if config['PROCESS']['music_2'] in instru:		music_2.value = config['PROCESS']['music_2']

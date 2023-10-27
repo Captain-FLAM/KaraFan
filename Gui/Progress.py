@@ -4,35 +4,33 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-# import ipywidgets as widgets
-import time, wx
+import time
 
 class Bar:
-	def __init__(self, progress_bar, progress_text, unit='Pass'):
+	def __init__(self, progress_bar, progress_text, GUI):
+		self.GUI   = GUI
 		self.value = 0
 		self.total = 0
-		self.unit = unit
+		self.unit  = "Pass"
 		self.units_time = 0
 		self.start_time = time.time()
 		self.progress_bar = progress_bar
 		self.progress_txt = progress_text
 
-		self.wxwidgets = (type(self.progress_bar) == wx.Gauge)
-		
-		if self.wxwidgets:
-			self.progress_txt.SetLabel("[00:00:00] -   0% - 0/0 - 0.00 sec./ " + unit)
+		if self.GUI == 'wxwidgets':
+			self.progress_txt.SetLabel("[00:00:00] -   0% - 0/0 - 0.00 sec./ " + self.unit)
 			self.progress_txt.Update()
 		else:
-			self.progress_txt.value = "[00:00:00] - &nbsp;&nbsp;0% - 0/0 - 0.00 sec./ " + unit
+			self.progress_txt.value = "[00:00:00] - &nbsp;&nbsp;0% - 0/0 - 0.00 sec./ " + self.unit
 
-	def reset(self, total, unit=''):
+	def reset(self, total, unit):
 		self.value = 0
 		self.total = total
 		self.unit = unit
 		self.units_time = time.time()
 
 		elapsed_time = time.time() - self.start_time
-		if self.wxwidgets:
+		if self.GUI == 'wxwidgets':
 			self.progress_bar.SetValue(0)
 			self.progress_bar.SetRange(total)
 			self.progress_txt.SetLabel(f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] -   0% - 0/{self.total} - 0.00 sec./ {self.unit}")
@@ -43,7 +41,7 @@ class Bar:
 			self.progress_bar.max = total
 			self.progress_txt.value = f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - &nbsp;&nbsp;0% - 0/{self.total} - 0.00 sec./ {self.unit}"
 
-	def update(self, increment=1):
+	def update(self, increment = 1):
 		self.value += increment
 
 		# Update the text of the progress bar
@@ -64,7 +62,7 @@ class Bar:
 
 		download = " MB" if self.unit == "MB" else ""
 
-		if self.wxwidgets:
+		if self.GUI == 'wxwidgets':
 			percent  = percent.replace("&nbsp;", " ")
 			self.progress_bar.SetValue(self.value)
 			self.progress_txt.SetLabel(f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - {percent}% - {self.value}/{self.total}{download} - {time_per_unit:.2f} sec./ {self.unit}")

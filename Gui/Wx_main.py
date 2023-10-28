@@ -193,8 +193,11 @@ class KaraFanForm(Gui.Wx_Window.Form):
 			self.HELP.SetPage(self.html_start +'<div style="color: #f00">'+ msg +'</div>'+ self.html_end)
 			return
 		
-		self.input_path.Value = os.path.normpath(self.input_path.Value)
-		self.output_path.Value = os.path.normpath(self.output_path.Value)
+		# Normalize paths
+		path = os.path.normpath(self.input_path.Value)
+		if self.input_path.Value != path:	self.input_path.Value = path
+		path = os.path.normpath(self.output_path.Value)
+		if self.output_path.Value != path:	self.output_path.Value = path
 
 		# Save config
 		self.Form_OnClose(None)		

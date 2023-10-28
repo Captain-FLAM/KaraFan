@@ -356,6 +356,8 @@ class Form ( wx.Frame ):
 		self.Progress_Text = wx.StaticText( self.Tab_Progress, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 350,-1 ), 0 )
 		self.Progress_Text.Wrap( -1 )
 
+		self.Progress_Text.SetFont( wx.Font( 11, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Tahoma" ) )
+
 		bSizer6.Add( self.Progress_Text, 0, 0, 5 )
 
 

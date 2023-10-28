@@ -552,7 +552,10 @@ class MusicSeparationModel:
 			# Check if source is same size than audio
 			source = librosa.util.fix_length(source, size = audio.shape[-1])
 
-			del sources; mdx23 = mdx23.cpu(); del mdx23; gc.collect(); torch.cuda.empty_cache()
+			del sources; mdx23 = mdx23.cpu(); del mdx23; gc.collect()
+			if  torch.cuda.is_available():
+				torch.cuda.empty_cache()
+
 		else:
 			if not self.large_gpu:
 				# print(f'Large GPU is disabled : Loading model "{name}" now...')
@@ -696,6 +699,8 @@ class MusicSeparationModel:
 			del self.MDX[model_name]['model']
 			del self.MDX[model_name]
 			gc.collect()
+			if  torch.cuda.is_available():
+				torch.cuda.empty_cache()
 
 	def raise_aicrowd_error(self, msg):
 		# Will be used by the evaluator to provide logs, DO NOT CHANGE

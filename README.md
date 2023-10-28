@@ -1,6 +1,6 @@
 # 🎵 KaraFan  [![](https://img.shields.io/github/stars/Captain-FLAM/KaraFan?color=ff0080&style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/stargazers) [![](https://img.shields.io/github/license/Captain-FLAM/KaraFan?style=for-the-badge)](https://github.com/Captain-FLAM/KaraFan/blob/master/LICENSE)
 
-![KaraFan](images/KaraFan_3.0.jpg)
+![KaraFan](images/KaraFan_Banner.jpg)
 
 The **BEST music separation** software with help of A.I. ... **to my ears** ! 👂👂
 

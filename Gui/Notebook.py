@@ -226,8 +226,11 @@ def Run(params):
 			HELP.value = '<div id="HELP"><div style="color: #f00">'+ msg +'</div></div>'
 			return
 		
-		input_path.value = os.path.normpath(input_path.value)
-		output_path.value = os.path.normpath(output_path.value)
+		# Normalize paths
+		path = os.path.normpath(input_path.value)
+		if input_path.value != path:	input_path.value = path
+		path = os.path.normpath(output_path.value)
+		if output_path.value != path:	output_path.value = path
 
 		# Save config
 		config = {

@@ -3,49 +3,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, sys, subprocess, json, gc, torch
-import regex as re
-
-#  Shows the tensors that are still in use by the Notebook.
-#  If this list is (mostly) empty, then you have freed all the memory you can free.
-
-def pretty_size(size):
-	"""Pretty prints a torch.Size object"""
-	assert(isinstance(size, torch.Size))
-	return " x ".join(map(str, size))
-
-def dump_tensors(gpu_only=True):
-	"""Prints a list of the Tensors being tracked by the garbage collector."""
-	total_size = 0
-	for obj in gc.get_objects():
-		try:
-			if torch.is_tensor(obj):
-				if not gpu_only or obj.is_cuda:
-					total_size += obj.numel()
-					
-					print("%s:%s%s %s" % (
-						type(obj).__name__, 
-						" GPU" if obj.is_cuda else "",
-						" pinned" if obj.is_pinned else "",
-						pretty_size(obj.size())))
-					
-			elif hasattr(obj, "data") and torch.is_tensor(obj.data):
-				if not gpu_only or obj.is_cuda:
-					total_size += obj.data.numel()
-					
-					print("%s → %s:%s%s%s%s %s" % (
-						type(obj).__name__, 
-						type(obj.data).__name__, 
-						" GPU" if obj.is_cuda else "",
-						" pinned" if obj.data.is_pinned else "",
-						" grad" if obj.requires_grad else "", 
-						" volatile" if obj.volatile else "",
-						pretty_size(obj.data.size())))
-		
-		except Exception as e:  pass
-
-	print("Total size:", total_size)
-
+import os, sys, subprocess, json, regex
 
 def Get(font_size):
 
@@ -66,7 +24,7 @@ def Get(font_size):
 		total_virtual_memory /= 1024
 		unit_index += 1
 
-	html += "Python : "+ re.sub(r'\(.*?\)\s*', '', sys.version) +"<br>"
+	html += "Python : "+ regex.sub(r'\(.*?\)\s*', '', sys.version) +"<br>"
 	html += f"OS : {system} { platform.release() }<br>"
 	html += f"RAM : {total_virtual_memory:.2f} {units[unit_index]}<br>"
 	html += f"Current directory : { os.getcwd() }<br><br>"
@@ -75,7 +33,7 @@ def Get(font_size):
 	match system:
 		case 'Windows':  # use 'wmic'
 			try:
-				cpu_info = subprocess.check_output(['wmic', 'cpu', 'get', 'Caption,MaxClockSpeed,NumberOfCores,NumberOfLogicalProcessors', '/FORMAT:CSV']).decode('utf-8')
+				cpu_info = subprocess.check_output(['wmic', 'cpu', 'get', 'Caption,MaxClockSpeed,NumberOfCores,NumberOfLogicalProcessors', '/FORMAT:CSV'], shell=True, stderr=subprocess.STDOUT).decode('utf-8')
 				cpu_info = cpu_info.split('\n')[-2].strip()  # catch the last line
 				# Split values
 				cpu_info = cpu_info.split(',')
@@ -88,7 +46,7 @@ def Get(font_size):
 
 		case 'Linux':  # use 'lscpu'
 			try:
-				cpu_info = subprocess.check_output(['lscpu', '-J']).decode('utf-8')
+				cpu_info = subprocess.check_output(['lscpu', '-J'], shell=True, stderr=subprocess.STDOUT).decode('utf-8')
 				cpu_info = json.loads(cpu_info)
 				if 'lscpu' in cpu_info:
 					sockets = cores = threads = 1
@@ -112,7 +70,7 @@ def Get(font_size):
 		case 'Darwin':  # For macOS, use 'sysctl'
 			try:
 				## TODO : decode CPU infos on macOS
-				html += "CPU : " + subprocess.check_output(['sysctl', 'machdep.cpu']).decode('utf-8')
+				html += "CPU : " + subprocess.check_output(['sysctl', 'machdep.cpu'], shell=True, stderr=subprocess.STDOUT).decode('utf-8')
 			except FileNotFoundError:
 				html += "--> Can't get CPU infos : 'sysctl' tool is not available on this platform."
 
@@ -123,7 +81,7 @@ def Get(font_size):
 	html += "<br><br>****    GPU Informations    ****<br><br>"
 	try:
 		# Nvidia details information
-		gpu_info = subprocess.check_output('nvidia-smi').decode('utf-8')
+		gpu_info = subprocess.check_output('nvidia-smi', shell=True, stderr=subprocess.STDOUT).decode('utf-8')
 		
 		html += '<div style="line-height: 1; ">'+ gpu_info +'</div><br>'
 
@@ -138,6 +96,8 @@ def Get(font_size):
 		elif gpu_info.find('Tesla P100') >= 0:
 			html += "You got a Tesla P100 GPU. (This is the FASTEST gpu, speeds are around  15-42 iterations/sec)"
 	
+	except subprocess.CalledProcessError as e:
+		print(f"Erreur lors de l'exécution de nvidia-smi : {e.returncode}\n{e.output.decode('utf-8')}")
 	except FileNotFoundError:
 		html += "<b>--> Can't get GPU infos : 'nvidia-smi' tool is not available on this platform.</b>"
 

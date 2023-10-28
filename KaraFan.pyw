@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.10
 
 #   MIT License - Copyright (c) 2023 - Captain FLAM
 #

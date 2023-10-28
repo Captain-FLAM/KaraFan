@@ -3,18 +3,16 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, csv, wx
+import os, csv, threading, wx
 
-import App.settings, App.inference, App.sys_info, Gui.Progress
+import App.settings, App.inference, App.sys_info, Gui.Wx_Progress, Gui.Wx_Window
 
-from Gui.Window import Form
-
-Running = False
-
-class KaraFanForm(Form):
+class KaraFanForm(Gui.Wx_Window.Form):
 
 	def __init__(self, parent, params):
-		Form.__init__(self, parent)
+		Gui.Wx_Window.Form.__init__(self, parent)
+
+		self.thread = None
 
 		# Get local version
 		with open(os.path.join(params['Project'], "App", "__init__.py"), "r") as version_file:
@@ -139,8 +137,7 @@ class KaraFanForm(Form):
 		self.CONSOLE.SetPage("")
 		self.Progress_Bar.Value = 0
 		self.Progress_Text.SetLabel("")
-		# +
-		self.Progress_combo	= Gui.Progress.Bar(self.Progress_Bar, self.Progress_Text, 'wxwidgets')  # Class for Progress Bar
+		
 		# TAB 3
 		self.sys_info.SetPage("")
 
@@ -170,7 +167,6 @@ class KaraFanForm(Form):
 	#*********************
 	
 	def Btn_Start_OnClick(self, event):
-		global Running
 
 		self.HELP.SetPage(self.html_start + self.html_end)  # Clear HELP
 
@@ -203,16 +199,20 @@ class KaraFanForm(Form):
 		# Save config
 		self.Form_OnClose(None)		
 
-		self.Tabs.Selection = 1
+		self.Tabs.ChangeSelection(1)
 		
 		self.params['CONSOLE']	= self.CONSOLE
-		self.params['Progress']	= self.Progress_combo
+		self.params['Progress']	= Gui.Wx_Progress.Bar(self)  # Pass this wxForm to the Class for Progress Bar
 
 		# Start processing
-		if not Running:
-			Running = True
-			self.CONSOLE.SetPage("");  App.inference.Process(self.params, self.config, 'wxwidgets')
-			Running = False
+		if self.thread is None or not self.thread.is_alive():
+
+			self.CONSOLE.SetPage("")
+			thread = threading.Thread(target=self.Process)
+			thread.start()
+
+	def Process(self):
+		App.inference.Process(self.params, self.config, wxForm = self)  # Pass to "inference" this wxForm object
 	
 	def Form_OnClose(self, event):
 

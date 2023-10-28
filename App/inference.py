@@ -37,7 +37,7 @@ def get_models(device, model_params, stem):
 	)
 	return [model]
 
-def demix_base_mdxv3(mix, model, device, config, overlap_MDX23, Progress):
+def demix_mdxv3(mix, model, device, config, overlap_MDX23, Progress):
 		
 		mix = torch.tensor(mix, dtype=torch.float32)
 		try:
@@ -131,9 +131,9 @@ def demix_base(mix, device, models, infer_session):
 
 class MusicSeparationModel:
 
-	def __init__(self, params, config, GUI):
+	def __init__(self, params, config, wxForm):
 
-		self.GUI		= GUI
+		self.wxForm		= wxForm
 		self.Gdrive		= params['Gdrive']
 		self.CONSOLE	= params['CONSOLE']
 		self.Progress	= params['Progress']
@@ -507,10 +507,10 @@ class MusicSeparationModel:
 		
 		# Clear screen between each song
 		if self.BATCH_MODE and not self.DEBUG:
-			if self.GUI == 'wxwidgets':
-				self.CONSOLE.SetPage("")
+			if self.wxForm == None:
+				self.CONSOLE.clear_output()	# ipywidgets
 			else:
-				self.CONSOLE.clear_output()
+				self.CONSOLE.SetPage("")	# wxwidgets
 		
 
 	def Extract_with_Model(self, type, audio, model):
@@ -545,7 +545,7 @@ class MusicSeparationModel:
 			overlap = self.MDX23_overlap if (type == "Music" or type == "Vocal") else self.MDX23_bleed
 
 			print(f"{text} (Overlap : {overlap})")
-			sources = demix_base_mdxv3(audio, mdx23, device, self.MDX23_config, overlap, self.Progress)
+			sources = demix_mdxv3(audio, mdx23, device, self.MDX23_config, overlap, self.Progress)
 			
 			source = sources['Vocals'] if "Vocal" in type else sources['Instrumental']
 			
@@ -854,13 +854,17 @@ def Download_Model(model, models_path, PROGRESS = None):
 
 # Redirect "Print" to the console widgets (or stdout)
 class CustomPrint:
-	def __init__(self, console, GUI):
-		self.CONSOLE = console;  self.GUI = GUI
+	def __init__(self, console, wxForm):
+		self.CONSOLE = console;  self.wxForm = wxForm
 
 	def write(self, text):
 		# Are we in GUI ?
 		if self.CONSOLE:
-			if self.GUI == 'wxwidgets':
+			if self.wxForm == None:  # ipywidgets
+				with self.CONSOLE:
+					display(HTML('<div class="console">'+ text +'</div>'))
+			else: 
+				# wxwidgets
 				if '<div' in text:
 					text = regex.sub(r'<div.*color:(.*);.*?>(.*)</div>', r'<font color="\1">\2</font>', text) # Convert to <font color="...">
 
@@ -869,9 +873,6 @@ class CustomPrint:
 				self.CONSOLE.AppendToPage(text)
 				self.CONSOLE.Update()
 				self.CONSOLE.ScrollLines(1)
-			else:
-				with self.CONSOLE:
-					display(HTML('<div class="console">'+ text +'</div>'))
 		else:
 			# We are in a terminal
 			text = regex.sub(r"<br>", "\n", text)  # Convert <br> to \n
@@ -883,7 +884,7 @@ class CustomPrint:
 		pass
 
 
-def Process(params, config, GUI):
+def Process(params, config, wxForm):
 
 	global isColab, KILL_on_END
 
@@ -891,7 +892,7 @@ def Process(params, config, GUI):
 	isColab		= params['isColab']
 	KILL_on_END	= config['BONUS']['KILL_on_END']
 
-	sys.stdout = CustomPrint(params['CONSOLE'], GUI)
+	sys.stdout = CustomPrint(params['CONSOLE'], wxForm)
 
 	input  = config['AUDIO']['input']
 	inputs = []
@@ -914,7 +915,7 @@ def Process(params, config, GUI):
 		print('Error : You have NO file to process in your "input" folder !!');  return
 	
 	model = None
-	model = MusicSeparationModel(params, config, GUI)
+	model = MusicSeparationModel(params, config, wxForm)
 
 	BATCH_MODE = len(inputs) > 1
 
@@ -927,6 +928,9 @@ def Process(params, config, GUI):
 		
 		model.SEPARATE(file, BATCH_MODE)
 	
+	# Reset the thread
+	if not wxForm is None:  wxForm.thread = None
+
 	del model; del params; del file
 
 	Exit_Notebook()

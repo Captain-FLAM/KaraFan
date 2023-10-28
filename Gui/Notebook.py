@@ -126,8 +126,6 @@ def Run(params):
 	CONSOLE			= widgets.Output(layout = {'max_width': max_width, 'height': console_max_height, 'max_height': console_max_height, 'overflow':'scroll'})
 	Progress_Bar	= widgets.IntProgress(value=0, min=0, max=100, orientation='horizontal', bar_style='info', layout={'width':'370px', 'height':'25px'})  # style={'bar_color': 'maroon'})
 	Progress_Text	= widgets.HTML(layout={'width':'300px', 'margin':'0 0 0 15px'})
-	# +
-	Progress_combo	= Gui.Progress.Bar(Progress_Bar, Progress_Text, 'ipywidgets')  # Class for Progress Bar
 
 	# TAB 3
 	sys_info		= widgets.HTML()
@@ -275,12 +273,12 @@ def Run(params):
 			display(HTML('<script type="application/javascript">show_titles();</script>'))
 
 		params['CONSOLE']	= CONSOLE
-		params['Progress']	= Progress_combo
+		params['Progress']	= Gui.Progress.Bar(Progress_Bar, Progress_Text)  # Class for Progress Bar
 
 		# Start processing
 		if not Running:
 			Running = True
-			CONSOLE.clear_output();  App.inference.Process(params, config, 'ipywidgets')
+			CONSOLE.clear_output();  App.inference.Process(params, config, wxForm = None)  # Tell "inference" to use ipywidgets
 			Running = False
 
 

@@ -29,6 +29,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.SetTitle("KaraFan - " + Version)
 		self.SetIcon(wx.Icon(icon_path + "KaraFan.ico", wx.BITMAP_TYPE_ICO))
 
+		self.timer = None
 		GPU = GPUtil.getGPUs()
 		if GPU and torch.cuda.is_available():
 			self.GPU.SetForegroundColour(wx.Colour(0, 179, 45))
@@ -207,7 +208,8 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.params['Progress']	= Gui.Wx_Progress.Bar(self)  # Pass this wxForm to the Class for Progress Bar
 
 		# Start processing
-		self.timer.Start(1000)  # Interval : 1 sec.
+		if self.timer is not None:  self.timer.Start(1000)  # Interval : 1 sec.
+		
 		if self.thread is None or not self.thread.is_alive():
 
 			self.CONSOLE.SetPage("")

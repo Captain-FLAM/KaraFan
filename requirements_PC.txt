@@ -24,3 +24,4 @@ scipy < 1.23.0
 regex
 requests
 psutil
+gputil

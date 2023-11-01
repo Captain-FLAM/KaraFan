@@ -344,6 +344,23 @@ class Form ( wx.Frame ):
 		self.Tab_Progress = wx.Panel( self.Tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		box2 = wx.BoxSizer( wx.VERTICAL )
 
+		bSizer61 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.GPU = wx.StaticText( self.Tab_Progress, wx.ID_ANY, _(u"Using GPU (0 Go) ►"), wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
+		self.GPU.Wrap( -1 )
+
+		self.GPU.SetFont( wx.Font( 12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, "Tahoma" ) )
+
+		bSizer61.Add( self.GPU, 0, wx.BOTTOM|wx.LEFT|wx.TOP, 11 )
+
+		self.GPU_info = wx.StaticText( self.Tab_Progress, wx.ID_ANY, _(u"0 Go - 0 %"), wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.GPU_info.Wrap( -1 )
+
+		bSizer61.Add( self.GPU_info, 0, wx.BOTTOM|wx.EXPAND|wx.TOP, 11 )
+
+
+		box2.Add( bSizer61, 0, wx.ALL|wx.EXPAND, 5 )
+
 		self.CONSOLE = wx.html.HtmlWindow( self.Tab_Progress, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.html.HW_SCROLLBAR_AUTO )
 		box2.Add( self.CONSOLE, 1, wx.EXPAND, 5 )
 

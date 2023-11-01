@@ -14,21 +14,18 @@ def Run(params):
 
 	import App.settings, App.inference, App.sys_info, Gui.Progress
 
-	Gdrive = params['Gdrive']
+	Gdrive  = params['Gdrive']
 	Project = params['Project']
 	isColab = params['isColab']
-	DEV_MODE = params['I_AM_A_DEVELOPER']
-	Auto_Start = params['Auto_Start']
+
+	font = '16px'
+	font_help = '15px'
 
 	width  = '670px'
-	height = '600px'
+	height = '630px'
 	label_width = '135px'
 
-	# Set the font size when running on your PC
-	font = '14px'
-	font_help = '14px'
-
-	if isColab:  font = '16px'; font_help = '15px'; height = '580px'; width = '700px'; label_width = '155px'
+	if isColab:  height = '580px'; width = '700px'; label_width = '155px'
 
 	font_input = {'font_size': font}
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
@@ -458,4 +455,4 @@ function show_titles() {\
 	if config['PROCESS']['bleed_6'] in instru:		bleed_6.value = config['PROCESS']['bleed_6']
 
 	# DEBUG : Auto-start processing on execution
-	if Auto_Start:  on_Btn_Start_clicked(None)
+	if params['Auto_Start']:  on_Btn_Start_clicked(None)

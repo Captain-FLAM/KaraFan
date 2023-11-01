@@ -21,6 +21,7 @@ from IPython.display import display, HTML
 
 import App.settings, App.audio_utils, App.compare, App.tfc_tdf
 
+wxForm = None
 isColab = False
 KILL_on_END = False
 
@@ -39,51 +40,53 @@ def get_models(device, model_params, stem):
 
 def demix_mdxv3(mix, model, device, config, overlap_MDX23, Progress):
 		
-		mix = torch.tensor(mix, dtype=torch.float32)
-		try:
-			S = model.num_target_instruments
-		except Exception as e:
-			S = model.module.num_target_instruments
-		
-		mdx_window_size = config.inference.dim_t
-		
-		# batch_size = config.inference.batch_size
-		batch_size = 1
-		C = config.audio.hop_length * (mdx_window_size - 1)
-		H = C // overlap_MDX23
-		L = mix.shape[1]
-		pad_size = H - (L - C) % H
-		mix = torch.cat([torch.zeros(2, C - H, dtype=torch.float32), mix, torch.zeros(2, pad_size + C - H, dtype=torch.float32)], 1)
-		mix = mix.to(device)
+	global wxForm
+	
+	mix = torch.tensor(mix, dtype=torch.float32)
+	try:
+		S = model.num_target_instruments
+	except Exception as e:
+		S = model.module.num_target_instruments
+	
+	mdx_window_size = config.inference.dim_t
+	
+	# batch_size = config.inference.batch_size
+	batch_size = 1
+	C = config.audio.hop_length * (mdx_window_size - 1)
+	H = C // overlap_MDX23
+	L = mix.shape[1]
+	pad_size = H - (L - C) % H
+	mix = torch.cat([torch.zeros(2, C - H, dtype=torch.float32), mix, torch.zeros(2, pad_size + C - H, dtype=torch.float32)], 1)
+	mix = mix.to(device)
 
-		chunks = mix.unfold(1, C, H).transpose(0, 1)
+	chunks = mix.unfold(1, C, H).transpose(0, 1)
 
-		batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
+	batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
 
-		Progress.reset(len(batches), unit="Step")
+	Progress.reset(len(batches), unit="Step")
 
-		X = torch.zeros(S, *mix.shape, dtype=torch.float32).to(device) if S > 1 else torch.zeros_like(mix, dtype=torch.float32)
+	X = torch.zeros(S, *mix.shape, dtype=torch.float32).to(device) if S > 1 else torch.zeros_like(mix, dtype=torch.float32)
 
-		with torch.cuda.amp.autocast(dtype=torch.float32):  # BUG fix : float16 by default !!
-			with torch.no_grad():
-				cnt = 0
-				for batch in batches:
+	with torch.cuda.amp.autocast(dtype=torch.float32):  # BUG fix : float16 by default !!
+		with torch.no_grad():
+			cnt = 0
+			for batch in batches:
 
-					x = model(batch)
-					x[torch.isnan(x)] = 0.0  # Replace "NaN" by zeros, just by security ...
+				x = model(batch)
+				x[torch.isnan(x)] = 0.0  # Replace "NaN" by zeros, just by security ...
 
-					for w in x:
-						X[..., cnt * H : (cnt * H) + C] += w
-						cnt += 1
-				
-					Progress.update()
+				for w in x:
+					X[..., cnt * H : (cnt * H) + C] += w
+					cnt += 1
+			
+				Progress.update()
 
-		estimated_sources = X[..., C - H:-(pad_size + C - H)] / overlap_MDX23
-		
-		if S > 1:
-			return {k: v for k, v in zip(config.training.instruments, estimated_sources.cpu().numpy())}
-		else:
-			return estimated_sources.cpu().numpy()
+	estimated_sources = X[..., C - H:-(pad_size + C - H)] / overlap_MDX23
+	
+	if S > 1:
+		return {k: v for k, v in zip(config.training.instruments, estimated_sources.cpu().numpy())}
+	else:
+		return estimated_sources.cpu().numpy()
 
 def demix_base(mix, device, models, infer_session):
 	sources = []
@@ -124,7 +127,7 @@ def demix_base(mix, device, models, infer_session):
 
 		except Exception as e:
 			print("\n\nError in demix_base() with Torch : ", e)
-			Exit_Notebook()
+			Exit()
 	
 	return np.array(sources)
 
@@ -149,7 +152,6 @@ class MusicSeparationModel:
 		self.GOD_MODE			= config['BONUS']['GOD_MODE']
 		self.large_gpu			= config['BONUS']['large_gpu']
 
-		self.device = 'cpu'
 		self.output = os.path.join(self.Gdrive, config['AUDIO']['output'])
 		
 		if params['isColab']:
@@ -157,14 +159,18 @@ class MusicSeparationModel:
 		else:
 			self.ffmpeg = os.path.join(params['Gdrive'], "KaraFan_user", "ffmpeg") + (".exe" if platform.system() == 'Windows' else "")
 		
-		if torch.cuda.is_available():  self.device = 'cuda:0'
-		
-		if self.device == 'cpu':
-			self.providers = ["CPUExecutionProvider"]
-			print('<div style="font-size:18px;color:#ff0040;"><b>Warning ! CPU is used instead of GPU for processing.<br>Processing will be very slow !!</b></div>')
-		else:
+		if torch.cuda.is_available():
+			self.GPU_device = 'cuda:0'
 			self.providers = ["CUDAExecutionProvider"]
-			print('<div style="font-size:18px;color:#00b32d;"><b>It\'s OK -> GPU is used for processing !!</b></div>')
+
+			if wxForm is None: # for Jupyter Notebook
+				print('<div style="font-size:18px;color:#00b32d;"><b>It\'s OK -> GPU is used for processing !!</b></div>')
+		else:
+			self.GPU_device = 'cpu'
+			self.providers = ["CPUExecutionProvider"]
+			
+			if wxForm is None: # for Jupyter Notebook
+				print('<div style="font-size:18px;color:#ff0040;"><b>Warning ! CPU is used instead of GPU for processing.<br>Processing will be very slow !!</b></div>')
 		
 		# MDX23C 8K
 		self.MDX23_overlap = 1
@@ -536,9 +542,9 @@ class MusicSeparationModel:
 
 		# ONLY 1 Pass, with MDX23C models !
 		if model['Stem'] == "BOTH":
-			device = torch.device(self.device)
+			device = torch.device(self.GPU_device)
 			mdx23 = App.tfc_tdf.TFC_TDF_net(self.MDX23_config)
-			mdx23.load_state_dict(torch.load(model['PATH']))
+			mdx23.load_state_dict( torch.load(model['PATH'], map_location = device) )
 			mdx23 = mdx23.to(device)
 			mdx23.eval()
 
@@ -686,7 +692,7 @@ class MusicSeparationModel:
 		name = model['Name']
 		if name not in self.MDX:
 			self.MDX[name] = {}
-			self.MDX[name]['model'] = get_models(self.device, model, model['Stem'])
+			self.MDX[name]['model'] = get_models(self.GPU_device, model, model['Stem'])
 			self.MDX[name]['inference'] = ort.InferenceSession(
 				model['PATH'],
 				providers = self.providers,
@@ -803,7 +809,7 @@ class MusicSeparationModel:
 				end = min(i + self.chunk_size, shifted_mix.shape[-1])
 				mix_part = shifted_mix[:, start:end]
 				# print(f"mix_part shape = {mix_part.shape}")
-				sources = demix_base(mix_part, self.device, use_model, infer_session)
+				sources = demix_base(mix_part, self.GPU_device, use_model, infer_session)
 				result[..., start:end] += sources
 				# print(f"result shape = {result.shape}")
 				divider[..., start:end] += 1
@@ -847,12 +853,12 @@ def Download_Model(model, models_path, PROGRESS = None):
 						file.write(data)
 			else:
 				print(f'Download of model "{name}" FAILED !!')
-				Exit_Notebook()
+				Exit()
 		
 		except (requests.exceptions.RequestException, requests.exceptions.ChunkedEncodingError) as e:
 			print(f'Error during Downloading "{name}" !!\n\n{e}')
 			if os.path.exists(file_path):  os.remove(file_path)
-			Exit_Notebook()
+			Exit()
 	
 	return file_path  # Path to this model
 
@@ -889,11 +895,12 @@ class CustomPrint:
 		pass
 
 
-def Process(params, config, wxForm):
+def Process(params, config, wx):
 
-	global isColab, KILL_on_END
+	global wxForm, isColab, KILL_on_END
 
-	# Only used for Exit_Notebook()
+	# Only used for Exit()
+	wxForm		= wx
 	isColab		= params['isColab']
 	KILL_on_END	= config['BONUS']['KILL_on_END']
 
@@ -933,15 +940,14 @@ def Process(params, config, wxForm):
 		
 		model.SEPARATE(file, BATCH_MODE)
 	
-	# Reset the thread
-	if not wxForm is None:  wxForm.thread = None
-
 	del model; del params; del file
 
-	Exit_Notebook()
+	Exit()
 
 
-def Exit_Notebook():
+def Exit():
+
+	global wxForm
 
 	# Free & Release GPU memory
 	if torch.cuda.is_available():
@@ -949,6 +955,8 @@ def Exit_Notebook():
 		torch.cuda.ipc_collect()
 
 	gc.collect()
+
+	if not wxForm is None:  wxForm.timer.Stop()
 	
 	if KILL_on_END:
 		# This trick is copyrigthed by "Captain FLAM" (2023) - MIT License

@@ -23,8 +23,12 @@ class Bar:
 		self.units_time = time.time()
 
 		elapsed_time = time.time() - self.start_time
+
+		# Prevent Bug when closing the app (this is an event)
+		if wx.GetApp() is None:  return
+
 		wx.CallAfter(self.UpdateProgressBar,
-	    	0,
+			0,
 			f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] -   0% - 0/{self.total} - 0.00 sec./ {self.unit}",
 			self.total  # Set Range
 		)
@@ -49,10 +53,13 @@ class Bar:
 		else:				percent = f"{percent}"
 
 		download = " MB" if self.unit == "MB" else ""
-
+		
+		# Prevent Bug when closing the app (this is an event)
+		if wx.GetApp() is None:  return
+		
 		wx.CallAfter(self.UpdateProgressBar,
-	       self.value,
-		   f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - {percent}% - {self.value}/{self.total}{download} - {time_per_unit:.2f} sec./ {self.unit}"
+			self.value,
+			f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - {percent}% - {self.value}/{self.total}{download} - {time_per_unit:.2f} sec./ {self.unit}"
 		)
 
 	def UpdateProgressBar(self, value, text, Set_Range = None):
@@ -61,5 +68,3 @@ class Bar:
 
 		self.GUI.Progress_Bar.Value = value
 		self.GUI.Progress_Text.SetLabel(text)
-		# self.GUI.Progress_Bar.Update()
-		# self.GUI.Progress_Text.Update()

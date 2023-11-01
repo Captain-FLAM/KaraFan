@@ -3,25 +3,27 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, gc, platform, requests, subprocess, tempfile, zipfile
+import os, gc, requests, subprocess
 
-def Check_dependencies(isColab):
+def Check_dependencies():
 
 	# Dependencies already installed ?
 	print("Installing dependencies... This will take few minutes...", end='')
 	try:
 		subprocess.run(["pip", "install", "-r", "requirements.txt"], text=True, capture_output=True, check=True)
-		if not isColab:
-			subprocess.run(["pip", "install", "-r", "requirements_PC.txt"], text=True, capture_output=True, check=True)
 		
 		print("\rInstallation done !                                     ") # Clean line
 	
 	except subprocess.CalledProcessError as e:
 		print("Error during Install dependencies :\n" + e.stderr + "\n" + e.stdout + "\n")
-		Exit_Notebook(isColab)
+		Exit_Notebook()
 
 def Install(params):
 	
+	# This is setup is only for Colab !!
+
+	if params['isColab'] == False:  return
+
 	Repository  = "https://github.com/Captain-FLAM/KaraFan"
 	Version_url = "https://raw.githubusercontent.com/Captain-FLAM/KaraFan/master/App/__init__.py"
 
@@ -29,12 +31,11 @@ def Install(params):
 
 	Gdrive = params['Gdrive']
 	Project = params['Project']
-	isColab = params['isColab']
 	DEV_MODE = params['I_AM_A_DEVELOPER']
 
 	if not os.path.exists(Gdrive):
 		print("ERROR : Google Drive path is not valid !\n")
-		Exit_Notebook(isColab)
+		Exit_Notebook()
 	
 	# Create missing folders
 	user_folder = os.path.join(Gdrive, "KaraFan_user")
@@ -43,45 +44,8 @@ def Install(params):
 
 	os.chdir(Project)  # For pip install
 
-	if isColab:
-		Check_dependencies(True)
+	Check_dependencies()
 	
-	# Get FFmpeg from GitHub wiki
-	if not isColab:
-		ffmpeg = os.path.join(user_folder, "ffmpeg") + (".exe" if platform.system() == 'Windows' else "")
-
-		if not os.path.exists(ffmpeg):
-			print("Downloading FFmpeg... This will take few seconds...", end='')
-			try:
-				response = requests.get(Repository + '/wiki/FFmpeg/' + platform.system() + '.zip')
-				if response.status_code == requests.codes.ok:
-					# Create a temporary file
-					temp = tempfile.NamedTemporaryFile(suffix='.zip', delete=False)
-					temp.write(response.content)
-
-					# Unzip the temporary file
-					with zipfile.ZipFile(temp.name, 'r') as zip_ref:
-						zip_ref.extractall(user_folder)
-						zip_ref.close()
-
-					# Make it executable
-					if platform.platform() == 'Linux':
-						subprocess.run(["chmod", "777", ffmpeg], text=True, capture_output=True, check=True)
-
-					temp.close()
-					os.remove(temp.name)
-				else:
-					print("\nUnable to download FFmpeg from GitHub wiki !")
-					Exit_Notebook(isColab)
-			except ValueError as e:
-				print("\nError processing FFmpeg data :", e)
-				Exit_Notebook(isColab)
-			except requests.exceptions.ConnectionError as e:
-				print("\nConnection error while trying to fetch FFmpeg :", e)
-				Exit_Notebook(isColab)
-			
-			print("\rFFmpeg downloaded !                                     ") # Clean line
-			
 	# Get local version
 	with open(os.path.join(Project, "App", "__init__.py"), "r") as version_file:
 		Version = version_file.readline().replace("# Version", "").strip()
@@ -114,40 +78,25 @@ def Install(params):
 					try:
 						subprocess.run(["git", "-C", Project, "pull"], text=True, capture_output=True, check=True)
 
-						Check_dependencies(isColab)
+						Check_dependencies()
 
-						if isColab:
-							print('\n\nFOR NOW : you have to go AGAIN in Colab menu, "Runtime > Restart and Run all" to use the new version of "KaraFan" !\n\n')
-						else:
-							print('\n\nFOR NOW : you have to "Restart" the notebook to use the new version of "KaraFan" !\n\n')
+						print('\n\nFOR NOW : you have to go AGAIN in Colab menu, "Runtime > Restart and Run all" to use the new version of "KaraFan" !\n\n')
 
-						Exit_Notebook(isColab)
+						Exit_Notebook()
 						
 					except subprocess.CalledProcessError as e:
 						if e.returncode == 127:
 							print('WARNING : "Git" is not installed on your system !\n' + warning)
 						else:
 							print("Error during Update :\n" + e.stderr + "\n" + e.stdout)
-							Exit_Notebook(isColab)
+							Exit_Notebook()
 		else:
 			print('"KaraFan" is up to date.')
 
-def Exit_Notebook(isColab):
+def Exit_Notebook():
 	gc.collect()
 	# This trick is copyrigthed by "Captain FLAM" (2023) - MIT License
 	# That means you can use it, but you have to keep this comment in your code.
 	# After deep researches, I found this trick that nobody found before me !!!
-	if isColab:
-		from google.colab import runtime
-		runtime.unassign()
-	else:
-		os._exit(0)
-
-
-if __name__ == '__main__':
-
-	# We are on PC
-	Project = os.getcwd()  # Get the current path
-	Gdrive  = os.path.dirname(Project)  # Get parent directory
-
-	Install({'Gdrive': Gdrive, 'Project': Project, 'isColab': False, 'I_AM_A_DEVELOPER': False})
+	from google.colab import runtime
+	runtime.unassign()

@@ -4,26 +4,29 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
+# KaraFan works on your PC !!
 
-#*************************************************
-#****        DEBUG  ->  for DEVELOPERS        ****
-#*************************************************
+import os, sys
 
-# Change to True if you're running on your PC (not in Visual Studio Code)
-# ... and you don't want Auto-Updates !!
-
-I_AM_A_DEVELOPER = False
-
-#*************************************************
-
-import os, App.setup, App.main
-
-# We are on PC
 Project = os.getcwd()  # Get the current path
-Gdrive  = os.path.dirname(Project)  # Get parent directory
 
-params = {'Gdrive': Gdrive, 'Project': Project, 'isColab': False, 'I_AM_A_DEVELOPER': I_AM_A_DEVELOPER}
+# Are we in the Parent directory ?
+if os.path.basename(Project) != "KaraFan":
+	Project = os.path.join(Project, "KaraFan")
+	
+	if not os.path.exists(Project):
+		print('ERROR : "KaraFan" folder not found !')
+		os._exit(0)
+	
+	# os.chdir(Project)
 
-# App.setup.Install(params)
+# Mandatory to import App modules
+sys.path.insert(0, Project)
+
+import App.main
+
+Gdrive = os.path.dirname(Project)  # Get Parent directory
+
+params = {'Gdrive': Gdrive, 'Project': Project, 'isColab': False}
 
 App.main.Start(params, GUI = "wxpython")

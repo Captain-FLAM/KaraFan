@@ -3,7 +3,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, csv, threading, wx
+import os, csv, GPUtil, torch, threading, wx
 
 import App.settings, App.inference, App.sys_info, Gui.Wx_Progress, Gui.Wx_Window
 
@@ -12,16 +12,34 @@ class KaraFanForm(Gui.Wx_Window.Form):
 	def __init__(self, parent, params):
 		Gui.Wx_Window.Form.__init__(self, parent)
 
-		self.thread = None
+		self.params = params
+		self.Gdrive = params['Gdrive']
+		self.thread	= None
+
+		icon_path = params['Project'] + os.path.sep + "images" + os.path.sep
+
+		# Reset defaults
+		self.Tabs.SetSelection(0)
+		self.Btn_Start.SetFocus()
 
 		# Get local version
 		with open(os.path.join(params['Project'], "App", "__init__.py"), "r") as version_file:
 			Version = version_file.readline().replace("# Version", "").strip()
 
-		icon_path  = params['Project'] + os.path.sep + "images" + os.path.sep
-
 		self.SetTitle("KaraFan - " + Version)
 		self.SetIcon(wx.Icon(icon_path + "KaraFan.ico", wx.BITMAP_TYPE_ICO))
+
+		GPU = GPUtil.getGPUs()
+		if GPU and torch.cuda.is_available():
+			self.GPU.SetForegroundColour(wx.Colour(0, 179, 45))
+			self.GPU.SetLabel(f"Using GPU ({GPU[0].memoryTotal:.0f} GB) ►")  # Total amount of VRAM on the GPU (GB)
+
+			self.timer  = wx.Timer(self)  # Local Timer
+			self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)  # Link timer to function
+		else:
+			self.GPU.SetForegroundColour(wx.Colour(255, 0, 64))
+			self.GPU.SetLabel("Using CPU ►►►")
+			self.GPU_info.SetLabel("With CPU, processing will be very slow !!")
 
 		# Set icons for each tab
 		icon_music = wx.Image(icon_path + "icon-music.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
@@ -46,11 +64,6 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.html_start	= '<html><body text="#000000" bgcolor="#ffffd2"><font size="4">'
 		self.html_end	= '</font></body></html>'
 		
-		self.params = params
-		self.Gdrive = params['Gdrive']
-		self.DEV_MODE = params['I_AM_A_DEVELOPER']
-		self.Auto_Start = params['Auto_Start']
-
 		# Get config values
 		self.config = App.settings.Load(self.Gdrive, False)
 
@@ -146,22 +159,8 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.chunk_size_OnSlider(None)
 
 		# DEBUG : Auto-start processing on execution
-		if self.Auto_Start:  self.Btn_Start_OnClick(None)
+		if self.params['Auto_Start']:  self.Btn_Start_OnClick(None)
 
-	def Show_Help(self, event):
-		label = event.GetEventObject().GetName()
-		if label in App.settings.Help_Dico:
-			self.HELP.SetPage(self.html_start + App.settings.Help_Dico[label] + self.html_end)
-
-	# Don't allow to type in the Combo Boxes (Needed because READONLY make the background color grey)
-	def ComboBox_OnKeyDown(self, event):
-		key = event.GetKeyCode()
-		# but let UP / DOWN arrow & ALT-F4 & ENTER keys to work
-		if key == 315 or key == 317 or key == 343 or key == 13:
-			event.Skip()
-		else:
-			return
-	
 	#*********************
 	#**  Buttons Click  **
 	#*********************
@@ -200,7 +199,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		if self.output_path.Value != path:	self.output_path.Value = path
 
 		# Save config
-		self.Form_OnClose(None)		
+		self.Form_OnClose(None)
 
 		self.Tabs.ChangeSelection(1)
 		
@@ -208,55 +207,15 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.params['Progress']	= Gui.Wx_Progress.Bar(self)  # Pass this wxForm to the Class for Progress Bar
 
 		# Start processing
+		self.timer.Start(1000)  # Interval : 1 sec.
 		if self.thread is None or not self.thread.is_alive():
 
 			self.CONSOLE.SetPage("")
-			thread = threading.Thread(target=self.Process)
-			thread.start()
+			self.thread = threading.Thread(target=self.Process)
+			self.thread.start()
 
 	def Process(self):
-		App.inference.Process(self.params, self.config, wxForm = self)  # Pass to "inference" this wxForm object
-	
-	def Form_OnClose(self, event):
-
-		self.config = {
-			'AUDIO': {
-				'input':		self.input_path.Value,
-				'output':		self.output_path.Value,
-				'output_format': self.output_format.GetClientData(self.output_format.GetSelection()),
-				'normalize':	self.normalize.GetClientData(self.normalize.GetSelection()),
-				'silent':		self.silent.GetClientData(self.silent.GetSelection()),
-				'infra_bass':	self.infra_bass.Value,
-			},
-			'PROCESS': {
-				'music_1': self.music_1.Value,
-				'music_2': self.music_2.Value,
-				'vocal_1': self.vocal_1.Value,
-				'vocal_2': self.vocal_2.Value,
-				'bleed_1': self.bleed_1.Value,
-				'bleed_2': self.bleed_2.Value,
-				'bleed_3': self.bleed_3.Value,
-				'bleed_4': self.bleed_4.Value,
-				'bleed_5': self.bleed_5.Value,
-				'bleed_6': self.bleed_6.Value,
-			},
-			'OPTIONS': {
-				'speed': App.settings.Options['Speed'][self.speed.Value],
-				'chunk_size': 	self.chunk_size.Value * 100000,
-			},
-			'BONUS': {
-				'KILL_on_END': 	self.KILL_on_END.Value,
-				'DEBUG':		self.DEBUG.Value,
-				'GOD_MODE':		self.GOD_MODE.Value,
-				# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
-				# 'large_gpu': large_gpu.Value,
-				'large_gpu':	False,
-			}
-		}
-		App.settings.Save(self.Gdrive, False, self.config)
-
-		# If it's a real close event
-		if not event is None:  event.Skip()
+		App.inference.Process(self.params, self.config, wx = self)  # Pass to "inference" this wxForm object
 	
 
 	def Btn_SysInfo_OnClick(self, event):
@@ -314,6 +273,69 @@ class KaraFanForm(Gui.Wx_Window.Form):
 	#**************
 	#**  Events  **
 	#**************
+	
+	def Form_OnClose(self, event):
+
+		self.config = {
+			'AUDIO': {
+				'input':		self.input_path.Value,
+				'output':		self.output_path.Value,
+				'output_format': self.output_format.GetClientData(self.output_format.GetSelection()),
+				'normalize':	self.normalize.GetClientData(self.normalize.GetSelection()),
+				'silent':		self.silent.GetClientData(self.silent.GetSelection()),
+				'infra_bass':	self.infra_bass.Value,
+			},
+			'PROCESS': {
+				'music_1': self.music_1.Value,
+				'music_2': self.music_2.Value,
+				'vocal_1': self.vocal_1.Value,
+				'vocal_2': self.vocal_2.Value,
+				'bleed_1': self.bleed_1.Value,
+				'bleed_2': self.bleed_2.Value,
+				'bleed_3': self.bleed_3.Value,
+				'bleed_4': self.bleed_4.Value,
+				'bleed_5': self.bleed_5.Value,
+				'bleed_6': self.bleed_6.Value,
+			},
+			'OPTIONS': {
+				'speed': App.settings.Options['Speed'][self.speed.Value],
+				'chunk_size': 	self.chunk_size.Value * 100000,
+			},
+			'BONUS': {
+				'KILL_on_END': 	self.KILL_on_END.Value,
+				'DEBUG':		self.DEBUG.Value,
+				'GOD_MODE':		self.GOD_MODE.Value,
+				# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
+				# 'large_gpu': large_gpu.Value,
+				'large_gpu':	False,
+			}
+		}
+		App.settings.Save(self.Gdrive, False, self.config)
+
+		# If it's a REAL close event
+		if not event is None:
+			event.Skip()
+			os._exit(0)  # Kill the process
+	
+
+	# Update GPU info
+	def OnTimer(self, event):
+		GPU = GPUtil.getGPUs()[0]
+		self.GPU_info.SetLabel(f"{GPU.memoryUsed:.2f} GB - ({GPU.memoryUtil * 100:.0f}%) - Load : {GPU.load*100:.0f} % - Temp : {GPU.temperature:.0f} °C")
+
+	def Show_Help(self, event):
+		label = event.GetEventObject().GetName()
+		if label in App.settings.Help_Dico:
+			self.HELP.SetPage(self.html_start + App.settings.Help_Dico[label] + self.html_end)
+
+	# Don't allow to type in the Combo Boxes (Better than "READONLY" that make the background color grey)
+	def ComboBox_OnKeyDown(self, event):
+		key = event.GetKeyCode()
+		# but let UP / DOWN arrow & ALT-F4 & ENTER keys to work
+		if key == 315 or key == 317 or key == 343 or key == 13:
+			event.Skip()
+		else:
+			return
 	
 	def input_path_OnChange(self, event):
 

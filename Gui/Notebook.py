@@ -278,7 +278,7 @@ def Run(params):
 		# Start processing
 		if not Running:
 			Running = True
-			CONSOLE.clear_output();  App.inference.Process(params, config, wxForm = None)  # Tell "inference" to use ipywidgets
+			CONSOLE.clear_output();  App.inference.Process(params, config, wx = None)  # Tell "inference" to use ipywidgets
 			Running = False
 
 

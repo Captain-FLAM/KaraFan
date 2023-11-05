@@ -15,6 +15,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.params = params
 		self.Gdrive = params['Gdrive']
 		self.thread	= None
+		self.timer	= None
 
 		icon_path = params['Project'] + os.path.sep + "images" + os.path.sep
 
@@ -29,13 +30,12 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.SetTitle("KaraFan - " + Version)
 		self.SetIcon(wx.Icon(icon_path + "KaraFan.ico", wx.BITMAP_TYPE_ICO))
 
-		self.timer = None
 		GPU = GPUtil.getGPUs()
 		if GPU and torch.cuda.is_available():
 			self.GPU.SetForegroundColour(wx.Colour(0, 179, 45))
-			self.GPU.SetLabel(f"Using GPU ({GPU[0].memoryTotal:.0f} GB) ►")  # Total amount of VRAM on the GPU (GB)
+			self.GPU.SetLabel(f"Using GPU ({(GPU[0].memoryTotal / 1024):.0f} GB) ►")  # Total amount of VRAM on the GPU (GB)
 
-			self.timer  = wx.Timer(self)  # Local Timer
+			self.timer = wx.Timer(self)  # Local Timer
 			self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)  # Link timer to function
 		else:
 			self.GPU.SetForegroundColour(wx.Colour(255, 0, 64))
@@ -272,6 +272,21 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.bleed_5.Value		= App.settings.Presets[3]['bleed_5']
 		self.bleed_6.Value		= App.settings.Presets[3]['bleed_6']
 
+	def Btn_input_Path_OnClick( self, event ):
+		dlg = wx.DirDialog(self, "Choose a folder :", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+		if dlg.ShowModal() == wx.ID_OK:
+			self.input_path.Value = dlg.GetPath().replace(self.Gdrive, "")
+
+	def Btn_input_File_OnClick( self, event ):
+		dlg = wx.FileDialog(self, "Choose a file :", "", "", "Audio files (*.flac;*.mp3;*.wav)|*.flac;*.mp3;*.wav", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+		if dlg.ShowModal() == wx.ID_OK:
+			self.input_path.Value = dlg.GetPath().replace(self.Gdrive, "")
+
+	def Btn_output_Path_OnClick( self, event ):
+		dlg = wx.DirDialog(self, "Choose a folder :", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+		if dlg.ShowModal() == wx.ID_OK:
+			self.output_path.Value = dlg.GetPath().replace(self.Gdrive, "")
+
 	#**************
 	#**  Events  **
 	#**************
@@ -323,7 +338,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 	# Update GPU info
 	def OnTimer(self, event):
 		GPU = GPUtil.getGPUs()[0]
-		self.GPU_info.SetLabel(f"{GPU.memoryUsed:.2f} GB - ({GPU.memoryUtil * 100:.0f}%) - Load : {GPU.load*100:.0f} % - Temp : {GPU.temperature:.0f} °C")
+		self.GPU_info.SetLabel(f"{GPU.memoryUsed:.2f} GB - ({GPU.memoryUtil * 100:.0f}%) - Load : {GPU.load * 100:.0f} % - Temp : {GPU.temperature:.0f} °C")
 
 	def Show_Help(self, event):
 		label = event.GetEventObject().GetName()

@@ -4,13 +4,17 @@
 
 The **BEST music separation** software with help of A.I. ... **to my ears** ! 👂👂
 
+🥇 Awarded to **1st place** by the community as the **Best software in the World**, for having **the less vocal residues** in Music track !  
+Read the [**Success Story**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B0-Success-Story) ...
+
 As you've guessed, it was made specially for Karaoke (▶️ focus on musical part).  
 This project is **open to all goodwill**.  
 
 Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made this project possible.
 
-KaraFan works **on Your PC** (Windows, Linux, Mac OSX), if you have a decent **Nvidia GPU**.
-KaraFan works with **Google Colab**.
+KaraFan works **on Your PC** (Windows 8/10/11, Linux, Mac OSX), if you have a decent **Nvidia GPU**.  
+KaraFan works with **Google Colab**.  
+KaraFan shall work with **GPU web services API** ... (in the future).
 
 # 💲 And if you like this software :
 
@@ -21,7 +25,7 @@ click here to send me an email, I'll give you my wallet address :
 
 [![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)](mailto:Captain_FLAM@gmx.fr) 😍
 
-You can reach me by [email](https://github.com/Captain-FLAM) or Join all of us on the [dedicated channel on Discord](https://discord.com/channels/708579735583588363/1162265179271200820) ![Discord](images/discord.svg)
+You can reach me by [email](https://github.com/Captain-FLAM) or Join all of us on the [**dedicated channel on Discord**](https://discord.com/channels/708579735583588363/1162265179271200820) ![Discord](images/discord.svg)
 
 # 🚀 INSTALL
 

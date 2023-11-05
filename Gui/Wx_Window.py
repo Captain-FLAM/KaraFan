@@ -21,7 +21,7 @@ _ = gettext.gettext
 class Form ( wx.Frame ):
 
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"KaraFan"), pos = wx.DefaultPosition, size = wx.Size( 697,755 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"KaraFan"), pos = wx.DefaultPosition, size = wx.Size( 697,761 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		self.SetFont( wx.Font( 14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Arial Narrow" ) )
@@ -35,33 +35,74 @@ class Form ( wx.Frame ):
 		self.Tab_Settings = wx.Panel( self.Tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		box1 = wx.BoxSizer( wx.VERTICAL )
 
-		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"    Songs    ") ), wx.VERTICAL )
+		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{  Songs  }") ), wx.VERTICAL )
 
-		fgSizer6 = wx.FlexGridSizer( 0, 4, 0, 0 )
-		fgSizer6.SetFlexibleDirection( wx.BOTH )
-		fgSizer6.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		bSizer7 = wx.BoxSizer( wx.HORIZONTAL )
 
-		self.label_input = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, _(u"Input X file or PATH"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"input" )
+		bSizer8 = wx.BoxSizer( wx.HORIZONTAL )
+
+		bSizer8.SetMinSize( wx.Size( 150,-1 ) )
+		self.label_input = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, _(u"Input"), wx.DefaultPosition, wx.Size( 75,-1 ), 0, u"input" )
 		self.label_input.Wrap( -1 )
 
-		fgSizer6.Add( self.label_input, 0, wx.TOP, 5 )
+		bSizer8.Add( self.label_input, 0, wx.TOP, 5 )
+
+		self.Btn_input_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+
+		self.Btn_input_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
+		self.Btn_input_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Btn_input_Path.SetToolTip( _(u"PATH") )
+
+		bSizer8.Add( self.Btn_input_Path, 0, wx.LEFT|wx.RIGHT, 5 )
+
+		self.Btn_input_File = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+
+		self.Btn_input_File.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_NORMAL_FILE, wx.ART_HELP_BROWSER ) )
+		self.Btn_input_File.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Btn_input_File.SetToolTip( _(u"X File") )
+
+		bSizer8.Add( self.Btn_input_File, 0, wx.LEFT|wx.RIGHT, 5 )
+
+
+		bSizer7.Add( bSizer8, 0, wx.EXPAND, 5 )
 
 		self.input_path = wx.TextCtrl( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 320,-1 ), 0 )
-		fgSizer6.Add( self.input_path, 0, wx.BOTTOM|wx.RIGHT, 5 )
+		bSizer7.Add( self.input_path, 0, wx.BOTTOM|wx.RIGHT, 5 )
 
 		self.label_normalize = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, _(u"Normalize "), wx.DefaultPosition, wx.DefaultSize, 0, u"normalize" )
 		self.label_normalize.Wrap( -1 )
 
-		fgSizer6.Add( self.label_normalize, 0, wx.LEFT|wx.TOP, 5 )
+		bSizer7.Add( self.label_normalize, 0, wx.LEFT|wx.TOP, 5 )
 
 		normalizeChoices = []
 		self.normalize = wx.ComboBox( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 70,-1 ), normalizeChoices, 0 )
-		fgSizer6.Add( self.normalize, 0, 0, 5 )
+		bSizer7.Add( self.normalize, 0, 0, 5 )
 
-		self.label_output = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, _(u"Output PATH"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"output" )
+
+		sbSizer1.Add( bSizer7, 1, wx.EXPAND|wx.LEFT, 5 )
+
+		fgSizer6 = wx.FlexGridSizer( 0, 6, 0, 0 )
+		fgSizer6.SetFlexibleDirection( wx.BOTH )
+		fgSizer6.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+
+		bSizer9 = wx.BoxSizer( wx.HORIZONTAL )
+
+		bSizer9.SetMinSize( wx.Size( 150,-1 ) )
+		self.label_output = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, _(u"Output "), wx.DefaultPosition, wx.Size( 75,-1 ), 0, u"output" )
 		self.label_output.Wrap( -1 )
 
-		fgSizer6.Add( self.label_output, 0, wx.TOP, 5 )
+		bSizer9.Add( self.label_output, 0, wx.TOP, 5 )
+
+		self.Btn_output_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+
+		self.Btn_output_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
+		self.Btn_output_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Btn_output_Path.SetToolTip( _(u"PATH") )
+
+		bSizer9.Add( self.Btn_output_Path, 0, wx.LEFT|wx.RIGHT, 5 )
+
+
+		fgSizer6.Add( bSizer9, 0, wx.EXPAND, 5 )
 
 		self.output_path = wx.TextCtrl( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 320,-1 ), 0 )
 		fgSizer6.Add( self.output_path, 0, 0, 5 )
@@ -107,7 +148,7 @@ class Form ( wx.Frame ):
 
 		box1.Add( sbSizer1, 0, wx.ALL|wx.EXPAND, 5 )
 
-		sbSizer2 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"     Process     ") ), wx.VERTICAL )
+		sbSizer2 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{  Vocals  }") ), wx.VERTICAL )
 
 		fgSizer7 = wx.FlexGridSizer( 0, 4, 0, 0 )
 		fgSizer7.SetFlexibleDirection( wx.BOTH )
@@ -164,52 +205,54 @@ class Form ( wx.Frame ):
 
 		sbSizer2.Add( fgSizer7, 0, wx.EXPAND|wx.LEFT, 5 )
 
-		self.m_staticline1 = wx.StaticLine( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
-		sbSizer2.Add( self.m_staticline1, 0, wx.EXPAND |wx.ALL, 10 )
-
-		fgSizer91 = wx.FlexGridSizer( 0, 4, 0, 0 )
-		fgSizer91.SetFlexibleDirection( wx.BOTH )
-		fgSizer91.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
-
-		self.label_MDX_bleed_2 = wx.StaticText( sbSizer2.GetStaticBox(), wx.ID_ANY, _(u"Vocal Bleedings"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_bleed_2" )
-		self.label_MDX_bleed_2.Wrap( -1 )
-
-		fgSizer91.Add( self.label_MDX_bleed_2, 0, wx.TOP, 5 )
-
-		bleed_3Choices = []
-		self.bleed_3 = wx.ComboBox( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_3Choices, 0 )
-		fgSizer91.Add( self.bleed_3, 0, wx.BOTTOM, 5 )
-
-		bleed_4Choices = []
-		self.bleed_4 = wx.ComboBox( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_4Choices, 0 )
-		fgSizer91.Add( self.bleed_4, 0, wx.LEFT|wx.RIGHT, 10 )
-
-		self.icon4 = wx.StaticBitmap( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
-		fgSizer91.Add( self.icon4, 0, wx.TOP, 3 )
-
-		self.label_MDX_bleed_3 = wx.StaticText( sbSizer2.GetStaticBox(), wx.ID_ANY, _(u"Remove Music"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_bleed_3" )
-		self.label_MDX_bleed_3.Wrap( -1 )
-
-		fgSizer91.Add( self.label_MDX_bleed_3, 0, wx.TOP, 5 )
-
-		bleed_5Choices = []
-		self.bleed_5 = wx.ComboBox( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_5Choices, 0 )
-		fgSizer91.Add( self.bleed_5, 0, 0, 5 )
-
-		bleed_6Choices = []
-		self.bleed_6 = wx.ComboBox( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_6Choices, 0 )
-		fgSizer91.Add( self.bleed_6, 0, wx.LEFT|wx.RIGHT, 10 )
-
-		self.icon5 = wx.StaticBitmap( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
-		fgSizer91.Add( self.icon5, 0, wx.TOP, 3 )
-
-
-		sbSizer2.Add( fgSizer91, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT, 5 )
-
 
 		box1.Add( sbSizer2, 0, wx.ALL|wx.EXPAND, 5 )
 
-		sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"     Options     ") ), wx.VERTICAL )
+		sbSizer21 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{   Music   }") ), wx.VERTICAL )
+
+		fgSizer911 = wx.FlexGridSizer( 0, 4, 0, 0 )
+		fgSizer911.SetFlexibleDirection( wx.BOTH )
+		fgSizer911.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+
+		self.label_MDX_bleed_21 = wx.StaticText( sbSizer21.GetStaticBox(), wx.ID_ANY, _(u"Vocal Bleedings"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_bleed_2" )
+		self.label_MDX_bleed_21.Wrap( -1 )
+
+		fgSizer911.Add( self.label_MDX_bleed_21, 0, wx.TOP, 5 )
+
+		bleed_31Choices = []
+		self.bleed_31 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_31Choices, 0 )
+		fgSizer911.Add( self.bleed_31, 0, wx.BOTTOM, 5 )
+
+		bleed_41Choices = []
+		self.bleed_41 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_41Choices, 0 )
+		fgSizer911.Add( self.bleed_41, 0, wx.LEFT|wx.RIGHT, 10 )
+
+		self.icon41 = wx.StaticBitmap( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+		fgSizer911.Add( self.icon41, 0, wx.TOP, 3 )
+
+		self.label_MDX_bleed_31 = wx.StaticText( sbSizer21.GetStaticBox(), wx.ID_ANY, _(u"Remove Music"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_bleed_3" )
+		self.label_MDX_bleed_31.Wrap( -1 )
+
+		fgSizer911.Add( self.label_MDX_bleed_31, 0, wx.TOP, 5 )
+
+		bleed_51Choices = []
+		self.bleed_51 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_51Choices, 0 )
+		fgSizer911.Add( self.bleed_51, 0, 0, 5 )
+
+		bleed_61Choices = []
+		self.bleed_61 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_61Choices, 0 )
+		fgSizer911.Add( self.bleed_61, 0, wx.LEFT|wx.RIGHT, 10 )
+
+		self.icon51 = wx.StaticBitmap( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+		fgSizer911.Add( self.icon51, 0, wx.TOP, 3 )
+
+
+		sbSizer21.Add( fgSizer911, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT, 5 )
+
+
+		box1.Add( sbSizer21, 1, wx.EXPAND, 5 )
+
+		sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{  Options  }") ), wx.VERTICAL )
 
 		fgSizer8 = wx.FlexGridSizer( 0, 3, 0, 0 )
 		fgSizer8.SetFlexibleDirection( wx.BOTH )
@@ -251,7 +294,7 @@ class Form ( wx.Frame ):
 
 		box1.Add( sbSizer3, 0, wx.ALL|wx.EXPAND, 5 )
 
-		sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"     BONUS     ") ), wx.VERTICAL )
+		sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{  BONUS  }") ), wx.VERTICAL )
 
 		fgSizer9 = wx.FlexGridSizer( 0, 4, 0, 20 )
 		fgSizer9.SetFlexibleDirection( wx.BOTH )
@@ -346,14 +389,14 @@ class Form ( wx.Frame ):
 
 		bSizer61 = wx.BoxSizer( wx.HORIZONTAL )
 
-		self.GPU = wx.StaticText( self.Tab_Progress, wx.ID_ANY, _(u"Using GPU (0 Go) ►"), wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
+		self.GPU = wx.StaticText( self.Tab_Progress, wx.ID_ANY, _(u"Using GPU (0 GB) ►"), wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
 		self.GPU.Wrap( -1 )
 
 		self.GPU.SetFont( wx.Font( 12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, "Tahoma" ) )
 
 		bSizer61.Add( self.GPU, 0, wx.BOTTOM|wx.LEFT|wx.TOP, 11 )
 
-		self.GPU_info = wx.StaticText( self.Tab_Progress, wx.ID_ANY, _(u"0 Go - 0 %"), wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.GPU_info = wx.StaticText( self.Tab_Progress, wx.ID_ANY, _(u"0 GB - 0 %"), wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
 		self.GPU_info.Wrap( -1 )
 
 		bSizer61.Add( self.GPU_info, 0, wx.BOTTOM|wx.EXPAND|wx.TOP, 11 )
@@ -415,10 +458,13 @@ class Form ( wx.Frame ):
 		self.Bind( wx.EVT_CLOSE, self.Form_OnClose )
 		self.Tabs.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.Tab_Changed )
 		self.label_input.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.Btn_input_Path.Bind( wx.EVT_BUTTON, self.Btn_input_Path_OnClick )
+		self.Btn_input_File.Bind( wx.EVT_BUTTON, self.Btn_input_File_OnClick )
 		self.input_path.Bind( wx.EVT_TEXT, self.input_path_OnChange )
 		self.label_normalize.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.normalize.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.label_output.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.Btn_output_Path.Bind( wx.EVT_BUTTON, self.Btn_output_Path_OnClick )
 		self.output_path.Bind( wx.EVT_TEXT, self.output_path_OnChange )
 		self.label_format.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.output_format.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
@@ -434,12 +480,12 @@ class Form ( wx.Frame ):
 		self.label_MDX_bleed_1.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.bleed_1.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.bleed_2.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
-		self.label_MDX_bleed_2.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.bleed_3.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
-		self.bleed_4.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
-		self.label_MDX_bleed_3.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.bleed_5.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
-		self.bleed_6.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.label_MDX_bleed_21.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.bleed_31.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.bleed_41.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.label_MDX_bleed_31.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.bleed_51.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.bleed_61.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.label_speed.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.speed.Bind( wx.EVT_SLIDER, self.speed_OnSlider )
 		self.label_chunks.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
@@ -468,6 +514,12 @@ class Form ( wx.Frame ):
 	def Show_Help( self, event ):
 		pass
 
+	def Btn_input_Path_OnClick( self, event ):
+		pass
+
+	def Btn_input_File_OnClick( self, event ):
+		pass
+
 	def input_path_OnChange( self, event ):
 		pass
 
@@ -475,6 +527,9 @@ class Form ( wx.Frame ):
 	def ComboBox_OnKeyDown( self, event ):
 		pass
 
+
+	def Btn_output_Path_OnClick( self, event ):
+		pass
 
 	def output_path_OnChange( self, event ):
 		pass

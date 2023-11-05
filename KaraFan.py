@@ -1,8 +1,9 @@
-#! python3.10
+#! python3.11
 
 #   MIT License - Copyright (c) 2023 - Captain FLAM
 #
 #   https://github.com/Captain-FLAM/KaraFan
+
 
 # KaraFan works on your PC !!
 

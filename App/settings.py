@@ -13,7 +13,7 @@ Defaults = {
 		'output': "Music",
 		'output_format': "FLAC",
 		'silent': "-50",
-		'infra_bass': True,
+		'infra_bass': False,
 	},
 	'PROCESS': {
 		'music_1': "----",
@@ -33,9 +33,8 @@ Defaults = {
 	},
 	'BONUS': {
 		'KILL_on_END': False,
-		'DEBUG': False,
-		'GOD_MODE': False,
-		'TEST_MODE': False,
+		'DEBUG': True,
+		'GOD_MODE': True,
 		'large_gpu': False,
 	},
 }
@@ -122,7 +121,7 @@ def Load(Gdrive, isColab):
 	file = os.path.join(Gdrive, "KaraFan_user", "Config_Colab.ini" if isColab else "Config_PC.ini")
 	
 	if not os.path.isfile(file):
-		Save(Gdrive, isColab, Defaults)
+		config = Save(Gdrive, isColab, Defaults)
 	else:
 		config = configparser.ConfigParser()
 		config.optionxform = lambda option: option  # To preserve case of Keys !!
@@ -158,3 +157,4 @@ def Save(Gdrive, isColab, config_dict):
 	with open(file, 'w', encoding='utf-8') as config_file:
 		config.write(config_file)
 	
+	return config

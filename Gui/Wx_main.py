@@ -338,7 +338,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 	# Update GPU info
 	def OnTimer(self, event):
 		GPU = GPUtil.getGPUs()[0]
-		self.GPU_info.SetLabel(f"{GPU.memoryUsed:.2f} GB - ({GPU.memoryUtil * 100:.0f}%) - Load : {GPU.load * 100:.0f} % - Temp : {GPU.temperature:.0f} °C")
+		self.GPU_info.SetLabel(f"{GPU.memoryUsed / 1024:.2f} GB - ({GPU.memoryUtil * 100:.0f}%) - Load : {GPU.load * 100:.0f} % - Temp : {GPU.temperature:.0f} °C")
 
 	def Show_Help(self, event):
 		label = event.GetEventObject().GetName()

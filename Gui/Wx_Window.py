@@ -154,10 +154,10 @@ class Form ( wx.Frame ):
 		fgSizer7.SetFlexibleDirection( wx.BOTH )
 		fgSizer7.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		self.label_MDX_music1 = wx.StaticText( sbSizer2.GetStaticBox(), wx.ID_ANY, _(u"Filter Music"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_music" )
-		self.label_MDX_music1.Wrap( -1 )
+		self.label_MDX_music = wx.StaticText( sbSizer2.GetStaticBox(), wx.ID_ANY, _(u"Filter Music"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_music" )
+		self.label_MDX_music.Wrap( -1 )
 
-		fgSizer7.Add( self.label_MDX_music1, 0, wx.TOP, 5 )
+		fgSizer7.Add( self.label_MDX_music, 0, wx.TOP, 5 )
 
 		music_1Choices = []
 		self.music_1 = wx.ComboBox( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), music_1Choices, 0 )
@@ -214,37 +214,37 @@ class Form ( wx.Frame ):
 		fgSizer911.SetFlexibleDirection( wx.BOTH )
 		fgSizer911.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		self.label_MDX_bleed_21 = wx.StaticText( sbSizer21.GetStaticBox(), wx.ID_ANY, _(u"Vocal Bleedings"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_bleed_2" )
-		self.label_MDX_bleed_21.Wrap( -1 )
+		self.label_MDX_bleed_2 = wx.StaticText( sbSizer21.GetStaticBox(), wx.ID_ANY, _(u"Vocal Bleedings"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_bleed_2" )
+		self.label_MDX_bleed_2.Wrap( -1 )
 
-		fgSizer911.Add( self.label_MDX_bleed_21, 0, wx.TOP, 5 )
+		fgSizer911.Add( self.label_MDX_bleed_2, 0, wx.TOP, 5 )
 
-		bleed_31Choices = []
-		self.bleed_31 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_31Choices, 0 )
-		fgSizer911.Add( self.bleed_31, 0, wx.BOTTOM, 5 )
+		bleed_3Choices = []
+		self.bleed_3 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_3Choices, 0 )
+		fgSizer911.Add( self.bleed_3, 0, wx.BOTTOM, 5 )
 
-		bleed_41Choices = []
-		self.bleed_41 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_41Choices, 0 )
-		fgSizer911.Add( self.bleed_41, 0, wx.LEFT|wx.RIGHT, 10 )
+		bleed_4Choices = []
+		self.bleed_4 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_4Choices, 0 )
+		fgSizer911.Add( self.bleed_4, 0, wx.LEFT|wx.RIGHT, 10 )
 
-		self.icon41 = wx.StaticBitmap( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
-		fgSizer911.Add( self.icon41, 0, wx.TOP, 3 )
+		self.icon4 = wx.StaticBitmap( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+		fgSizer911.Add( self.icon4, 0, wx.TOP, 3 )
 
-		self.label_MDX_bleed_31 = wx.StaticText( sbSizer21.GetStaticBox(), wx.ID_ANY, _(u"Remove Music"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_bleed_3" )
-		self.label_MDX_bleed_31.Wrap( -1 )
+		self.label_MDX_bleed_3 = wx.StaticText( sbSizer21.GetStaticBox(), wx.ID_ANY, _(u"Remove Music"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"MDX_bleed_3" )
+		self.label_MDX_bleed_3.Wrap( -1 )
 
-		fgSizer911.Add( self.label_MDX_bleed_31, 0, wx.TOP, 5 )
+		fgSizer911.Add( self.label_MDX_bleed_3, 0, wx.TOP, 5 )
 
-		bleed_51Choices = []
-		self.bleed_51 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_51Choices, 0 )
-		fgSizer911.Add( self.bleed_51, 0, 0, 5 )
+		bleed_5Choices = []
+		self.bleed_5 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_5Choices, 0 )
+		fgSizer911.Add( self.bleed_5, 0, 0, 5 )
 
-		bleed_61Choices = []
-		self.bleed_61 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_61Choices, 0 )
-		fgSizer911.Add( self.bleed_61, 0, wx.LEFT|wx.RIGHT, 10 )
+		bleed_6Choices = []
+		self.bleed_6 = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_6Choices, 0 )
+		fgSizer911.Add( self.bleed_6, 0, wx.LEFT|wx.RIGHT, 10 )
 
-		self.icon51 = wx.StaticBitmap( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
-		fgSizer911.Add( self.icon51, 0, wx.TOP, 3 )
+		self.icon5 = wx.StaticBitmap( sbSizer21.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+		fgSizer911.Add( self.icon5, 0, wx.TOP, 3 )
 
 
 		sbSizer21.Add( fgSizer911, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT, 5 )
@@ -471,7 +471,7 @@ class Form ( wx.Frame ):
 		self.label_silent.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.silent.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.label_infra_bass.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.label_MDX_music1.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.label_MDX_music.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.music_1.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.music_2.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.label_MDX_vocal.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
@@ -480,12 +480,12 @@ class Form ( wx.Frame ):
 		self.label_MDX_bleed_1.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.bleed_1.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.bleed_2.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
-		self.label_MDX_bleed_21.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.bleed_31.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
-		self.bleed_41.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
-		self.label_MDX_bleed_31.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.bleed_51.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
-		self.bleed_61.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.label_MDX_bleed_2.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.bleed_3.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.bleed_4.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.label_MDX_bleed_3.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.bleed_5.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.bleed_6.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.label_speed.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.speed.Bind( wx.EVT_SLIDER, self.speed_OnSlider )
 		self.label_chunks.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )

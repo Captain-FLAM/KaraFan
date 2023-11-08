@@ -3,9 +3,9 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, csv, GPUtil, torch, threading, wx
+import os, csv, torch, threading, wx
 
-import App.settings, App.inference, App.sys_info, Gui.Wx_Progress, Gui.Wx_Window
+import App.settings, App.inference, App.sys_info, Gui.GPUtil, Gui.Wx_Progress, Gui.Wx_Window
 
 class KaraFanForm(Gui.Wx_Window.Form):
 
@@ -30,7 +30,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.SetTitle("KaraFan - " + Version)
 		self.SetIcon(wx.Icon(icon_path + "KaraFan.ico", wx.BITMAP_TYPE_ICO))
 
-		GPU = GPUtil.getGPUs()
+		GPU = Gui.GPUtil.getGPUs()
 		if GPU and torch.cuda.is_available():
 			self.GPU.SetForegroundColour(wx.Colour(0, 179, 45))
 			self.GPU.SetLabel(f"Using GPU ({(GPU[0].memoryTotal / 1024):.0f} GB) ►")  # Total amount of VRAM on the GPU (GB)
@@ -158,9 +158,6 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		# Update readouts text
 		self.speed_OnSlider(None)
 		self.chunk_size_OnSlider(None)
-
-		# DEBUG : Auto-start processing on execution
-		if self.params['Auto_Start']:  self.Btn_Start_OnClick(None)
 
 	#*********************
 	#**  Buttons Click  **
@@ -337,8 +334,9 @@ class KaraFanForm(Gui.Wx_Window.Form):
 
 	# Update GPU info
 	def OnTimer(self, event):
-		GPU = GPUtil.getGPUs()[0]
-		self.GPU_info.SetLabel(f"{GPU.memoryUsed / 1024:.2f} GB - ({GPU.memoryUtil * 100:.0f}%) - Load : {GPU.load * 100:.0f} % - Temp : {GPU.temperature:.0f} °C")
+		GPU = Gui.GPUtil.getStatus()[0]
+		if GPU:
+			self.GPU_info.SetLabel(f"{GPU.memoryUsed / 1024:.2f} GB - ({GPU.memoryUtil * 100:.0f}%) - Load : {GPU.load * 100:.0f} % - Temp : {GPU.temperature:.0f} °C")
 
 	def Show_Help(self, event):
 		label = event.GetEventObject().GetName()

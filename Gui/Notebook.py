@@ -453,6 +453,3 @@ function show_titles() {\
 	if config['PROCESS']['bleed_4'] in vocals:		bleed_4.value = config['PROCESS']['bleed_4']
 	if config['PROCESS']['bleed_5'] in instru:		bleed_5.value = config['PROCESS']['bleed_5']
 	if config['PROCESS']['bleed_6'] in instru:		bleed_6.value = config['PROCESS']['bleed_6']
-
-	# DEBUG : Auto-start processing on execution
-	if params['Auto_Start']:  on_Btn_Start_clicked(None)

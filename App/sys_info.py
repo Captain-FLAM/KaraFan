@@ -4,6 +4,7 @@
 #   https://github.com/Captain-FLAM/KaraFan
 
 import os, sys, subprocess, json, regex
+from distutils import spawn
 
 def Get(font_size):
 
@@ -80,8 +81,18 @@ def Get(font_size):
 
 	html += "<br><br>****    GPU Informations    ****<br><br>"
 	try:
+		if platform.system() == "Windows":
+			# If the platform is Windows and nvidia-smi 
+			# could not be found from the environment path, 
+			# try to find it from system drive with default installation path
+			nvidia_smi = spawn.find_executable('nvidia-smi')
+			if nvidia_smi is None:
+				nvidia_smi = "%s\\Program Files\\NVIDIA Corporation\\NVSMI\\nvidia-smi.exe" % os.environ['systemdrive']
+		else:
+			nvidia_smi = "nvidia-smi"
+
 		# Nvidia details information
-		gpu_info = subprocess.check_output('nvidia-smi', shell=True, stderr=subprocess.STDOUT).decode('utf-8')
+		gpu_info = subprocess.check_output(nvidia_smi, shell=True, stderr=subprocess.STDOUT).decode('utf-8')
 		
 		html += '<div style="line-height: 1; ">'+ gpu_info +'</div><br>'
 

@@ -8,7 +8,7 @@
 			"name": "KaraFan on PC",
 			"type": "python",
 			"request": "launch",
-			"program": "${workspaceFolder}/KaraFan.py",
+			"program": "${workspaceFolder}/KaraFan.pyw",
 			// "console": "integratedTerminal",
 			"console": "internalConsole",
 			"justMyCode": true

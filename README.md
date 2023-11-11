@@ -25,8 +25,8 @@ click here to send me an email, I'll give you my wallet address :
 
 [![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)](mailto:Captain_FLAM@gmx.fr) 😍
 
-You can reach me by [email](https://github.com/Captain-FLAM) or Join all of us on the [**Dedicated channel on Discord**](https://discord.com/channels/708579735583588363/1162265179271200820) ![Discord](images/discord.svg)  
-(prior : [Discord Invitation](https://discord.gg/eXdEYwU2) on the "Audio Separation" server)
+You can reach me by [**email**](https://github.com/Captain-FLAM) or Join all of us on the [**Dedicated channel on Discord**](https://discord.com/channels/708579735583588363/1162265179271200820) ![Discord](images/discord.svg)  
+(prior to : [**Discord Invitation**](https://discord.gg/eXdEYwU2) on the "Audio Separation" server)
 
 # 🚀 INSTALL
 
@@ -150,7 +150,7 @@ All these wonderful people without whom this project would not have been possibl
 
 ✔️ [Jarredou](https://github.com/jarredou/MVSEP-MDX23-Colab_v2/) - For his multiples **Colab** sharing, for his really helpful hand on Discord, and from whom **I've stolen ALL the code** of inference.py to create my own GUI with it !! 👼
 
-✔️ [Deton 24](https://github.com/deton24/MVSEP-MDX23-Colab_v2.1) - For helping hand and for his very BIG documentation about Music Separation, that you can find [**HERE ! Read it !!**](https://docs.google.com/document/d/17fjNvJzj8ZGSer7c7OFe_CNfUKbAxEh_OBv94ZdRG5c/edit)  
+✔️ [Deton 24](https://github.com/deton24/MVSEP-MDX23-Colab_v2.1) - For helping hand and for his **very BIG documentation**, that you can find [**HERE ! Read it !!**](https://docs.google.com/document/d/17fjNvJzj8ZGSer7c7OFe_CNfUKbAxEh_OBv94ZdRG5c/edit)  
 ✔️ [Bas Curtiz](https://www.youtube.com/@bascurtiz) - For his Youtube video : [Tips &amp; Tricks - Inverting](https://www.youtube.com/watch?v=FBMOWcDDxIs) that confort my FIRST intuition (after thousands tests 😛) about the importance of cascading the models to improve the quality of the results.
 
 ✔️ [Anjok07](https://github.com/Anjok07) & Aufr33 - for having trained **all the MDX-Net AI models** that KaraFan uses.  

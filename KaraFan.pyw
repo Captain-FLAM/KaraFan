@@ -41,7 +41,11 @@ def error_handler(exception, value, traceback):
 sys.excepthook = error_handler
 
 frame = None
-app = wx.App(False, useBestVisual=True)
-frame = Gui.wx_Main.KaraFanForm(None, {'Gdrive': Gdrive, 'Project': Project, 'isColab': False})
-frame.Show()
-app.MainLoop()
+try:
+	app = wx.App(False, useBestVisual=True)
+	frame = Gui.wx_Main.KaraFanForm(None, {'Gdrive': Gdrive, 'Project': Project, 'isColab': False})
+	frame.Show()
+	app.MainLoop()
+	
+except Exception as e:
+	Gui.wx_Error.Report(f"{e.__class__.__name__} : {e}", sys.exc_info()[2], frame)

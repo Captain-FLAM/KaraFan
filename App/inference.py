@@ -333,7 +333,7 @@ class MusicSeparationModel:
 		
 		print("Go with : <b>" + name + "</b>")
 
-		original_audio2, self.sample_rate = App.audio_utils.Load_Audio(audio_file, 44100)  # Resample to 44.1 Khz
+		original_audio, self.sample_rate = App.audio_utils.Load_Audio(audio_file, 44100)  # Resample to 44.1 Khz
 		
 		# TODO : Get the cut-off frequency of the input audio
 		# self.original_cutoff = App.audio_utils.Find_Cut_OFF(original_audio, self.sample_rate)

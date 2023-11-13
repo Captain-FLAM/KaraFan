@@ -560,6 +560,7 @@ class MusicSeparationModel:
 			source = librosa.util.fix_length(source, size = audio.shape[-1])
 
 			del sources; mdx23 = mdx23.cpu(); del mdx23; gc.collect()
+
 			if  torch.cuda.is_available():
 				torch.cuda.empty_cache()
 
@@ -645,6 +646,8 @@ class MusicSeparationModel:
 					# vocals_mid = lr_filter(lr_filter((2 * vocals_mdxb2.T + 2 * vocals_SRS.T + vocals_demucs.T) / 5, 16500, 'lowpass', order=24), 12000, 'highpass', order=12)
 					# vocals_high = lr_filter((vocals_demucs.T + vocals_SRS.T) / 2, 16500, 'highpass', order=24)
 					# vocals = (vocals_low + vocals_mid + vocals_high) * 1.0074
+
+					del audio_SRS; del source_SRS; gc.collect()
 					
 				# 2 - Low SRS -> Bigshifts only 1 pass, else bad SDR
 				
@@ -678,6 +681,8 @@ class MusicSeparationModel:
 					source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
 
 					source = App.audio_utils.Make_Ensemble('Max', [source, source_SRS])
+
+					del audio_SRS; del source_SRS; gc.collect()
 
 			if not self.large_gpu:  self.Kill_MDX(name)
 

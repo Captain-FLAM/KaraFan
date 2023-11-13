@@ -7,7 +7,7 @@
 
 # KaraFan works on your PC !!
 
-import os, sys, subprocess, platform
+import os, gc, sys, subprocess, platform
 
 try:
 	import wx
@@ -46,6 +46,7 @@ try:
 	frame = Gui.wx_Main.KaraFanForm(None, {'Gdrive': Gdrive, 'Project': Project, 'isColab': False})
 	frame.Show()
 	app.MainLoop()
+	gc.collect()
 	
 except Exception as e:
 	Gui.wx_Error.Report(f"{e.__class__.__name__} : {e}", sys.exc_info()[2], frame)

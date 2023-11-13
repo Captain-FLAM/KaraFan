@@ -3,7 +3,7 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, csv
+import os, sys, csv
 
 import ipywidgets as widgets
 from IPython.display import display, HTML
@@ -18,20 +18,20 @@ def Run(params):
 	Project = params['Project']
 	isColab = params['isColab']
 
-	font = '16px'
+	font = '15px'
 	font_help = '15px'
 
 	width  = '670px'
 	height = '630px'
 	label_width = '135px'
 
-	if isColab:  height = '580px'; width = '700px'; label_width = '155px'
+	if isColab:  font = '16px'; height = '580px'; width = '700px'; label_width = '155px'
 
 	font_input = {'font_size': font}
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
 	checkbox_layout = {'width': '30px', 'max_width': '30px', 'margin': '5px 0 0 0' }
 	max_width = str(int(width.replace('px','')) - 18) + 'px'  # = border + Left and Right "panel_layout" padding
-	console_max_height = str(int(height.replace('px','')) - 20) + 'px'
+	console_max_height = str(int(height.replace('px','')) - 22) + 'px'
 
 	# This CSS is the style for HTML elements for BOTH : PC and Colab
 	# BUG on Colab: "style={'font_size':'16px'}" as widgets param doesn't work !!
@@ -135,7 +135,7 @@ def Run(params):
 			layout = panel_layout,
 			children = [
 				widgets.VBox([
-					widgets.HBox([ Label("Input X file or PATH", 'input'), input_path, Label("&nbsp; Normalize &nbsp;", 'normalize', short=True), normalize ]),
+					widgets.HBox([ Label("Input X file or Path", 'input'), input_path, Label("&nbsp; Normalize &nbsp;", 'normalize', short=True), normalize ]),
 					widgets.HBox([ Label("Output PATH", 'output'), output_path ]),
 					widgets.HBox([
 						Label("Output Format", 'format'), output_format,
@@ -278,7 +278,14 @@ def Run(params):
 		# Start processing
 		if not Running:
 			Running = True
-			CONSOLE.clear_output();  App.inference.Process(params, config, wx = None)  # Tell "inference" to use ipywidgets
+			CONSOLE.clear_output()
+			try:
+				App.inference.Process(params, config, wxWindow = None)  # Tell "inference" to use ipywidgets
+			
+			except Exception as e:
+				Gui.Error.Report(f"{e.__class__.__name__} : {e}", sys.exc_info()[2])
+				App.inference.Exit()
+			
 			Running = False
 
 

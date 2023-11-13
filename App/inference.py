@@ -19,7 +19,7 @@ from ml_collections import ConfigDict
 
 from IPython.display import display, HTML
 
-import App.settings, App.audio_utils, App.compare, App.tfc_tdf
+import App.settings, App.audio_utils, App.compare, App.tfc_tdf, Gui.Error
 
 wxForm = None
 isColab = False
@@ -286,7 +286,8 @@ class MusicSeparationModel:
 		self.AudioFiles_Debug.append(3)
 		self.AudioFiles_Debug.append(4)
 		self.AudioFiles_Debug.append(5)
-		
+
+	
 	# ******************************************************************
 	# ****    This is the MAGIC RECIPE , the heart of KaraFan !!    ****
 	# ******************************************************************
@@ -309,7 +310,7 @@ class MusicSeparationModel:
 		# Set to False for fast testing (1 pass instead of 2 for denoising)
 		self.Denoise = True
 
-		# Save intermediate files Example
+		# You can copy this line in between steps : Save intermediate files
 		# self.Save_Audio("X - Music SUB", normalized - vocal_ensemble)
 
 		#*************************************************
@@ -332,7 +333,7 @@ class MusicSeparationModel:
 		
 		print("Go with : <b>" + name + "</b>")
 
-		original_audio, self.sample_rate = App.audio_utils.Load_Audio(audio_file, 44100)  # Resample to 44.1 Khz
+		original_audio2, self.sample_rate = App.audio_utils.Load_Audio(audio_file, 44100)  # Resample to 44.1 Khz
 		
 		# TODO : Get the cut-off frequency of the input audio
 		# self.original_cutoff = App.audio_utils.Find_Cut_OFF(original_audio, self.sample_rate)
@@ -895,12 +896,12 @@ class CustomPrint:
 		pass
 
 
-def Process(params, config, wx):
+def Process(params, config, wxWindow):
 
 	global wxForm, isColab, KILL_on_END
 
 	# Only used for Exit()
-	wxForm		= wx
+	wxForm		= wxWindow
 	isColab		= params['isColab']
 	KILL_on_END	= config['BONUS']['KILL_on_END']
 
@@ -947,7 +948,7 @@ def Process(params, config, wx):
 
 def Exit():
 
-	global wxForm
+	global wxForm, isColab, KILL_on_END
 
 	# Free & Release GPU memory
 	if torch.cuda.is_available():
@@ -956,7 +957,7 @@ def Exit():
 
 	gc.collect()
 
-	if not wxForm is None:  wxForm.timer.Stop()
+	if not wxForm is None and not wxForm.timer is None:  wxForm.timer.Stop()
 	
 	if KILL_on_END:
 		# This trick is copyrigthed by "Captain FLAM" (2023) - MIT License

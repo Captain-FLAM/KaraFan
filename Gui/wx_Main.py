@@ -3,14 +3,14 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, csv, torch, threading, wx
+import os, sys, csv, torch, threading, wx
 
-import App.settings, App.inference, App.sys_info, Gui.GPUtil, Gui.Wx_Progress, Gui.Wx_Window
+import App.settings, App.inference, App.sys_info, Gui.wx_GPUtil, Gui.wx_Progress, Gui.wx_Window
 
-class KaraFanForm(Gui.Wx_Window.Form):
+class KaraFanForm(Gui.wx_Window.Form):
 
 	def __init__(self, parent, params):
-		Gui.Wx_Window.Form.__init__(self, parent)
+		Gui.wx_Window.Form.__init__(self, parent)
 
 		self.params = params
 		self.Gdrive = params['Gdrive']
@@ -30,7 +30,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.SetTitle("KaraFan - " + Version)
 		self.SetIcon(wx.Icon(icon_path + "KaraFan.ico", wx.BITMAP_TYPE_ICO))
 
-		GPU = Gui.GPUtil.getGPUs()
+		GPU = Gui.wx_GPUtil.getGPUs()
 		if GPU and torch.cuda.is_available():
 			self.GPU.SetForegroundColour(wx.Colour(0, 179, 45))
 			self.GPU.SetLabel(f"Using GPU ({(GPU[0].memoryTotal / 1024):.0f} GB) ►")  # Total amount of VRAM on the GPU (GB)
@@ -202,7 +202,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 		self.Tabs.ChangeSelection(1)
 		
 		self.params['CONSOLE']	= self.CONSOLE
-		self.params['Progress']	= Gui.Wx_Progress.Bar(self)  # Pass this wxForm to the Class for Progress Bar
+		self.params['Progress']	= Gui.wx_Progress.Bar(self)  # Pass this wxForm to the Class for Progress Bar
 
 		# Start processing
 		if self.timer is not None:  self.timer.Start(1000)  # Interval : 1 sec.
@@ -214,8 +214,14 @@ class KaraFanForm(Gui.Wx_Window.Form):
 			self.thread.start()
 
 	def Process(self):
-		App.inference.Process(self.params, self.config, wx = self)  # Pass to "inference" this wxForm object
-	
+		try:
+			App.inference.Process(self.params, self.config, wxWindow = self)  # Pass to "inference" this wxForm object
+
+		except Exception as e:
+			if not self.timer is None:  self.timer.Stop()
+			
+			Gui.wx_Error.Report(f"{e.__class__.__name__} : {e}", sys.exc_info()[2], self)
+
 
 	def Btn_SysInfo_OnClick(self, event):
 		self.sys_info.SetPage("")
@@ -334,7 +340,7 @@ class KaraFanForm(Gui.Wx_Window.Form):
 
 	# Update GPU info
 	def OnTimer(self, event):
-		GPU = Gui.GPUtil.getStatus()[0]
+		GPU = Gui.wx_GPUtil.getStatus()[0]
 		if GPU:
 			self.GPU_info.SetLabel(f"{GPU.memoryUsed / 1024:.2f} GB - ({GPU.memoryUtil * 100:.0f}%) - Load : {GPU.load * 100:.0f} % - Temp : {GPU.temperature:.0f} °C")
 

@@ -1,52 +1,24 @@
-#! python3.11
 
 #   MIT License - Copyright (c) 2023 - Captain FLAM
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
+import wx, wx.adv, traceback
 
-# KaraFan works on your PC !!
+def Report(exception, stack, object):
+    
+	text = ""
+	for line in traceback.format_tb(stack):  text += line + "\n"
+	text += exception
 
-import os, sys, subprocess, platform, traceback
-
-try:
-	import wx, wx.adv
-except:
-	if platform.system() == "Windows":
-		subprocess.run(["cmd", "/c", "@cls & @echo. & @echo wxPython is not installed ! & echo. & echo Run 'Setup.py' first !! & echo. & pause"], shell = True)
-	else:
-		subprocess.run(["bash", "-c", 'clear ; echo "wxPython is not installed !" ; echo ; echo "Run \'Setup.py\' first !!" ; echo ; read -n 1 -s -r -p "Press any key to continue..."'], shell = True)
-
-Gdrive  = os.getcwd()
-Project = os.path.join(Gdrive, "KaraFan")
-
-# Are we in the Project directory ?
-if not os.path.exists(Project):
-	Gdrive  = os.path.dirname(Gdrive)  # Go to Parent directory
-	Project = os.path.join(Gdrive, "KaraFan")
-	os.chdir(Gdrive)
-
-# Mandatory to import Gui & App modules
-sys.path.insert(0, Project)
-
-from Gui import wx_Main
-
-try:
-	app = wx.App(False)
-	frame = wx_Main.KaraFanForm(None, {'Gdrive': Gdrive, 'Project': Project, 'isColab': False})
-	frame.Show()
-	app.MainLoop()
-
-except Exception as e:
 	# Open a modal dialog box to display the errors
-	dialog = wx.App(False)
-	frame  = wx.Frame(None, wx.ID_ANY, "KaraFan - Error", size = (800, 600))
-	frame.Center()
-	frame.SetBackgroundColour(wx.Colour(255, 255, 255))
-	frame.SetIcon(wx.Icon(os.path.join(Project, "images", "KaraFan.ico")))
+	dialog = wx.Dialog(None, wx.ID_ANY, "KaraFan - Error", size = (800, 600), style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+	dialog.Center()
+	dialog.SetBackgroundColour(wx.Colour(255, 255, 255))
+	dialog.SetIcon(wx.ArtProvider.GetIcon(wx.ART_ERROR, wx.ART_OTHER, (48, 48)))
 
 	# Create a panel and a sizer
-	panel = wx.Panel(frame, wx.ID_ANY)
+	panel = wx.Panel(dialog, wx.ID_ANY)
 	sizer = wx.BoxSizer(wx.VERTICAL)
 	sizer_links = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -59,21 +31,15 @@ except Exception as e:
 	sizer.Add(line, 0, wx.ALL | wx.EXPAND, 5)
 
 	# Error message
-	error = wx.StaticText(panel, wx.ID_ANY, f"{e.__class__.__name__} : {e.__str__()}", style = wx.ALIGN_CENTER)
-	error.SetFont(wx.Font(14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-	sizer.Add(error, 0, wx.ALL | wx.EXPAND, 5)
+	message = wx.StaticText(panel, wx.ID_ANY, exception, style = wx.ALIGN_CENTER)
+	message.SetFont(wx.Font(14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+	sizer.Add(message, 0, wx.ALL | wx.EXPAND, 5)
 
 	line = wx.StaticLine(panel, wx.ID_ANY, size = (800, 2), style = wx.LI_HORIZONTAL)
 	sizer.Add(line, 0, wx.ALL | wx.EXPAND, 5)
 	
-	# Stack trace
-	text = ""
-	for line in traceback.format_tb(e.__traceback__):
-		text += line + "\n"
-
-	text += f"\n{e.__class__.__name__} : {e.__str__()}"
-
-	stack = wx.StaticText(panel, wx.ID_ANY, text, style = wx.ALIGN_LEFT)
+	# Stack trace (Selectable)
+	stack = wx.TextCtrl(panel, wx.ID_ANY, text, style = wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_DONTWRAP)
 	stack.SetFont(wx.Font(12, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 	sizer.Add(stack, 1, wx.ALL | wx.EXPAND, 5)
 
@@ -104,11 +70,14 @@ except Exception as e:
 
 	# Close
 	button = wx.Button(panel, wx.ID_ANY, "OK")
-	button.Bind(wx.EVT_BUTTON, lambda event: frame.Close())
+	button.Bind(wx.EVT_BUTTON, lambda event: dialog.Close())
 	sizer.Add(button, 0, wx.ALL | wx.ALIGN_CENTER, 5)
 	button.SetFocus()
 
-	# Set the sizer and show the frame
+	# Set the sizer and show the dialog
 	panel.SetSizer(sizer)
-	frame.Show()
-	dialog.MainLoop()
+	dialog.ShowModal()
+	dialog.Destroy()
+
+	# Check if object has a Close() method
+	if object != None and hasattr(object, "Close"):  object.Close()

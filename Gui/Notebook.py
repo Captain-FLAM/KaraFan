@@ -412,7 +412,7 @@ def Run(params):
 			if path != output_path.value:  output_path.value = path
 		
 	def on_high_pass_change(change):
-		pass_readout.value = f"&nbsp;► {high_pass.value * 5} Hz - {14 + (low_pass.value * 0.5):.1f} KHz"
+		pass_readout.value = f"&nbsp;{high_pass.value * 5} Hz - {14 + (low_pass.value * 0.5):.1f} KHz"
 
 	def on_low_pass_change(change):
 		on_high_pass_change(None)

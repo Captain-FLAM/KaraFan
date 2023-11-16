@@ -152,12 +152,12 @@ def Run(params):
 					widgets.HBox([ Label("Filter Music", 'MDX_music'),		music_1, music_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
 					widgets.HBox([ Label("Extract Vocals", 'MDX_vocal'),	vocal_1, vocal_2, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
 					widgets.HBox([ Label("Music Bleedings", 'MDX_bleed_1'), bleed_1, bleed_2, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("Vocals Pass Band", 'vocal_pass'), high_pass, widgets.HTML(' &nbsp;'), low_pass, pass_readout ]),
 				]),
 				separator,
 				widgets.VBox([
 					widgets.HBox([ Label("Vocal Bleedings", 'MDX_bleed_2'), bleed_3, bleed_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
 					widgets.HBox([ Label("Remove Music", 'MDX_bleed_3'),	bleed_5, bleed_6, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
-					widgets.HBox([ Label("Vocals Pass Band", 'vocal_pass'), high_pass, widgets.HTML(' &nbsp;'), low_pass, pass_readout ]),
 				]),
 				separator,
 				widgets.VBox([

@@ -21,12 +21,12 @@ class Bar:
 	def reset(self, total, unit):
 		self.value = 0
 		self.total = total
-		self.unit = unit
+		self.unit  = unit
 		self.units_time = time.time()
 
 		elapsed_time = time.time() - self.start_time
-		self.progress_bar.value  = 0
 		self.progress_bar.max = total
+		self.progress_bar.value = 0
 		self.progress_txt.value = f"[{time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}] - &nbsp;&nbsp;0% - 0/{self.total} - 0.00 sec./ {self.unit}"
 		
 	def update(self, increment = 1):

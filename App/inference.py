@@ -145,6 +145,8 @@ class MusicSeparationModel:
 		# Integers
 		self.normalize			= int(config['AUDIO']['normalize'])
 		self.silent				= int(config['AUDIO']['silent'])
+		self.high_pass			= int(config['PROCESS']['high_pass']) * 5				# from 0 to 100 Hz
+		self.low_pass			= 14000 + (int(config['PROCESS']['low_pass']) * 500)	# from 14 Khz to 22 Khz
 		self.chunk_size			= int(config['OPTIONS']['chunk_size'])
 		# Booleans
 		self.infra_bass			= config['AUDIO']['infra_bass']
@@ -333,7 +335,12 @@ class MusicSeparationModel:
 		
 		print("Go with : <b>" + name + "</b>")
 
-		original_audio, self.sample_rate = App.audio_utils.Load_Audio(audio_file, 44100)  # Resample to 44.1 Khz
+		# Check if user's file is Bad encoded, then Resample to 44.1 Khz if needed
+		original_audio, self.sample_rate = App.audio_utils.Load_Audio(audio_file, 44100, self.ffmpeg, self.song_output_path)
+
+		if original_audio is None:
+			print("► Error : Can't correct your audio file !")  # Too much Corrupted file !
+			return
 		
 		# TODO : Get the cut-off frequency of the input audio
 		# self.original_cutoff = App.audio_utils.Find_Cut_OFF(original_audio, self.sample_rate)
@@ -343,11 +350,17 @@ class MusicSeparationModel:
 		print(f"{original_audio.shape[1] // 44100} sec. - Rate : {self.sample_rate} Hz / Cut-OFF : {self.original_cutoff} Hz")
 		
 		# ****  START PROCESSING  ****
+
+		# Automatic detection of normalization level (Apply -1dB if needed to avoid clipping)
+		# Cancel if inferior to 5% of the song duration
+		if self.normalize == -1:
+			if App.audio_utils.Clipping_Percent(original_audio) < 0.05:  self.normalize = 0
+
 		if self.normalize < 0:
 			normalized = self.Check_Already_Processed(0)
 
 			if normalized is None:
-				print("► Normalizing audio")
+				print(f"► Normalizing audio : -{self.normalize} dB")
 				normalized = App.audio_utils.Normalize(original_audio, self.normalize)
 
 				self.Save_Audio(0, normalized)
@@ -426,13 +439,26 @@ class MusicSeparationModel:
 
 			del vocal_ensemble; del bleed_extracts; del bleed_ensemble; gc.collect()
 
-		# 4 - Get Music by subtracting Vocals from original audio (for instrumental not captured by MDX models)
+		# 4 - Apply High Pass & Low Pass filters on Vocals
+
+		print(f"► Apply High {self.high_pass} Hz & Low {self.low_pass /1000:.1f} KHz Pass on Vocals")
+
+		if self.high_pass > 0:
+			vocal_final = App.audio_utils.Pass_filter('highpass', self.high_pass, vocal_final, self.sample_rate, order = 16)
+
+		if self.low_pass < 22000:
+			if self.low_pass > 17000:
+				vocal_final = App.audio_utils.Pass_filter('lowpass', self.low_pass, vocal_final, self.sample_rate, order = 16)
+			else:
+				vocal_final = App.audio_utils.Pass_filter('lowpass', self.low_pass, vocal_final, self.sample_rate, order = 8)
+		
+		# 5 - Get Music by subtracting Vocals from original audio (for instrumental not captured by MDX models)
 		
 		print("► Get Music by subtracting Vocals from original audio")
 
 		music_sub = normalized - vocal_final
 
-		# 5 - Pass Music SUB through Filters
+		# 6 - Pass Music SUB through Filters
 		
 		if len(self.models['bleed_vocal']) == 0:
 			music_final = music_sub
@@ -566,7 +592,7 @@ class MusicSeparationModel:
 
 		else:
 			if not self.large_gpu:
-				# print(f'Large GPU is disabled : Loading model "{name}" now...')
+				# print(f'Loading model "{name}" ...')
 				self.Load_MDX(model)
 			
 			mdx_model = self.MDX[name]['model']
@@ -885,9 +911,10 @@ class CustomPrint:
 				if '<div' in text:
 					text = regex.sub(r'<div.*color:(.*);.*?>(.*)</div>', r'<font color="\1">\2</font>', text) # Convert to <font color="...">
 
-				text = regex.sub(r'\n', '<br>', text)  # Convert \n to <br>
+				text = text.rstrip('\n')				# Remove \n at the end
+				text = regex.sub(r'\n', '<br>', text)	# Convert \n to <br>
 
-				self.CONSOLE.AppendToPage(text)
+				self.CONSOLE.AppendToPage('<p>'+ text +'</p>')
 				self.CONSOLE.Update()
 				self.CONSOLE.ScrollLines(1)
 		else:

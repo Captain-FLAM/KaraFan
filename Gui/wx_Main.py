@@ -3,14 +3,32 @@
 #
 #   https://github.com/Captain-FLAM/KaraFan
 
-import os, sys, csv, torch, threading, wx
+import os, sys, csv, platform, threading, wx
 
-import App.settings, App.inference, App.sys_info, Gui.wx_GPUtil, Gui.wx_Progress, Gui.wx_Window
+import App.settings, Gui.wx_GPUtil, Gui.wx_Progress, Gui.wx_Window
+
+# Change Font for ALL controls in a wxForm (Recursive)
+def Set_Fonts(parent, font):
+
+	for control in parent.GetChildren():
+
+		if hasattr(control, "SetFont") and control.GetFont().GetFaceName() != "Tahoma" and not isinstance(control, wx.html.HtmlWindow):
+			control.SetFont(font)
+
+		# Recursive
+		if isinstance(control, wx.Notebook) or isinstance(control, wx.NotebookPage) \
+		or isinstance(control, wx.BoxSizer) or isinstance(control, wx.StaticBox) \
+		or isinstance(control, wx.FlexGridSizer) or isinstance(control, wx.WrapSizer):
+			Set_Fonts(control, font)
 
 class KaraFanForm(Gui.wx_Window.Form):
 
 	def __init__(self, parent, params):
 		Gui.wx_Window.Form.__init__(self, parent)
+
+		# Set fonts for ALL controls
+		if platform.system() == "Windows":
+			Set_Fonts(self, wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Segoe UI"))
 
 		self.params = params
 		self.Gdrive = params['Gdrive']
@@ -31,7 +49,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.SetIcon(wx.Icon(icon_path + "KaraFan.ico", wx.BITMAP_TYPE_ICO))
 
 		GPU = Gui.wx_GPUtil.getGPUs()
-		if GPU and torch.cuda.is_available():
+		if GPU:
 			self.GPU.SetForegroundColour(wx.Colour(0, 179, 45))
 			self.GPU.SetLabel(f"Using GPU ({(GPU[0].memoryTotal / 1024):.0f} GB) ►")  # Total amount of VRAM on the GPU (GB)
 
@@ -132,6 +150,9 @@ class KaraFanForm(Gui.wx_Window.Form):
 		if self.config['PROCESS']['bleed_6'] in instru:		self.bleed_6.SetStringSelection(self.config['PROCESS']['bleed_6'])
 		else: self.bleed_6.SetSelection(0)
 
+		self.high_pass.Value = int(self.config['PROCESS']['high_pass'])
+		self.low_pass.Value  = int(self.config['PROCESS']['low_pass'])
+
 		# OPTIONS
 		for index in range(len(App.settings.Options['Speed'])):
 			if self.config['OPTIONS']['speed'] == App.settings.Options['Speed'][index]:  self.speed.Value = index; break
@@ -148,7 +169,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.HELP.SetPage(self.html_start +'<div style="color: #888">Hover your mouse over an option to get more informations.</div>'+ self.html_end)
 
 		# TAB 2
-		self.CONSOLE.SetPage("")
+		self.CONSOLE.SetPage("<b>Loading PyTorch, please wait ...</b><br>")
 		self.Progress_Bar.Value = 0
 		self.Progress_Text.SetLabel("")
 		
@@ -156,6 +177,8 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.sys_info.SetPage("")
 
 		# Update readouts text
+		self.high_pass_OnSlider(None)
+		self.low_pass_OnSlider(None)
 		self.speed_OnSlider(None)
 		self.chunk_size_OnSlider(None)
 
@@ -205,15 +228,16 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.params['Progress']	= Gui.wx_Progress.Bar(self)  # Pass this wxForm to the Class for Progress Bar
 
 		# Start processing
-		if self.timer is not None:  self.timer.Start(1000)  # Interval : 1 sec.
+		if self.timer is not None:  self.timer.Start(2000)  # Interval : 2 sec.
 		
 		if self.thread is None or not self.thread.is_alive():
 
-			self.CONSOLE.SetPage("")
 			self.thread = threading.Thread(target=self.Process)
 			self.thread.start()
 
 	def Process(self):
+		import App.inference;  self.CONSOLE.SetPage("")
+		
 		try:
 			App.inference.Process(self.params, self.config, wxWindow = self)  # Pass to "inference" this wxForm object
 
@@ -224,6 +248,8 @@ class KaraFanForm(Gui.wx_Window.Form):
 
 
 	def Btn_SysInfo_OnClick(self, event):
+		import App.sys_info
+
 		self.sys_info.SetPage("")
 		self.sys_info.SetPage(App.sys_info.Get('14px'))
 
@@ -275,6 +301,18 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.bleed_5.Value		= App.settings.Presets[3]['bleed_5']
 		self.bleed_6.Value		= App.settings.Presets[3]['bleed_6']
 
+	def Btn_Preset_5_OnClick(self, event):
+		self.music_1.Value		= App.settings.Presets[4]['music_1']
+		self.music_2.Value		= App.settings.Presets[4]['music_2']
+		self.vocal_1.Value		= App.settings.Presets[4]['vocal_1']
+		self.vocal_2.Value		= App.settings.Presets[4]['vocal_2']
+		self.bleed_1.Value		= App.settings.Presets[4]['bleed_1']
+		self.bleed_2.Value		= App.settings.Presets[4]['bleed_2']
+		self.bleed_3.Value		= App.settings.Presets[4]['bleed_3']
+		self.bleed_4.Value		= App.settings.Presets[4]['bleed_4']
+		self.bleed_5.Value		= App.settings.Presets[4]['bleed_5']
+		self.bleed_6.Value		= App.settings.Presets[4]['bleed_6']
+
 	def Btn_input_Path_OnClick( self, event ):
 		dlg = wx.DirDialog(self, "Choose a folder :", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
@@ -312,6 +350,8 @@ class KaraFanForm(Gui.wx_Window.Form):
 				'vocal_2': self.vocal_2.Value,
 				'bleed_1': self.bleed_1.Value,
 				'bleed_2': self.bleed_2.Value,
+				'high_pass': self.high_pass.Value,
+				'low_pass':  self.low_pass.Value,
 				'bleed_3': self.bleed_3.Value,
 				'bleed_4': self.bleed_4.Value,
 				'bleed_5': self.bleed_5.Value,
@@ -322,9 +362,9 @@ class KaraFanForm(Gui.wx_Window.Form):
 				'chunk_size': 	self.chunk_size.Value * 100000,
 			},
 			'BONUS': {
-				'KILL_on_END': 	self.KILL_on_END.Value,
 				'DEBUG':		self.DEBUG.Value,
 				'GOD_MODE':		self.GOD_MODE.Value,
+				'KILL_on_END': 	self.KILL_on_END.Value,
 				# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 				# 'large_gpu': large_gpu.Value,
 				'large_gpu':	False,
@@ -388,6 +428,12 @@ class KaraFanForm(Gui.wx_Window.Form):
 
 			if path != self.output_path.Value:  self.output_path.Value = path
 		
+	def high_pass_OnSlider(self, event):
+		self.label_vocal_pass.SetLabel(f"Vocals Pass Band\n► {self.high_pass.Value * 5} Hz - {14 + (self.low_pass.Value * 0.5):.1f} KHz")
+
+	def low_pass_OnSlider(self, event):
+		self.high_pass_OnSlider(None)
+
 	def speed_OnSlider(self, event):
 		self.speed_readout.SetLabel(App.settings.Options['Speed'][self.speed.Value])
 

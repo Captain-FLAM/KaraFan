@@ -21,7 +21,7 @@ _ = gettext.gettext
 class Form ( wx.Frame ):
 
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"KaraFan"), pos = wx.DefaultPosition, size = wx.Size( 697,761 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"KaraFan"), pos = wx.DefaultPosition, size = wx.Size( 697,830 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		self.SetFont( wx.Font( 14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Arial Narrow" ) )
@@ -30,12 +30,14 @@ class Form ( wx.Frame ):
 		MainSizer = wx.BoxSizer( wx.VERTICAL )
 
 		self.Tabs = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.Tabs.SetFont( wx.Font( 12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Tahoma" ) )
+		self.Tabs.SetFont( wx.Font( 12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Arial" ) )
 
 		self.Tab_Settings = wx.Panel( self.Tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.Tab_Settings.SetFont( wx.Font( 12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Arial" ) )
+
 		box1 = wx.BoxSizer( wx.VERTICAL )
 
-		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{  Songs  }") ), wx.VERTICAL )
+		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"[ Songs ]") ), wx.VERTICAL )
 
 		bSizer7 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -75,7 +77,7 @@ class Form ( wx.Frame ):
 		bSizer7.Add( self.label_normalize, 0, wx.LEFT|wx.TOP, 5 )
 
 		normalizeChoices = []
-		self.normalize = wx.ComboBox( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 70,-1 ), normalizeChoices, 0 )
+		self.normalize = wx.ComboBox( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 73,-1 ), normalizeChoices, 0 )
 		bSizer7.Add( self.normalize, 0, 0, 5 )
 
 
@@ -129,7 +131,7 @@ class Form ( wx.Frame ):
 		fgSizer71.Add( self.label_silent, 0, wx.TOP, 5 )
 
 		silentChoices = []
-		self.silent = wx.ComboBox( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 99,-1 ), silentChoices, 0 )
+		self.silent = wx.ComboBox( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 96,-1 ), silentChoices, 0 )
 		self.silent.SetBackgroundColour( wx.Colour( 255, 255, 255 ) )
 
 		fgSizer71.Add( self.silent, 0, wx.LEFT|wx.RIGHT, 5 )
@@ -148,7 +150,7 @@ class Form ( wx.Frame ):
 
 		box1.Add( sbSizer1, 0, wx.ALL|wx.EXPAND, 5 )
 
-		sbSizer2 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{  Vocals  }") ), wx.VERTICAL )
+		sbSizer2 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"[ Vocals ]") ), wx.VERTICAL )
 
 		fgSizer7 = wx.FlexGridSizer( 0, 4, 0, 0 )
 		fgSizer7.SetFlexibleDirection( wx.BOTH )
@@ -193,7 +195,7 @@ class Form ( wx.Frame ):
 
 		bleed_1Choices = []
 		self.bleed_1 = wx.ComboBox( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_1Choices, 0 )
-		fgSizer7.Add( self.bleed_1, 0, 0, 5 )
+		fgSizer7.Add( self.bleed_1, 0, wx.BOTTOM, 5 )
 
 		bleed_2Choices = []
 		self.bleed_2 = wx.ComboBox( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 220,-1 ), bleed_2Choices, 0 )
@@ -202,13 +204,24 @@ class Form ( wx.Frame ):
 		self.icon3 = wx.StaticBitmap( sbSizer2.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
 		fgSizer7.Add( self.icon3, 0, wx.TOP, 3 )
 
+		self.label_vocal_pass = wx.StaticText( sbSizer2.GetStaticBox(), wx.ID_ANY, _(u"Vocals Pass Band\n► 0 Hz - 22.0 KHz"), wx.DefaultPosition, wx.Size( 150,-1 ), 0, u"vocal_pass" )
+		self.label_vocal_pass.Wrap( -1 )
 
-		sbSizer2.Add( fgSizer7, 0, wx.EXPAND|wx.LEFT, 5 )
+		fgSizer7.Add( self.label_vocal_pass, 0, wx.TOP, 5 )
+
+		self.high_pass = wx.Slider( sbSizer2.GetStaticBox(), wx.ID_ANY, 14, 0, 20, wx.DefaultPosition, wx.Size( 216,-1 ), wx.SL_AUTOTICKS|wx.SL_HORIZONTAL )
+		fgSizer7.Add( self.high_pass, 0, wx.ALL|wx.EXPAND, 2 )
+
+		self.low_pass = wx.Slider( sbSizer2.GetStaticBox(), wx.ID_ANY, 5, 0, 16, wx.DefaultPosition, wx.Size( 216,-1 ), wx.SL_AUTOTICKS|wx.SL_HORIZONTAL )
+		fgSizer7.Add( self.low_pass, 0, wx.ALL|wx.EXPAND, 2 )
 
 
-		box1.Add( sbSizer2, 0, wx.ALL|wx.EXPAND, 5 )
+		sbSizer2.Add( fgSizer7, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT, 5 )
 
-		sbSizer21 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{   Music   }") ), wx.VERTICAL )
+
+		box1.Add( sbSizer2, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT|wx.RIGHT, 5 )
+
+		sbSizer21 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"[  Music  ]") ), wx.VERTICAL )
 
 		fgSizer911 = wx.FlexGridSizer( 0, 4, 0, 0 )
 		fgSizer911.SetFlexibleDirection( wx.BOTH )
@@ -250,9 +263,9 @@ class Form ( wx.Frame ):
 		sbSizer21.Add( fgSizer911, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT, 5 )
 
 
-		box1.Add( sbSizer21, 1, wx.EXPAND, 5 )
+		box1.Add( sbSizer21, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT|wx.RIGHT, 5 )
 
-		sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{  Options  }") ), wx.VERTICAL )
+		sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"[ Options ]") ), wx.VERTICAL )
 
 		fgSizer8 = wx.FlexGridSizer( 0, 3, 0, 0 )
 		fgSizer8.SetFlexibleDirection( wx.BOTH )
@@ -292,9 +305,9 @@ class Form ( wx.Frame ):
 		sbSizer3.Add( fgSizer8, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT, 5 )
 
 
-		box1.Add( sbSizer3, 0, wx.ALL|wx.EXPAND, 5 )
+		box1.Add( sbSizer3, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT|wx.RIGHT, 5 )
 
-		sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"{  BONUS  }") ), wx.VERTICAL )
+		sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"[ BONUS ]") ), wx.VERTICAL )
 
 		fgSizer9 = wx.FlexGridSizer( 0, 4, 0, 20 )
 		fgSizer9.SetFlexibleDirection( wx.BOTH )
@@ -328,7 +341,7 @@ class Form ( wx.Frame ):
 		sbSizer4.Add( fgSizer9, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT, 5 )
 
 
-		box1.Add( sbSizer4, 0, wx.ALL|wx.EXPAND, 5 )
+		box1.Add( sbSizer4, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT|wx.RIGHT, 5 )
 
 		wSizer1 = wx.WrapSizer( wx.HORIZONTAL, wx.WRAPSIZER_DEFAULT_FLAGS )
 
@@ -359,6 +372,13 @@ class Form ( wx.Frame ):
 		self.Btn_Preset_4.SetToolTip( _(u"Preset 4") )
 
 		wSizer1.Add( self.Btn_Preset_4, 0, wx.ALL, 5 )
+
+		self.Btn_Preset_5 = wx.Button( self.Tab_Settings, wx.ID_ANY, _(u"5"), wx.DefaultPosition, wx.Size( 32,32 ), 0 )
+		self.Btn_Preset_5.SetForegroundColour( wx.Colour( 255, 255, 255 ) )
+		self.Btn_Preset_5.SetBackgroundColour( wx.Colour( 13, 138, 240 ) )
+		self.Btn_Preset_5.SetToolTip( _(u"Preset 5 - © dca100fb8") )
+
+		wSizer1.Add( self.Btn_Preset_5, 0, wx.ALL, 5 )
 
 
 		wSizer1.Add( ( 130, 0), 1, 0, 5 )
@@ -480,6 +500,9 @@ class Form ( wx.Frame ):
 		self.label_MDX_bleed_1.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.bleed_1.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.bleed_2.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
+		self.label_vocal_pass.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.high_pass.Bind( wx.EVT_SLIDER, self.high_pass_OnSlider )
+		self.low_pass.Bind( wx.EVT_SLIDER, self.low_pass_OnSlider )
 		self.label_MDX_bleed_2.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.bleed_3.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.bleed_4.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
@@ -497,6 +520,7 @@ class Form ( wx.Frame ):
 		self.Btn_Preset_2.Bind( wx.EVT_BUTTON, self.Btn_Preset_2_OnClick )
 		self.Btn_Preset_3.Bind( wx.EVT_BUTTON, self.Btn_Preset_3_OnClick )
 		self.Btn_Preset_4.Bind( wx.EVT_BUTTON, self.Btn_Preset_4_OnClick )
+		self.Btn_Preset_5.Bind( wx.EVT_BUTTON, self.Btn_Preset_5_OnClick )
 		self.Btn_Start.Bind( wx.EVT_BUTTON, self.Btn_Start_OnClick )
 		self.Btn_SysInfo.Bind( wx.EVT_BUTTON, self.Btn_SysInfo_OnClick )
 
@@ -549,6 +573,13 @@ class Form ( wx.Frame ):
 
 
 
+	def high_pass_OnSlider( self, event ):
+		pass
+
+	def low_pass_OnSlider( self, event ):
+		pass
+
+
 
 
 
@@ -575,6 +606,9 @@ class Form ( wx.Frame ):
 		pass
 
 	def Btn_Preset_4_OnClick( self, event ):
+		pass
+
+	def Btn_Preset_5_OnClick( self, event ):
 		pass
 
 	def Btn_Start_OnClick( self, event ):

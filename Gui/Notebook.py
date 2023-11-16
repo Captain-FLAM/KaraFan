@@ -12,7 +12,7 @@ Running = False
 
 def Run(params):
 
-	import App.settings, App.inference, App.sys_info, Gui.Progress
+	import App.settings, Gui.Progress
 
 	Gdrive  = params['Gdrive']
 	Project = params['Project']
@@ -21,11 +21,11 @@ def Run(params):
 	font = '15px'
 	font_help = '15px'
 
-	width  = '670px'
+	width  = '690px'
 	height = '630px'
 	label_width = '135px'
 
-	if isColab:  font = '16px'; height = '580px'; width = '700px'; label_width = '155px'
+	if isColab:  font = '16px'; height = '610px'; width = '700px'; label_width = '155px'
 
 	font_input = {'font_size': font}
 	panel_layout = {'height': height, 'max_height': height, 'margin':'8px'}
@@ -97,6 +97,10 @@ def Run(params):
 	vocal_2			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	bleed_1			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	bleed_2			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
+	high_pass		= widgets.IntSlider(int(config['PROCESS']['high_pass']), min=0, max=20, step=1, continuous_update=True, readout=False, layout = {'width':'180px'}, style=font_input)
+	low_pass		= widgets.IntSlider(int(config['PROCESS']['low_pass']),  min=0, max=16, step=1, continuous_update=True, readout=False, layout = {'width':'180px'}, style=font_input)
+	pass_readout	= widgets.HTML("")
+	
 	bleed_3			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	bleed_4			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	bleed_5			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
@@ -153,6 +157,7 @@ def Run(params):
 				widgets.VBox([
 					widgets.HBox([ Label("Vocal Bleedings", 'MDX_bleed_2'), bleed_3, bleed_4, widgets.HTML('<span style="font-size:18px">&nbsp; 💋</span>') ]),
 					widgets.HBox([ Label("Remove Music", 'MDX_bleed_3'),	bleed_5, bleed_6, widgets.HTML('<span style="font-size:18px">&nbsp; 🎵</span>') ]),
+					widgets.HBox([ Label("Vocals Pass Band", 'vocal_pass'), high_pass, widgets.HTML(' &nbsp;'), low_pass, pass_readout ]),
 				]),
 				separator,
 				widgets.VBox([
@@ -161,8 +166,8 @@ def Run(params):
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("DEBUG Mode", 'debug'), DEBUG, Label("GOD Mode", 'god_mode'), GOD_MODE ]),
-					widgets.HBox([ Label("This is the END ...", 'kill_end'), KILL_on_END ]),
+					widgets.HBox([ Label("DEBUG Mode", 'debug'), DEBUG, Label("This is the END ...", 'kill_end'), KILL_on_END ]),
+					widgets.HBox([ Label("GOD Mode", 'god_mode'), GOD_MODE ]),
 					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
 #					, Label('Large GPU', 'large_gpu'), large_gpu ]),
 				]),
@@ -187,6 +192,8 @@ def Run(params):
 			]),
 	]
 
+	CONSOLE.append_display_data(HTML('<div class="console"><b>Loading PyTorch, please wait ...</b></div>'))
+
 	# Bug in VS Code : titles NEEDS to be set AFTER children
 	tab.titles = titles
 	tab.selected_index = 0
@@ -197,6 +204,8 @@ def Run(params):
 	#*********************
 	
 	def on_Btn_Start_clicked(b):
+		import App.settings
+
 		global Running
 
 		HELP.value = '<div id="HELP"></div>'  # Clear HELP
@@ -246,6 +255,8 @@ def Run(params):
 				'vocal_2': vocal_2.value,
 				'bleed_1': bleed_1.value,
 				'bleed_2': bleed_2.value,
+				'high_pass': high_pass.value,
+				'low_pass':  low_pass.value,
 				'bleed_3': bleed_3.value,
 				'bleed_4': bleed_4.value,
 				'bleed_5': bleed_5.value,
@@ -256,9 +267,9 @@ def Run(params):
 				'chunk_size':	chunk_size.value,
 			},
 			'BONUS': {
-				'KILL_on_END':	KILL_on_END.value,
 				'DEBUG':		DEBUG.value,
 				'GOD_MODE':		GOD_MODE.value,
+				'KILL_on_END':	KILL_on_END.value,
 				# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 				# 'large_gpu': large_gpu.value,
 				'large_gpu':	False,
@@ -278,7 +289,9 @@ def Run(params):
 		# Start processing
 		if not Running:
 			Running = True
-			CONSOLE.clear_output()
+			CONSOLE.clear_output(wait = True)  # wait until a new output is available ... for 1st : "Loading PyTorch, please wait ..."
+			
+			import App.inference
 			try:
 				App.inference.Process(params, config, wxWindow = None)  # Tell "inference" to use ipywidgets
 			
@@ -290,6 +303,8 @@ def Run(params):
 
 
 	def on_Btn_SysInfo_clicked(b):
+		import App.sys_info
+
 		font_size = '13px' if isColab == True else '12px'
 		sys_info.value = ""
 		sys_info.value = App.sys_info.Get(font_size)
@@ -396,9 +411,17 @@ def Run(params):
 			
 			if path != output_path.value:  output_path.value = path
 		
+	def on_high_pass_change(change):
+		pass_readout.value = f"&nbsp;► {high_pass.value * 5} Hz - {14 + (low_pass.value * 0.5):.1f} KHz"
+
+	def on_low_pass_change(change):
+		on_high_pass_change(None)
+
 	# Link Events to functions
 	input_path.observe(on_input_change, names='value')
 	output_path.observe(on_output_change, names='value')
+	high_pass.observe(on_high_pass_change, names='value')
+	low_pass.observe(on_low_pass_change, names='value')
 
 	#*************
 	#**  FINAL  **
@@ -449,6 +472,8 @@ function show_titles() {\
 	display(HTML(javascript))
 
 	# Update controls after loading
+
+	on_high_pass_change(None)
 
 	if config['PROCESS']['music_1'] in instru:		music_1.value = config['PROCESS']['music_1']
 	if config['PROCESS']['music_2'] in instru:		music_2.value = config['PROCESS']['music_2']

@@ -17,15 +17,15 @@ class Bar:
 		wx.CallAfter(self.UpdateProgressBar, 0, "[00:00:00] -   0% - 0/0 - 0.00 sec./ " + self.unit)
 
 	def reset(self, total, unit):
+		# Prevent Bug when closing the app (this is an event)
+		if wx.GetApp() is None:  return
+
 		self.value = 0
 		self.total = total
 		self.unit = unit
 		self.units_time = time.time()
 
 		elapsed_time = time.time() - self.start_time
-
-		# Prevent Bug when closing the app (this is an event)
-		if wx.GetApp() is None:  return
 
 		wx.CallAfter(self.UpdateProgressBar,
 			0,
@@ -34,6 +34,9 @@ class Bar:
 		)
 
 	def update(self, increment = 1):
+		# Prevent Bug when closing the app (this is an event)
+		if wx.GetApp() is None:  return
+		
 		self.value += increment
 
 		# Update the text of the progress bar
@@ -53,9 +56,6 @@ class Bar:
 		else:				percent = f"{percent}"
 
 		download = " MB" if self.unit == "MB" else ""
-		
-		# Prevent Bug when closing the app (this is an event)
-		if wx.GetApp() is None:  return
 		
 		wx.CallAfter(self.UpdateProgressBar,
 			self.value,

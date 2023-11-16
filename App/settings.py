@@ -9,10 +9,10 @@ import os, configparser
 Defaults = {
 	'AUDIO': {
 		'input': "Music",
-		'normalize': "0",
+		'normalize': "-1",
 		'output': "Music",
 		'output_format': "FLAC",
-		'silent': "-50",
+		'silent': "0",
 		'infra_bass': False,
 	},
 	'PROCESS': {
@@ -22,6 +22,9 @@ Defaults = {
 		'vocal_2': "----",
 		'bleed_1': "----",
 		'bleed_2': "----",
+		'high_pass': 14,
+		'low_pass': 5,
+
 		'bleed_3': "----",
 		'bleed_4': "----",
 		'bleed_5': "----",
@@ -39,7 +42,7 @@ Defaults = {
 	},
 }
 Options = {
-	'Normalize': [("NONE", "0"), ("- 1 dB", "-1"), ("- 3 dB", "-3"), ("- 6 dB", "-6")],
+	'Normalize': [("NONE", "0"), ("AUTO -1", "-1"), ("- 3 dB", "-3"), ("- 6 dB", "-6")],
 	'Format':	[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320K", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
 	'Silent':	[("NONE", "0"), ("- 45 dB", "-45"), ("- 50 dB", "-50"), ("- 55 dB", "-55"), ("- 60 dB", "-60")],
 	'Speed':	['Fastest', 'Fast', 'Medium', 'Slow', 'Slowest'],
@@ -55,6 +58,7 @@ Help_Dico = {
 	'MDX_music':	"Make an Ensemble of extractions with Instrumental selected models.<br>This is used to remove <b>Music</b> before Vocal extractions.",
 	'MDX_vocal':	"Make an Ensemble of extractions with Vocals selected models.",
 	'MDX_bleed_1':	"Remove <b>Music Bleedings</b> in Vocal extractions.<br><br>DON'T use « <b>Instrum HQ 3</b> » as it catchs too much vocals !!",
+	'vocal_pass':	"Set the <b>Passband</b> for <b>Vocal</b> extractions to get more <b>Music</b> back !<br>Defaults : <b>70 Hz</b> (+ slope 15 Hz) & <b>16.5 KHz</b> for this frequencies (Bass - Mid / Harmonics) :<br>Male : 85 - 180 Hz / 14 K , Female : 165 - 255 Hz / 16 K , Children : 250 - 400 Hz / 20 K",
 	'MDX_bleed_2':	"Remove <b>Vocal Bleedings</b> in <b>subtracted</b> Music.<br><br>DON'T use « <b>Kim Vocal 2</b> » or « <b>Voc FT</b> » as they remove too much music !!",
 	'MDX_bleed_3':	"Remove <b>Music Bleedings</b> in Vocal Bleedings extracted <b>above</b> to get them back in Music !<br>DON'T use « Instrum HQ 3 » as it catchs too much Vocals ! 😉<br>... and : <b>ALL models</b> will carry more or less Vocal bleedings in Music Final !!",
 	'speed':		"Fastest : extract in 1 pass with <b>NO</b> SRS (<b>only</b> for Testing)<br>All « Speed » are processed with <b>DENOISE</b> (the same option as in <b>UVR 5</b> 😉)<br>Slowest : is the best quality, but it will take hours to process !! 😝",
@@ -113,6 +117,18 @@ Presets = [
 		'bleed_4': "----",
 		'bleed_5': "Instrum 3",
 		'bleed_6': "Instrum Main",
+	},
+	{
+		'music_1': "MDX23C 8K FFT",
+		'music_2': "Instrum HQ 3",
+		'vocal_1': "MDX23C 8K FFT",
+		'vocal_2': "Voc FT",
+		'bleed_1': "MDX23C 8K FFT",
+		'bleed_2': "Kim Instrum",
+		'bleed_3': "MDX23C 8K FFT",
+		'bleed_4': "Kim Vocal 1",
+		'bleed_5': "MDX23C 8K FFT",
+		'bleed_6': "Kim Instrum",
 	},
 ]
 

@@ -6,9 +6,34 @@
 import os, librosa, subprocess, tempfile, soundfile as sf, numpy as np
 from scipy import signal
 
-def Load_Audio(file, sample_rate):
+def Load_Audio(file, sample_rate, ffmpeg = None, output_path = None):
 
-	audio, sr = sf.read(file, dtype='float32')
+	# Load audio file that is already passed through KaraFan
+	if ffmpeg is None:
+		audio, sr = sf.read(file, dtype='float32')
+	else:
+		# Load the audio file from User's input
+		try:
+			audio, sr = sf.read(file, dtype='float32')
+
+		# Corrupted file : try to correct it with ffmpeg
+		except RuntimeError as e:
+			print('<div style="font-size:18px;color:#ff0040;"><b>Your audio file is Bad encoded ! Trying to correct ...</b></div>')
+			try:
+				corrected = os.path.join(output_path, "X - Corrected.flac")
+
+				if not os.path.exists(corrected):
+					subprocess.run(f'"{ffmpeg}" -y -i "{file}" -codec:a flac -compression_level 5 -ch_mode mid_side -lpc_type cholesky -lpc_passes 1 -exact_rice_parameters 1 "{corrected}"', shell=True, text=True, capture_output=True, check=True)
+
+				audio, sr = sf.read(corrected, dtype='float32')
+				
+			except RuntimeError as e:
+				print(f"Error : {e}");  return None, 0
+			except Exception as e:
+				print(f"Error : {e}");  return None, 0
+		except Exception as e:
+			print(f"Error : {e}");  return None, 0
+	
 	audio = audio.T
 
 	# Convert to 44100 Hz if needed (for MDX models)
@@ -61,7 +86,20 @@ def Save_Audio(file_path, audio, sample_rate, output_format, cut_off, ffmpeg):
 		temp.close()
 		os.remove(temp.name)
 
-def Normalize(audio, threshold_db = -1.0):
+def Clipping_Percent(audio, threshold_dB = -1.0):
+	"""
+	Measure the percentage of audio samples above a given threshold.
+	"""
+	max_peaks = np.max(np.abs(audio), axis=1)
+
+	# Calculate the percentage of peaks above the threshold
+	max_db = 10 ** (threshold_dB / 20)  # Convert -X dB to linear scale
+	
+	above_threshold = max_peaks[max_peaks > max_db]
+
+	return len(above_threshold) / len(max_peaks)  # Percentage above threshold
+
+def Normalize(audio, threshold_dB = -1.0):
 	"""
 	Normalize audio to -1.0 dB peak amplitude
 	This is mandatory for SOME audio files because every process is based on RMS dB levels.
@@ -75,13 +113,13 @@ def Normalize(audio, threshold_db = -1.0):
 	# Normalize audio peak amplitude to -1.0 dB
 	max_peak = np.max(np.abs(audio))
 	if max_peak > 0.0:
-		max_db = 10 ** (threshold_db / 20)  # Convert -1.0 dB to linear scale
+		max_db = 10 ** (threshold_dB / 20)  # Convert -X dB to linear scale
 		audio /= max_peak
 		audio *= max_db
 
 	return audio.T
 
-def Silent(audio_in, sample_rate, threshold_db = -50):
+def Silent(audio_in, sample_rate, threshold_dB = -50):
 	"""
 	Make silent the parts of audio where dynamic range (RMS) goes below threshold.
 	Don't misundertand : this function is NOT a noise reduction !
@@ -105,7 +143,7 @@ def Silent(audio_in, sample_rate, threshold_db = -50):
 		
 		# TODO : Maybe use S=audio (Spectrogram) instead of y=audio ??
 		RMS = np.max(librosa.amplitude_to_db(librosa.feature.rms(y=audio[:, i:(i + window_frame)], frame_length=window_frame, hop_length=window_frame)))
-		if RMS < threshold_db:
+		if RMS < threshold_dB:
 			end = i + window_frame
 			# Last part (in case of silence at the end)
 			if i >= audio_length - window_frame:

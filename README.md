@@ -14,7 +14,7 @@ Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made th
 
 KaraFan works **on Your PC** (Windows 8/10/11, Linux, Mac OSX), if you have a decent **Nvidia GPU**.  
 KaraFan works with **Google Colab**.  
-KaraFan shall work with **GPU web services API** ... (in the future).
+KaraFan will work with **GPU web services API** ... (in the future).
 
 # 💲 And if you like this software :
 

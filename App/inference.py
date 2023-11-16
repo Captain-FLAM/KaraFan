@@ -911,10 +911,9 @@ class CustomPrint:
 				if '<div' in text:
 					text = regex.sub(r'<div.*color:(.*);.*?>(.*)</div>', r'<font color="\1">\2</font>', text) # Convert to <font color="...">
 
-				text = text.rstrip('\n')				# Remove \n at the end
-				text = regex.sub(r'\n', '<br>', text)	# Convert \n to <br>
+				text = regex.sub(r'\n', '<br>', text)  # Convert \n to <br>
 
-				self.CONSOLE.AppendToPage('<p>'+ text +'</p>')
+				self.CONSOLE.AppendToPage(text)
 				self.CONSOLE.Update()
 				self.CONSOLE.ScrollLines(1)
 		else:

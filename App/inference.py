@@ -1,13 +1,13 @@
 
 #   MIT License
 #
-#   Copyright (c) 2023 - ZFTurbo - Start the project MVSEP-MDX23 (music separation model)
-#   Copyright (c) 2023 - Jarredou - Did all the job for Inference !!
 #   Copyright (c) 2023 - Captain FLAM - Heavily modified ! (GUI, sequential processing, etc ...)
+#   Copyright (c) 2023 - Jarredou     - Did all the job for Inference & Assists me in audio tricks !!
+#   Copyright (c) 2023 - ZFTurbo      - Started the project MVSEP-MDX23 (music separation model)
 #
-#   https://github.com/ZFTurbo/MVSEP-MDX23-music-separation-model
-#   https://github.com/jarredou/MVSEP-MDX23-Colab_v2/
 #   https://github.com/Captain-FLAM/KaraFan
+#   https://github.com/jarredou/MVSEP-MDX23-Colab_v2/
+#   https://github.com/ZFTurbo/MVSEP-MDX23-music-separation-model
 
 
 import os, gc, glob, sys, csv, time, platform, regex, requests, torch, librosa

@@ -47,7 +47,7 @@
             <property name="minimum_size"></property>
             <property name="name">Form</property>
             <property name="pos"></property>
-            <property name="size">697,830</property>
+            <property name="size">697,777</property>
             <property name="style">wxDEFAULT_FRAME_STYLE</property>
             <property name="subclass">; ; forward_declare</property>
             <property name="title">KaraFan</property>

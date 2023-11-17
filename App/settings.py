@@ -125,7 +125,7 @@ Presets = [
 		'bleed_1': "Instrum 3",
 		'bleed_2': "Instrum Main",
 		'bleed_3': "MDX23C 8K FFT",
-		'bleed_4': "Kim Vocal 1",
+		'bleed_4': "----",
 		'bleed_5': "Instrum 3",
 		'bleed_6': "Instrum Main",
 	},

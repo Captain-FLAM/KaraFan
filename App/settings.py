@@ -67,7 +67,6 @@ Help_Dico = {
 	'god_mode':		"Give you the GOD's POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You'll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !",
 	'kill_end':		"On <b>Colab</b> : KaraFan will KILL your session at end of « Processongs », to save your credits !!<br>On <b>your Laptop</b> : KaraFan will KILL your GPU, to save battery (and hot-less) !!<br>On <b>your PC</b> : KaraFan will KILL your GPU, anyway ... maybe it helps ? Try it !!",
 #	'large_gpu':	"It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.",
-#	'reprocess':	"With <b>DEBUG</b> & <b>GOD MODE</b> activated : Available with <b>ONE file</b> at a time.<br>Automatic delete audio files of Stem that you want to re-process.<br>Vocals : <b>4_F</b> & <b>5_F</b> & <b>6</b>-Bleedings <b>/</b> Music : <b>same</b> + <b>2</b>-Music_extract & <b>3</b>-Audio_sub_Music",
 }
 Presets = [
 	{
@@ -123,12 +122,12 @@ Presets = [
 		'music_2': "Instrum HQ 3",
 		'vocal_1': "MDX23C 8K FFT",
 		'vocal_2': "Voc FT",
-		'bleed_1': "MDX23C 8K FFT",
-		'bleed_2': "Kim Instrum",
+		'bleed_1': "Instrum 3",
+		'bleed_2': "Instrum Main",
 		'bleed_3': "MDX23C 8K FFT",
 		'bleed_4': "Kim Vocal 1",
-		'bleed_5': "MDX23C 8K FFT",
-		'bleed_6': "Kim Instrum",
+		'bleed_5': "Instrum 3",
+		'bleed_6': "Instrum Main",
 	},
 ]
 

@@ -20,7 +20,7 @@ def Load_Audio(file, sample_rate, ffmpeg = None, output_path = None):
 		except RuntimeError as e:
 			print('<div style="font-size:18px;color:#ff0040;"><b>Your audio file is Bad encoded ! Trying to correct ...</b></div>')
 			try:
-				corrected = os.path.join(output_path, "X - Corrected.flac")
+				corrected = os.path.join(output_path, "X - CORRECTED.flac")
 
 				if not os.path.exists(corrected):
 					subprocess.run(f'"{ffmpeg}" -y -i "{file}" -codec:a flac -compression_level 5 -ch_mode mid_side -lpc_type cholesky -lpc_passes 1 -exact_rice_parameters 1 "{corrected}"', shell=True, text=True, capture_output=True, check=True)

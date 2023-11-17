@@ -17,26 +17,17 @@ import numpy as np, onnxruntime as ort
 import yaml
 from ml_collections import ConfigDict
 
-from IPython.display import display, HTML
+# Maybe not available on PC
+try:
+	from IPython.display import display, HTML
+except:
+	pass
 
-import App.settings, App.audio_utils, App.compare, App.tfc_tdf, Gui.Error
+import App.settings, App.audio_utils, App.compare, App.tfc_tdf
 
 wxForm = None
 isColab = False
 KILL_on_END = False
-
-def get_models(device, model_params, stem):
-	# ??? NOT so simple ... ???
-	# FFT = 7680  --> Narrow Band
-	# FFT = 6144  --> FULL Band
-	model = App.tfc_tdf.Conv_TDF_net_trim_model(
-		device,
-		# I suppose you can use '*' to get both vocals and instrum, with the new MDX23C model ...
-		'vocals' if stem == 'Vocals' else 'instrum',
-		11,
-		model_params
-	)
-	return [model]
 
 def demix_mdxv3(mix, model, device, config, overlap_MDX23, Progress):
 		
@@ -88,47 +79,47 @@ def demix_mdxv3(mix, model, device, config, overlap_MDX23, Progress):
 	else:
 		return estimated_sources.cpu().numpy()
 
-def demix_base(mix, device, models, infer_session):
+def demix_base(mix, device, model, infer_session):
 	sources = []
 	n_sample = mix.shape[1]
-	for model in models:
-		trim = model.n_fft // 2
-		gen_size = model.chunk_size - 2 * trim
-		pad = gen_size - n_sample % gen_size
-		mix_p = np.concatenate(
-			(
-				np.zeros((2, trim)),
-				mix,
-				np.zeros((2, pad)),
-				np.zeros((2, trim))
-			), 1
-		)
-
-		mix_waves = []
-		i = 0
-		while i < n_sample + pad:
-			waves = np.array(mix_p[:, i:i + model.chunk_size])
-			mix_waves.append(waves)
-			i += gen_size
-		mix_waves = np.array(mix_waves)
-		mix_waves = torch.tensor(mix_waves, dtype=torch.float32).to(device)
-
-		try:
-			with torch.no_grad():
-				_ort = infer_session
-				stft_res = model.stft(mix_waves)
-				res = _ort.run(None, {'input': stft_res.cpu().numpy()})[0]
-				ten = torch.tensor(res, dtype=torch.float32)
-				tar_waves = model.istft(ten.to(device))
-				tar_waves = tar_waves.cpu()
-				tar_signal = tar_waves[:, :, trim:-trim].transpose(0, 1).reshape(2, -1).numpy()[:, :-pad]
-
-			sources.append(tar_signal)
-
-		except Exception as e:
-			print("\n\nError in demix_base() with Torch : ", e)
-			Exit()
 	
+	trim = model.n_fft // 2
+	gen_size = model.chunk_size - 2 * trim
+	pad = gen_size - n_sample % gen_size
+	mix_p = np.concatenate(
+		(
+			np.zeros((2, trim)),
+			mix,
+			np.zeros((2, pad)),
+			np.zeros((2, trim))
+		), 1
+	)
+
+	mix_waves = []
+	i = 0
+	while i < n_sample + pad:
+		waves = np.array(mix_p[:, i:i + model.chunk_size])
+		mix_waves.append(waves)
+		i += gen_size
+	mix_waves = np.array(mix_waves)
+	mix_waves = torch.tensor(mix_waves, dtype=torch.float32).to(device)
+
+	try:
+		with torch.no_grad():
+			_ort = infer_session
+			stft_res = model.stft(mix_waves)
+			res = _ort.run(None, {'input': stft_res.cpu().numpy()})[0]
+			ten = torch.tensor(res, dtype=torch.float32)
+			tar_waves = model.istft(ten.to(device))
+			tar_waves = tar_waves.cpu()
+			tar_signal = tar_waves[:, :, trim:-trim].transpose(0, 1).reshape(2, -1).numpy()[:, :-pad]
+
+		sources.append(tar_signal)
+
+	except Exception as e:
+		print("\n\nError in demix_base() with Torch : ", e)
+		Exit()
+
 	return np.array(sources)
 
 
@@ -529,21 +520,21 @@ class MusicSeparationModel:
 
 		print('<b>--> Processing DONE !</b>')
 
-		elapsed_time = time.time() - start_time
-		elapsed_time = f"Elapsed Time for <b>{name}</b> : {time.strftime('%H:%M:%S', time.gmtime(elapsed_time))} sec.<br>"
-		print(elapsed_time)
-		elapsed_time = regex.sub(r"<.*?>", "", elapsed_time)   # Remove HTML tags
-
-		if self.SDR_Testing:
-			print("----------------------------------------")
-			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, elapsed_time)
-		
 		# Clear screen between each song
 		if self.BATCH_MODE and not self.DEBUG:
 			if self.wxForm == None:
-				self.CONSOLE.clear_output()	# ipywidgets
-			else:
-				self.CONSOLE.SetPage("")	# wxwidgets
+				self.CONSOLE.clear_output()	# ipywidgets (for Colab)
+			# else:
+			# 	self.CONSOLE.SetPage("")	# wxwidgets
+		
+		elapsed_time = time.time() - start_time
+		elapsed_time = f"Elapsed Time for <b>{name}</b> : {time.strftime('%H:%M:%S', time.gmtime(elapsed_time))} sec.<br>"
+		print(elapsed_time)
+
+		if self.SDR_Testing:
+			elapsed_time = regex.sub(r"<.*?>", "", elapsed_time)   # Remove HTML tags
+			print("----------------------------------------")
+			App.compare.SDR(self.song_output_path, self.output_format, self.Gdrive, elapsed_time)
 		
 
 	def Extract_with_Model(self, type, audio, model):
@@ -724,7 +715,7 @@ class MusicSeparationModel:
 		name = model['Name']
 		if name not in self.MDX:
 			self.MDX[name] = {}
-			self.MDX[name]['model'] = get_models(self.GPU_device, model, model['Stem'])
+			self.MDX[name]['model'] = App.tfc_tdf.Conv_TDF_net_trim_model(self.GPU_device, '', 11, model)  # can use '*' to get 4 stems ??
 			self.MDX[name]['inference'] = ort.InferenceSession(
 				model['PATH'],
 				providers = self.providers,

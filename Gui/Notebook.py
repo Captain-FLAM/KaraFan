@@ -97,8 +97,8 @@ def Run(params):
 	vocal_2			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
 	bleed_1			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
 	bleed_2			= widgets.Dropdown(options = instru, layout = {'width':'200px'}, style=font_input)
-	high_pass		= widgets.IntSlider(int(config['PROCESS']['high_pass']), min=0, max=20, step=1, continuous_update=True, readout=False, layout = {'width':'180px'}, style=font_input)
-	low_pass		= widgets.IntSlider(int(config['PROCESS']['low_pass']),  min=0, max=16, step=1, continuous_update=True, readout=False, layout = {'width':'180px'}, style=font_input)
+	high_pass		= widgets.IntSlider(int(config['PROCESS']['high_pass']), min=0, max=20, step=1, continuous_update=True, readout=False, layout = {'width':'170px'}, style=font_input)
+	low_pass		= widgets.IntSlider(int(config['PROCESS']['low_pass']),  min=0, max=16, step=1, continuous_update=True, readout=False, layout = {'width':'170px'}, style=font_input)
 	pass_readout	= widgets.HTML("")
 	
 	bleed_3			= widgets.Dropdown(options = vocals, layout = {'width':'200px'}, style=font_input)
@@ -121,6 +121,7 @@ def Run(params):
 	Btn_Preset_2	= widgets.Button(description='2️⃣', tooltip="Preset 2", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
 	Btn_Preset_3	= widgets.Button(description='3️⃣', tooltip="Preset 3", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
 	Btn_Preset_4	= widgets.Button(description='4️⃣', tooltip="Preset 4", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
+	Btn_Preset_5	= widgets.Button(description='5️⃣', tooltip="Preset 5", layout={'width':'72px', 'height':'27px', 'margin':'10px 0 0 5px'}, style={'font_size': '22px', 'button_color':'#fff'})
 	Btn_Start		= widgets.Button(description='Start', button_style='primary', layout={'width':'200px', 'margin':'8px 0 12px 0'})
 	HELP			= widgets.HTML('<div id="HELP"><div style="color: #888">Hover your mouse over an option to get more informations.</div></div>')
 	# TAB 2
@@ -173,7 +174,7 @@ def Run(params):
 				]),
 				separator,
 				widgets.HBox([
-					widgets.HBox([Btn_Preset_1, Btn_Preset_2, Btn_Preset_3, Btn_Preset_4]),
+					widgets.HBox([Btn_Preset_1, Btn_Preset_2, Btn_Preset_3, Btn_Preset_4, Btn_Preset_5]),
 					widgets.HBox([Btn_Start], layout={'width':'100%', 'justify_content':'center'}),
 				]),
 				HELP
@@ -357,11 +358,24 @@ def Run(params):
 		bleed_5.value		= App.settings.Presets[3]['bleed_5']
 		bleed_6.value		= App.settings.Presets[3]['bleed_6']
 		
+	def on_Btn_Preset_5_clicked(b):
+		music_1.value		= App.settings.Presets[4]['music_1']
+		music_2.value		= App.settings.Presets[4]['music_2']
+		vocal_1.value		= App.settings.Presets[4]['vocal_1']
+		vocal_2.value		= App.settings.Presets[4]['vocal_2']
+		bleed_1.value		= App.settings.Presets[4]['bleed_1']
+		bleed_2.value		= App.settings.Presets[4]['bleed_2']
+		bleed_3.value		= App.settings.Presets[4]['bleed_3']
+		bleed_4.value		= App.settings.Presets[4]['bleed_4']
+		bleed_5.value		= App.settings.Presets[4]['bleed_5']
+		bleed_6.value		= App.settings.Presets[4]['bleed_6']
+		
 	# Link Buttons to functions
 	Btn_Preset_1.on_click(on_Btn_Preset_1_clicked)
 	Btn_Preset_2.on_click(on_Btn_Preset_2_clicked)
 	Btn_Preset_3.on_click(on_Btn_Preset_3_clicked)
 	Btn_Preset_4.on_click(on_Btn_Preset_4_clicked)
+	Btn_Preset_5.on_click(on_Btn_Preset_5_clicked)
 	Btn_Start.on_click(on_Btn_Start_clicked)
 	Btn_SysInfo.on_click(on_Btn_SysInfo_clicked)
 

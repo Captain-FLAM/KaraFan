@@ -376,7 +376,7 @@ class Form ( wx.Frame ):
 		self.Btn_Preset_5 = wx.Button( self.Tab_Settings, wx.ID_ANY, _(u"5"), wx.DefaultPosition, wx.Size( 32,32 ), 0 )
 		self.Btn_Preset_5.SetForegroundColour( wx.Colour( 255, 255, 255 ) )
 		self.Btn_Preset_5.SetBackgroundColour( wx.Colour( 13, 138, 240 ) )
-		self.Btn_Preset_5.SetToolTip( _(u"Preset 5 - © dca100fb8") )
+		self.Btn_Preset_5.SetToolTip( _(u"Preset 5") )
 
 		wSizer1.Add( self.Btn_Preset_5, 0, wx.ALL, 5 )
 

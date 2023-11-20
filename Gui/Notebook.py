@@ -12,7 +12,7 @@ Running = False
 
 def Run(params):
 
-	import App.settings, Gui.Progress
+	import App.settings, Gui.Progress, Gui.Error
 
 	Gdrive  = params['Gdrive']
 	Project = params['Project']

@@ -21,10 +21,9 @@ _ = gettext.gettext
 class Form ( wx.Frame ):
 
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"KaraFan"), pos = wx.DefaultPosition, size = wx.Size( 697,777 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"KaraFan"), pos = wx.DefaultPosition, size = wx.Size( 697,806 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
-		self.SetFont( wx.Font( 14, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Arial Narrow" ) )
 		self.SetBackgroundColour( wx.Colour( 255, 255, 255 ) )
 
 		MainSizer = wx.BoxSizer( wx.VERTICAL )
@@ -33,8 +32,6 @@ class Form ( wx.Frame ):
 		self.Tabs.SetFont( wx.Font( 12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Arial" ) )
 
 		self.Tab_Settings = wx.Panel( self.Tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.Tab_Settings.SetFont( wx.Font( 12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Arial" ) )
-
 		box1 = wx.BoxSizer( wx.VERTICAL )
 
 		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"[ Songs ]") ), wx.VERTICAL )

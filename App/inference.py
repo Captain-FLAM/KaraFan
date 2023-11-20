@@ -158,6 +158,13 @@ class MusicSeparationModel:
 
 			if wxForm is None: # for Jupyter Notebook
 				print('<div style="font-size:18px;color:#00b32d;"><b>It\'s OK -> GPU is used for processing !!</b></div>')
+		# For MAC OSX
+		elif torch.backends.mps.is_available():
+			self.GPU_device = 'mps'
+			self.providers = None
+				
+			if wxForm is None: # for Jupyter Notebook
+				print('<div style="font-size:18px;color:#00b32d;"><b>It\'s OK -> GPU is used for processing !!</b></div>')
 		else:
 			self.GPU_device = 'cpu'
 			self.providers = ["CPUExecutionProvider"]
@@ -263,9 +270,11 @@ class MusicSeparationModel:
 	
 		self.AudioFiles = [
 			"NORMALIZED",
+			# Vocals extraction
 			"Music extract",
 			"Vocal extract",
 			"Music Bleedings",
+			# Here --> Vocals results subtracted from Original Audio = Music
 			"Vocal Bleedings",
 			"Remove Music",
 			"Vocal FINAL",
@@ -277,8 +286,8 @@ class MusicSeparationModel:
 		# DEBUG
 		# Reload "Bleedings" files with GOD MODE ... or not !
 		self.AudioFiles_Debug.append(3)
-		self.AudioFiles_Debug.append(4)
-		self.AudioFiles_Debug.append(5)
+		# self.AudioFiles_Debug.append(4)
+		# self.AudioFiles_Debug.append(5)
 
 	
 	# ******************************************************************
@@ -580,6 +589,9 @@ class MusicSeparationModel:
 
 			if  torch.cuda.is_available():
 				torch.cuda.empty_cache()
+				torch.cuda.ipc_collect()
+			elif torch.backends.mps.is_available():
+				torch.mps.empty_cache()
 
 		else:
 			if not self.large_gpu:
@@ -593,12 +605,12 @@ class MusicSeparationModel:
 			
 			if self.Denoise:
 				print(f"{text} ({quality['BigShifts']} pass)")
-				source  = 0.5 * -self.demix_full(-audio, mdx_model, inference, bigshifts)[0]
-				source += 0.5 *  self.demix_full( audio, mdx_model, inference, bigshifts)[0]
+				source  = 0.5 * -self.demix_full(-audio, mdx_model, inference, bigshifts, 1)[0]
+				source += 0.5 *  self.demix_full( audio, mdx_model, inference, bigshifts, 2)[0]
 			else:
 				# ONLY 1 Pass, for testing purposes
 				print(f"{text} ({quality['BigShifts']} pass) - <b>NO Denoise !</b>")
-				source = self.demix_full(audio, mdx_model, inference, bigshifts)[0]
+				source = self.demix_full(audio, mdx_model, inference, bigshifts, 0)[0]
 
 			# Automatic SRS (for not FULL-BAND models !)
 			if quality['BigShifts_SRS'] > 0:
@@ -629,15 +641,15 @@ class MusicSeparationModel:
 						print(f"{text} -> SRS High ({bigshifts} pass)")
 						
 						source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
-							-self.demix_full(-audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
+							-self.demix_full(-audio_SRS, mdx_model, inference, bigshifts, 1)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
 						
 						source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
-							self.demix_full( audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
+							self.demix_full( audio_SRS, mdx_model, inference, bigshifts, 2)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
 					else:
 						# ONLY 1 Pass, for testing purposes
 						print(f"{text} -> SRS High ({bigshifts} pass) - <b>NO Denoise !</b>")
 						source_SRS = App.audio_utils.Change_sample_rate(
-							self.demix_full(audio_SRS, mdx_model, inference, bigshifts)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
+							self.demix_full( audio_SRS, mdx_model, inference, bigshifts, 0)[0], 'UP', self.original_cutoff, model['Cut_OFF'] + delta)
 
 					# Check if source_SRS is same size than source
 					source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
@@ -685,14 +697,14 @@ class MusicSeparationModel:
 						print(f"{text} -> SRS Low (1 pass)")
 						
 						source_SRS = 0.5 * App.audio_utils.Change_sample_rate(
-							-self.demix_full(-audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
+							-self.demix_full(-audio_SRS, mdx_model, inference, 1, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
 
 						source_SRS += 0.5 * App.audio_utils.Change_sample_rate(
-							self.demix_full( audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
+							self.demix_full( audio_SRS, mdx_model, inference, 1, 2)[0], 'DOWN', self.original_cutoff, cut_freq)
 					else:
 						print(f"{text} -> SRS Low (1 pass) - <b>NO Denoise !</b>")
 						source_SRS = App.audio_utils.Change_sample_rate(
-							self.demix_full(audio_SRS, mdx_model, inference, 1)[0], 'DOWN', self.original_cutoff, cut_freq)
+							self.demix_full( audio_SRS, mdx_model, inference, 1, 0)[0], 'DOWN', self.original_cutoff, cut_freq)
 
 					# Check if source_SRS is same size than source
 					source_SRS = librosa.util.fix_length(source_SRS, size = source.shape[-1])
@@ -730,6 +742,9 @@ class MusicSeparationModel:
 			gc.collect()
 			if  torch.cuda.is_available():
 				torch.cuda.empty_cache()
+				torch.cuda.ipc_collect()
+			elif torch.backends.mps.is_available():
+				torch.mps.empty_cache()
 
 	def raise_aicrowd_error(self, msg):
 		# Will be used by the evaluator to provide logs, DO NOT CHANGE
@@ -795,7 +810,7 @@ class MusicSeparationModel:
 		App.audio_utils.Save_Audio(file, audio, self.sample_rate, self.output_format, self.original_cutoff, self.ffmpeg)
 
 	
-	def demix_full(self, mix, use_model, infer_session, bigshifts):
+	def demix_full(self, mix, use_model, infer_session, bigshifts, pass_number = 0):
 		
 		results = []
 		mix_length = int(mix.shape[1] / 44100)
@@ -812,7 +827,10 @@ class MusicSeparationModel:
 
 		shifts  = [x * demix_seconds for x in range(bigshifts)]
 		
-		self.Progress.reset(len(shifts), unit="Pass")
+		if pass_number == 0:
+			self.Progress.reset(len(shifts), unit="Pass")  # NO Denoise -> only 1 PASS !
+		elif pass_number == 1:
+			self.Progress.reset(len(shifts) * 2, unit="Pass")  # 1st PASS / 2
 
 		for shift in shifts:
 			
@@ -976,6 +994,8 @@ def Exit():
 	if torch.cuda.is_available():
 		torch.cuda.empty_cache()
 		torch.cuda.ipc_collect()
+	elif torch.backends.mps.is_available():
+		torch.mps.empty_cache()
 
 	gc.collect()
 

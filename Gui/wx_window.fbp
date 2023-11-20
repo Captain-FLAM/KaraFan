@@ -40,14 +40,14 @@
             <property name="event_handler">impl_virtual</property>
             <property name="extra_style"></property>
             <property name="fg"></property>
-            <property name="font">Arial Narrow,90,400,14,74,0</property>
+            <property name="font"></property>
             <property name="hidden">0</property>
             <property name="id">wxID_ANY</property>
             <property name="maximum_size"></property>
             <property name="minimum_size"></property>
             <property name="name">Form</property>
             <property name="pos"></property>
-            <property name="size">697,777</property>
+            <property name="size">697,806</property>
             <property name="style">wxDEFAULT_FRAME_STYLE</property>
             <property name="subclass">; ; forward_declare</property>
             <property name="title">KaraFan</property>
@@ -149,7 +149,7 @@
                                 <property name="enabled">1</property>
                                 <property name="fg"></property>
                                 <property name="floatable">1</property>
-                                <property name="font">Arial,90,400,12,74,0</property>
+                                <property name="font"></property>
                                 <property name="gripper">0</property>
                                 <property name="hidden">0</property>
                                 <property name="id">wxID_ANY</property>

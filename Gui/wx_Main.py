@@ -8,12 +8,17 @@ import os, sys, csv, platform, threading, wx
 import App.settings, Gui.wx_GPUtil, Gui.wx_Progress, Gui.wx_Window
 
 # Change Font for ALL controls in a wxForm (Recursive)
-def Set_Fonts(parent, font):
+def Set_Fonts(parent, font = None, color = None):
 
 	for control in parent.GetChildren():
 
-		if hasattr(control, "SetFont") and control.GetFont().GetFaceName() != "Tahoma" and not isinstance(control, wx.html.HtmlWindow):
-			control.SetFont(font)
+		if font is not None:
+			if hasattr(control, "SetFont") and control.GetFont().GetFaceName() != "Tahoma" and not isinstance(control, wx.html.HtmlWindow):
+				control.SetFont(font)
+
+		if color is not None:
+			if hasattr(control, "SetForegroundColour") and not isinstance(control, wx.html.HtmlWindow):
+				control.SetForegroundColour(color)
 
 		# Recursive
 		if isinstance(control, wx.Notebook) or isinstance(control, wx.NotebookPage) \
@@ -28,7 +33,9 @@ class KaraFanForm(Gui.wx_Window.Form):
 
 		# Set fonts for ALL controls
 		if platform.system() == "Windows":
-			Set_Fonts(self, wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Segoe UI"))
+			Set_Fonts(self, font = wx.Font(11, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Segoe UI"))
+		elif platform.system() == "Darwin":
+			Set_Fonts(self, color = wx.Colour(0, 0, 0))
 
 		self.params = params
 		self.Gdrive = params['Gdrive']
@@ -56,9 +63,14 @@ class KaraFanForm(Gui.wx_Window.Form):
 			self.timer = wx.Timer(self)  # Local Timer
 			self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)  # Link timer to function
 		else:
-			self.GPU.SetForegroundColour(wx.Colour(255, 0, 64))
-			self.GPU.SetLabel("Using CPU ►►►")
-			self.GPU_info.SetLabel("With CPU, processing will be very slow !!")
+			if platform.system() == "Darwin":
+				self.GPU.SetForegroundColour(wx.Colour(0, 179, 45))
+				self.GPU.SetLabel(f"Using GPU ►")
+				self.GPU_info.SetLabel("... if you have installed the correct drivers !")
+			else:
+				self.GPU.SetForegroundColour(wx.Colour(255, 0, 64))
+				self.GPU.SetLabel("Using CPU ►►►")
+				self.GPU_info.SetLabel("With CPU, processing will be very slow !!")
 
 		# Set icons for each tab
 		icon_music = wx.Image(icon_path + "icon-music.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()

@@ -26,7 +26,7 @@ click here to send me an email, I'll give you my wallet address :
 [![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)](mailto:Captain_FLAM@gmx.fr) 😍
 
 You can reach me by [**email**](https://github.com/Captain-FLAM) or Join all of us on the [**Dedicated channel on Discord**](https://discord.com/channels/708579735583588363/1162265179271200820) ![Discord](images/discord.svg)  
-(prior to : [**Discord Invitation**](https://discord.gg/eXdEYwU2) on the "Audio Separation" server)
+(prior to : [**Discord Invitation**](https://discord.gg/ErkXU4JGKn) on the "Audio Separation" server)
 
 # 🚀 INSTALL
 

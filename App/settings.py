@@ -118,16 +118,16 @@ Presets = [
 		'bleed_6': "Instrum Main",
 	},
 	{
-		'music_1': "MDX23C 8K FFT",
-		'music_2': "Instrum HQ 3",
+		'music_1': "----",
+		'music_2': "----",
 		'vocal_1': "MDX23C 8K FFT",
-		'vocal_2': "Voc FT",
-		'bleed_1': "Instrum 3",
-		'bleed_2': "Instrum Main",
+		'vocal_2': "Kim Vocal 2",
+		'bleed_1': "Instrum Main",
+		'bleed_2': "----",
 		'bleed_3': "MDX23C 8K FFT",
 		'bleed_4': "----",
-		'bleed_5': "Instrum 3",
-		'bleed_6': "Instrum Main",
+		'bleed_5': "----",
+		'bleed_6': "----",
 	},
 ]
 

@@ -35,14 +35,15 @@ Defaults = {
 		'chunk_size': 500000,
 	},
 	'BONUS': {
-		'KILL_on_END': False,
 		'DEBUG': True,
 		'GOD_MODE': True,
+		'KILL_on_END': False,
+		'THEME': "",
 		'large_gpu': False,
 	},
 }
 Options = {
-	'Normalize': [("NONE", "0"), ("AUTO -1", "-1"), ("- 3 dB", "-3"), ("- 6 dB", "-6")],
+	'Normalize': [("NONE", "0"), ("-0.5 dB", "-0.5"), ("- 1 dB", "-1"), ("- 2 dB", "-2"), ("- 3 dB", "-3")],
 	'Format':	[("FLAC - 24 bits", "FLAC"), ("MP3 - CBR 320K", "MP3"), ("WAV - PCM 16 bits","PCM_16"), ("WAV - FLOAT 32 bits","FLOAT")],
 	'Silent':	[("NONE", "0"), ("- 45 dB", "-45"), ("- 50 dB", "-50"), ("- 55 dB", "-55"), ("- 60 dB", "-60")],
 	'Speed':	['Fastest', 'Fast', 'Medium', 'Slow', 'Slowest'],
@@ -65,6 +66,7 @@ Help_Dico = {
 	'chunks':		"Chunk size for ONNX models. (default : 500,000)<br><br>Set lower to reduce GPU memory consumption OR <b>if you have GPU memory errors</b> !",
 	'debug':		"IF checked, it will save all intermediate audio files to compare in your <b>Audacity</b>.",
 	'god_mode':		"Give you the GOD's POWER : each audio file is reloaded IF it was created before,<br>NO NEED to process it again and again !!<br>You'll be warned : You have to <b>delete MANUALLY</b> each file that you want to re-process !",
+	'theme':		"Darth Vader or Stormtrooper ?<br><br>Choose your prefered theme for KaraFan !",
 	'kill_end':		"On <b>Colab</b> : KaraFan will KILL your session at end of « Processongs », to save your credits !!<br>On <b>your Laptop</b> : KaraFan will KILL your GPU, to save battery (and hot-less) !!<br>On <b>your PC</b> : KaraFan will KILL your GPU, anyway ... maybe it helps ? Try it !!",
 #	'large_gpu':	"It will load ALL models in GPU memory for faster processing of MULTIPLE audio files.<br>Requires more GB of free GPU memory.<br>Uncheck it if you have memory troubles.",
 }

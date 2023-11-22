@@ -9,9 +9,11 @@ import ipywidgets as widgets
 from IPython.display import display, HTML
 
 Running = False
+Theme = ""
 
 def Run(params):
 
+	global Theme
 	import App.settings, Gui.Progress, Gui.Error
 
 	Gdrive  = params['Gdrive']
@@ -58,6 +60,7 @@ def Run(params):
 
 	# Get config values
 	config = App.settings.Load(Gdrive, isColab)
+	Theme = config['BONUS']['THEME']
 
 	# Fill Models dropdowns
 	vocals = ["----"]; instru = ["----"]
@@ -167,8 +170,8 @@ def Run(params):
 				]),
 				separator,
 				widgets.VBox([
-					widgets.HBox([ Label("DEBUG Mode", 'debug'), DEBUG, Label("This is the END ...", 'kill_end'), KILL_on_END ]),
-					widgets.HBox([ Label("GOD Mode", 'god_mode'), GOD_MODE ]),
+					widgets.HBox([ Label("DEBUG Mode", 'debug'), DEBUG, Label("GOD Mode", 'god_mode'), GOD_MODE ]),
+					widgets.HBox([ Label("This is the END ...", 'kill_end'), KILL_on_END ]),
 					# TODO : Large GPU -> Do multiple Pass with steps with 2 models max for each Song
 #					, Label('Large GPU', 'large_gpu'), large_gpu ]),
 				]),
@@ -207,7 +210,7 @@ def Run(params):
 	def on_Btn_Start_clicked(b):
 		import App.settings
 
-		global Running
+		global Running, Theme
 
 		HELP.value = '<div id="HELP"></div>'  # Clear HELP
 		msg = ""
@@ -271,6 +274,7 @@ def Run(params):
 				'DEBUG':		DEBUG.value,
 				'GOD_MODE':		GOD_MODE.value,
 				'KILL_on_END':	KILL_on_END.value,
+				'THEME':		Theme,  # Not applicable in Colab, but leave it here for dual usage on PC (VS Code + wxPython)
 				# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 				# 'large_gpu': large_gpu.value,
 				'large_gpu':	False,

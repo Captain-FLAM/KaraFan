@@ -48,23 +48,27 @@ def Get(font_size):
 		case 'Linux':  # use 'lscpu'
 			try:
 				cpu_info = subprocess.check_output(['lscpu', '-J'], shell=True, stderr=subprocess.STDOUT).decode('utf-8')
-				cpu_info = json.loads(cpu_info)
-				if 'lscpu' in cpu_info:
-					sockets = cores = threads = 1
-					for item in cpu_info["lscpu"]:
-						if 'field' in item and 'data' in item:
-							data = item['data']
-							match item['field']:
-								case "Architecture:":		html += f"Arch : {data}<br>"
-								case "Model name:":			html += f"CPU : {data}<br>"
-								case "CPU max MHz:":		html += f"MaxClock Speed : {int(data)} MHz<br>"
-								case "Socket(s):":			sockets = int(data)
-								case "Core(s) per socket:":	cores   = int(data)
-								case "Thread(s) per core:":	threads = int(data)
-					
-					html += f"Cores : {cores * sockets}<br>"
-					html += f"Threads : {threads * cores * sockets}"
+				try:
+					cpu_info = json.loads(cpu_info)
+					if 'lscpu' in cpu_info:
+						sockets = cores = threads = 1
+						for item in cpu_info["lscpu"]:
+							if 'field' in item and 'data' in item:
+								data = item['data']
+								match item['field']:
+									case "Architecture:":		html += f"Arch : {data}<br>"
+									case "Model name:":			html += f"CPU : {data}<br>"
+									case "CPU max MHz:":		html += f"MaxClock Speed : {int(data)} MHz<br>"
+									case "Socket(s):":			sockets = int(data)
+									case "Core(s) per socket:":	cores   = int(data)
+									case "Thread(s) per core:":	threads = int(data)
+						
+						html += f"Cores : {cores * sockets}<br>"
+						html += f"Threads : {threads * cores * sockets}"
 
+				except json.decoder.JSONDecodeError:
+					html += "--> Can't get CPU infos : 'lscpu' doesn't work correctly on this platform ??"
+					
 			except FileNotFoundError:
 				html += "--> Can't get CPU infos : 'lscpu' tool is not available on this platform."
 

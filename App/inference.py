@@ -281,13 +281,13 @@ class MusicSeparationModel:
 			"Music FINAL",
 		]
 		self.AudioFiles_Mandatory = [6, 7]  # Vocal FINAL & Music FINAL
-		self.AudioFiles_Debug = [1, 2]		# Music & Vocal extract
+		self.AudioFiles_Debug = [0, 1, 2]	# Music & Vocal extract
 		
 		# DEBUG
 		# Reload "Bleedings" files with GOD MODE ... or not !
 		self.AudioFiles_Debug.append(3)
-		# self.AudioFiles_Debug.append(4)
-		# self.AudioFiles_Debug.append(5)
+		self.AudioFiles_Debug.append(4)
+		self.AudioFiles_Debug.append(5)
 
 	
 	# ******************************************************************
@@ -335,7 +335,7 @@ class MusicSeparationModel:
 		
 		print("Go with : <b>" + name + "</b>")
 
-		# Check if user's file is Bad encoded, then Resample to 44.1 Khz if needed
+		# Function checks if user's file is Bad encoded, then Resample to 44.1 Khz if needed
 		original_audio, self.sample_rate = App.audio_utils.Load_Audio(audio_file, 44100, self.ffmpeg, self.song_output_path)
 
 		if original_audio is None:
@@ -351,16 +351,11 @@ class MusicSeparationModel:
 		
 		# ****  START PROCESSING  ****
 
-		# Automatic detection of normalization level (Apply -1dB if needed to avoid clipping)
-		# Cancel if inferior to 5% of the song duration
-		if self.normalize == -1:
-			if App.audio_utils.Clipping_Percent(original_audio) < 0.05:  self.normalize = 0
-
 		if self.normalize < 0:
 			normalized = self.Check_Already_Processed(0)
 
 			if normalized is None:
-				print(f"► Normalizing audio : -{self.normalize} dB")
+				print(f"► Normalizing audio : {self.normalize} dB")
 				normalized = App.audio_utils.Normalize(original_audio, self.normalize)
 
 				self.Save_Audio(0, normalized)
@@ -529,12 +524,14 @@ class MusicSeparationModel:
 
 		print('<b>--> Processing DONE !</b>')
 
-		# Clear screen between each song
-		if self.BATCH_MODE and not self.DEBUG:
-			if self.wxForm == None:
-				self.CONSOLE.clear_output()	# ipywidgets (for Colab)
-			# else:
-			# 	self.CONSOLE.SetPage("")	# wxwidgets
+		# # Clear screen between each song
+		# if self.BATCH_MODE and not self.DEBUG:
+		# 	if self.wxForm == None:
+		# 		self.CONSOLE.clear_output()  # ipywidgets (for Colab)
+		# 	else:
+		# 		# Get <body> tag content first
+		# 		body = regex.findall(r"<body(.*?)>", self.CONSOLE.GetPage())[0]
+		# 		self.CONSOLE.SetPage('<body' + body + '></body>')  # wxwidgets
 		
 		elapsed_time = time.time() - start_time
 		elapsed_time = f"Elapsed Time for <b>{name}</b> : {time.strftime('%H:%M:%S', time.gmtime(elapsed_time))} sec.<br>"

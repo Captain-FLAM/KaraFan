@@ -86,19 +86,6 @@ def Save_Audio(file_path, audio, sample_rate, output_format, cut_off, ffmpeg):
 		temp.close()
 		os.remove(temp.name)
 
-def Clipping_Percent(audio, threshold_dB = -1.0):
-	"""
-	Measure the percentage of audio samples above a given threshold.
-	"""
-	max_peaks = np.max(np.abs(audio), axis=1)
-
-	# Calculate the percentage of peaks above the threshold
-	max_db = 10 ** (threshold_dB / 20)  # Convert -X dB to linear scale
-	
-	above_threshold = max_peaks[max_peaks > max_db]
-
-	return len(above_threshold) / len(max_peaks)  # Percentage above threshold
-
 def Normalize(audio, threshold_dB = -1.0):
 	"""
 	Normalize audio to -1.0 dB peak amplitude

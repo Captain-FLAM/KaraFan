@@ -24,7 +24,6 @@ class Form ( wx.Frame ):
 		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"KaraFan"), pos = wx.DefaultPosition, size = wx.Size( 697,806 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
-		self.SetBackgroundColour( wx.Colour( 255, 255, 255 ) )
 
 		MainSizer = wx.BoxSizer( wx.VERTICAL )
 
@@ -46,21 +45,21 @@ class Form ( wx.Frame ):
 
 		bSizer8.Add( self.label_input, 0, wx.TOP, 5 )
 
-		self.Btn_input_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+		self.Dlg_input_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
 
-		self.Btn_input_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
-		self.Btn_input_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
-		self.Btn_input_Path.SetToolTip( _(u"PATH") )
+		self.Dlg_input_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
+		self.Dlg_input_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Dlg_input_Path.SetToolTip( _(u"PATH") )
 
-		bSizer8.Add( self.Btn_input_Path, 0, wx.LEFT|wx.RIGHT, 5 )
+		bSizer8.Add( self.Dlg_input_Path, 0, wx.LEFT|wx.RIGHT, 5 )
 
-		self.Btn_input_File = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+		self.Dlg_input_File = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
 
-		self.Btn_input_File.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_NORMAL_FILE, wx.ART_HELP_BROWSER ) )
-		self.Btn_input_File.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
-		self.Btn_input_File.SetToolTip( _(u"X File") )
+		self.Dlg_input_File.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_NORMAL_FILE, wx.ART_HELP_BROWSER ) )
+		self.Dlg_input_File.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Dlg_input_File.SetToolTip( _(u"X File") )
 
-		bSizer8.Add( self.Btn_input_File, 0, wx.LEFT|wx.RIGHT, 5 )
+		bSizer8.Add( self.Dlg_input_File, 0, wx.LEFT|wx.RIGHT, 5 )
 
 
 		bSizer7.Add( bSizer8, 0, wx.EXPAND, 5 )
@@ -92,13 +91,13 @@ class Form ( wx.Frame ):
 
 		bSizer9.Add( self.label_output, 0, wx.TOP, 5 )
 
-		self.Btn_output_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+		self.Dlg_output_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
 
-		self.Btn_output_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
-		self.Btn_output_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
-		self.Btn_output_Path.SetToolTip( _(u"PATH") )
+		self.Dlg_output_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
+		self.Dlg_output_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Dlg_output_Path.SetToolTip( _(u"PATH") )
 
-		bSizer9.Add( self.Btn_output_Path, 0, wx.LEFT|wx.RIGHT, 5 )
+		bSizer9.Add( self.Dlg_output_Path, 0, wx.LEFT|wx.RIGHT, 5 )
 
 
 		fgSizer6.Add( bSizer9, 0, wx.EXPAND, 5 )
@@ -129,8 +128,6 @@ class Form ( wx.Frame ):
 
 		silentChoices = []
 		self.silent = wx.ComboBox( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 96,-1 ), silentChoices, 0 )
-		self.silent.SetBackgroundColour( wx.Colour( 255, 255, 255 ) )
-
 		fgSizer71.Add( self.silent, 0, wx.LEFT|wx.RIGHT, 5 )
 
 		self.label_infra_bass = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, _(u"KILL Infra-Bass"), wx.DefaultPosition, wx.DefaultSize, 0, u"infra_bass" )
@@ -306,11 +303,11 @@ class Form ( wx.Frame ):
 
 		sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.Tab_Settings, wx.ID_ANY, _(u"[ BONUS ]") ), wx.VERTICAL )
 
-		fgSizer9 = wx.FlexGridSizer( 0, 4, 0, 20 )
+		fgSizer9 = wx.FlexGridSizer( 0, 6, 0, 20 )
 		fgSizer9.SetFlexibleDirection( wx.BOTH )
 		fgSizer9.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		self.label_debug = wx.StaticText( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"DEBUG Mode"), wx.DefaultPosition, wx.Size( 130,-1 ), 0, u"debug" )
+		self.label_debug = wx.StaticText( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"DEBUG Mode"), wx.DefaultPosition, wx.Size( 130,-1 ), wx.ALIGN_RIGHT, u"debug" )
 		self.label_debug.Wrap( -1 )
 
 		fgSizer9.Add( self.label_debug, 0, wx.TOP, 5 )
@@ -318,7 +315,7 @@ class Form ( wx.Frame ):
 		self.DEBUG = wx.CheckBox( sbSizer4.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		fgSizer9.Add( self.DEBUG, 0, wx.TOP, 8 )
 
-		self.label_kill_end = wx.StaticText( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"This is the END ..."), wx.DefaultPosition, wx.Size( 130,-1 ), 0, u"kill_end" )
+		self.label_kill_end = wx.StaticText( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"This is the END ..."), wx.DefaultPosition, wx.Size( 160,-1 ), wx.ALIGN_RIGHT, u"kill_end" )
 		self.label_kill_end.Wrap( -1 )
 
 		fgSizer9.Add( self.label_kill_end, 0, wx.TOP, 5 )
@@ -326,7 +323,15 @@ class Form ( wx.Frame ):
 		self.KILL_on_END = wx.CheckBox( sbSizer4.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
 		fgSizer9.Add( self.KILL_on_END, 0, wx.TOP, 8 )
 
-		self.label_god_mode = wx.StaticText( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"GOD Mode"), wx.DefaultPosition, wx.Size( 130,-1 ), 0, u"god_mode" )
+		self.label_theme = wx.StaticText( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"Theme"), wx.DefaultPosition, wx.Size( 160,-1 ), wx.ALIGN_RIGHT, u"theme" )
+		self.label_theme.Wrap( -1 )
+
+		fgSizer9.Add( self.label_theme, 0, wx.TOP, 5 )
+
+		self.Theme_Toggle = wx.BitmapToggleButton( sbSizer4.GetStaticBox(), wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.Size( 24,24 ), wx.BORDER_NONE )
+		fgSizer9.Add( self.Theme_Toggle, 0, 0, 1 )
+
+		self.label_god_mode = wx.StaticText( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"GOD Mode"), wx.DefaultPosition, wx.Size( 130,-1 ), wx.ALIGN_RIGHT, u"god_mode" )
 		self.label_god_mode.Wrap( -1 )
 
 		fgSizer9.Add( self.label_god_mode, 0, wx.TOP, 5 )
@@ -475,13 +480,13 @@ class Form ( wx.Frame ):
 		self.Bind( wx.EVT_CLOSE, self.Form_OnClose )
 		self.Tabs.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.Tab_Changed )
 		self.label_input.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.Btn_input_Path.Bind( wx.EVT_BUTTON, self.Btn_input_Path_OnClick )
-		self.Btn_input_File.Bind( wx.EVT_BUTTON, self.Btn_input_File_OnClick )
+		self.Dlg_input_Path.Bind( wx.EVT_BUTTON, self.Btn_input_Path_OnClick )
+		self.Dlg_input_File.Bind( wx.EVT_BUTTON, self.Btn_input_File_OnClick )
 		self.input_path.Bind( wx.EVT_TEXT, self.input_path_OnChange )
 		self.label_normalize.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.normalize.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.label_output.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.Btn_output_Path.Bind( wx.EVT_BUTTON, self.Btn_output_Path_OnClick )
+		self.Dlg_output_Path.Bind( wx.EVT_BUTTON, self.Btn_output_Path_OnClick )
 		self.output_path.Bind( wx.EVT_TEXT, self.output_path_OnChange )
 		self.label_format.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.output_format.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
@@ -512,6 +517,8 @@ class Form ( wx.Frame ):
 		self.chunk_size.Bind( wx.EVT_SLIDER, self.chunk_size_OnSlider )
 		self.label_debug.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.label_kill_end.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.label_theme.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
+		self.Theme_Toggle.Bind( wx.EVT_TOGGLEBUTTON, self.Theme_Toggle_OnClick )
 		self.label_god_mode.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.Btn_Preset_1.Bind( wx.EVT_BUTTON, self.Btn_Preset_1_OnClick )
 		self.Btn_Preset_2.Bind( wx.EVT_BUTTON, self.Btn_Preset_2_OnClick )
@@ -591,6 +598,10 @@ class Form ( wx.Frame ):
 		pass
 
 
+
+
+	def Theme_Toggle_OnClick( self, event ):
+		pass
 
 
 	def Btn_Preset_1_OnClick( self, event ):

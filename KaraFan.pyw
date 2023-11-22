@@ -55,7 +55,7 @@ def error_handler(exception, value, traceback):
 	if exception.__name__ == "SystemError":
 		Gui.wx_Error.Report(f"{exception.__name__} : {value}", traceback, None)
 	else:
-		Gui.wx_Error.Report(f"{exception.__name__} : {value}", traceback, value.obj)
+		Gui.wx_Error.Report(f"{exception.__name__} : {value}", traceback, (value.obj if hasattr(value, "obj") else None))
 
 sys.excepthook = error_handler
 

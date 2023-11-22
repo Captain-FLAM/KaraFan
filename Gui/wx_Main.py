@@ -5,37 +5,36 @@
 
 import os, sys, csv, platform, threading, wx
 
-import App.settings, Gui.wx_GPUtil, Gui.wx_Progress, Gui.wx_Window
+import App.settings, Gui.wx_GPUtil, Gui.wx_Progress, Gui.wx_Window, Gui.wx_Error
+
+# Forbidden to change !!
+Btn_background = wx.Colour(13, 138, 240)   # Blue
 
 # Change Font for ALL controls in a wxForm (Recursive)
-def Set_Fonts(parent, font = None, color = None):
+def Set_Theme(container, back, fore, font = None):
 
-	for control in parent.GetChildren():
+	for control in container.GetChildren():
 
-		if font is not None:
-			if hasattr(control, "SetFont") and control.GetFont().GetFaceName() != "Tahoma" and not isinstance(control, wx.html.HtmlWindow):
+		if not isinstance(control, wx.html.HtmlWindow):
+
+			if font != None and hasattr(control, "SetFont") and control.GetFont().GetFaceName() != "Tahoma":
 				control.SetFont(font)
-
-		if color is not None:
-			if hasattr(control, "SetForegroundColour") and not isinstance(control, wx.html.HtmlWindow):
-				control.SetForegroundColour(color)
+			
+			# Don't apply for Blue buttons
+			if control.GetBackgroundColour() != Btn_background:
+				if hasattr(control, "SetBackgroundColour"):	control.SetBackgroundColour(back)
+				if hasattr(control, "SetForegroundColour"): control.SetForegroundColour(fore)
 
 		# Recursive
 		if isinstance(control, wx.Notebook) or isinstance(control, wx.NotebookPage) \
 		or isinstance(control, wx.BoxSizer) or isinstance(control, wx.StaticBox) \
 		or isinstance(control, wx.FlexGridSizer) or isinstance(control, wx.WrapSizer):
-			Set_Fonts(control, font)
+			Set_Theme(control, back, fore, font)
 
 class KaraFanForm(Gui.wx_Window.Form):
 
 	def __init__(self, parent, params):
 		Gui.wx_Window.Form.__init__(self, parent)
-
-		# Set fonts for ALL controls
-		if platform.system() == "Windows":
-			Set_Fonts(self, font = wx.Font(11, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Segoe UI"))
-		elif platform.system() == "Darwin":
-			Set_Fonts(self, color = wx.Colour(0, 0, 0))
 
 		self.params = params
 		self.Gdrive = params['Gdrive']
@@ -54,6 +53,80 @@ class KaraFanForm(Gui.wx_Window.Form):
 
 		self.SetTitle("KaraFan - " + Version)
 		self.SetIcon(wx.Icon(icon_path + "KaraFan.ico", wx.BITMAP_TYPE_ICO))
+
+		# Get config values
+		self.config = App.settings.Load(self.Gdrive, False)
+
+		self.Themes = {
+			"Dark": {
+				"Background": wx.Colour(0, 0, 0),
+	     		"Foreground": wx.Colour(255, 255, 255),
+			    "Image": wx.Image(icon_path + "light-storm.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+			},
+			"Light":
+			{
+				"Background": wx.Colour(255, 255, 255),
+				"Foreground": wx.Colour(0, 0, 0),
+				"Image": wx.Image(icon_path + "dark-vader.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+			},
+		}
+
+		# Try to guess the theme from the system (Dark or Light)
+		if self.config['BONUS']['THEME'] == "":
+
+			Dark_Theme = None
+			if platform.system() == "Windows":
+				import winreg
+				try:
+					key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")
+					Dark_Theme = (winreg.QueryValueEx(key, "AppsUseLightTheme")[0] == 0)
+					winreg.CloseKey(key)
+				except:
+					pass
+			else:
+				import subprocess
+				result = ""
+				if platform.system() == "Darwin":
+					try:
+						result = subprocess.check_output("defaults read -g AppleInterfaceStyle", shell=True).decode("utf-8").strip()
+						Dark_Theme = ("dark" in result.lower())
+					except:
+						pass
+				elif platform.system() == "Linux":
+					try:
+						# for Gnome : "Adwaita-dark"
+						result = subprocess.check_output("gsettings get org.gnome.desktop.interface gtk-theme", shell=True).decode("utf-8").strip()
+						Dark_Theme = ("dark" in result.lower())
+					except:
+						pass
+					try:
+						# for KDE Plasma : "Breeze Dark"
+						result = subprocess.check_output("kreadconfig5 --group Colors:View --key BackgroundNormal", shell=True).decode("utf-8").strip()
+						Dark_Theme = ("dark" in result.lower())
+					except:
+						pass
+				
+			self.config['BONUS']['THEME'] = "Light" if Dark_Theme == None or Dark_Theme == False else "Dark"
+
+		Theme = self.config['BONUS']['THEME']
+
+		self.Theme_Toggle.SetValue(Theme == "Dark")
+		self.Theme_Toggle.SetBitmap(self.Themes[ Theme ]['Image'])
+
+		self.SetBackgroundColour(self.Themes[ Theme ]['Background'])
+		self.SetForegroundColour(self.Themes[ Theme ]['Foreground'])
+
+		# Set fonts for ALL controls
+		Font = None
+		if platform.system() == "Windows":
+			Font = wx.Font(11, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Segoe UI")
+
+		Set_Theme(self, self.Themes[ Theme ]['Background'], self.Themes[ Theme ]['Foreground'], Font)
+
+		if Theme == "Dark":	self.html_start	= '<body text="#ffffff" bgcolor="#222222">'
+		else:				self.html_start	= '<body text="#000000" bgcolor="#fcfcfc">'
+
+		self.help_start	= '<body text="#000000" bgcolor="#ffffd2">'
 
 		GPU = Gui.wx_GPUtil.getGPUs()
 		if GPU:
@@ -89,14 +162,9 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.icon5.SetBitmap(icon_music)
 
 		# Set fonts for HTML controls
+		self.HELP.SetStandardFonts (12, "Arial", "Arial")
 		self.CONSOLE.SetStandardFonts (12, "Courier New", "Courier New")
 		self.sys_info.SetStandardFonts(10, "Courier New", "Courier New")
-
-		self.html_start	= '<html><body text="#000000" bgcolor="#ffffd2"><font size="4">'
-		self.html_end	= '</font></body></html>'
-		
-		# Get config values
-		self.config = App.settings.Load(self.Gdrive, False)
 
 		# Fill Models dropdowns
 		vocals = ["----"]; instru = ["----"]
@@ -107,7 +175,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 					# New fine-tuned MDX23C (less vocal bleedings in music ??)
 					if row['Name'] == "MDX23C 8K FFT - v2" and not os.path.isfile(os.path.join(self.Gdrive, "KaraFan_user", "Models", "MDX23C-8KFFT-InstVoc_HQ_2.ckpt")):
 						continue
-					# ignore "Other" stems
+					
 					if row['Stem'] == "BOTH":			instru.append(row['Name']);  vocals.append(row['Name'])
 					elif row['Stem'] == "Instrumental":	instru.append(row['Name'])
 					elif row['Stem'] == "Vocals":		vocals.append(row['Name'])
@@ -178,15 +246,15 @@ class KaraFanForm(Gui.wx_Window.Form):
 		# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 		# self.large_gpu.Value	= (self.config['BONUS']['large_gpu'].lower() == "true")
 		
-		self.HELP.SetPage(self.html_start +'<div style="color: #888">Hover your mouse over an option to get more informations.</div>'+ self.html_end)
+		self.HELP.SetPage(self.help_start + '<font color="#888">Hover your mouse over an option to get more informations.</font></body>')
 
 		# TAB 2
-		self.CONSOLE.SetPage("<b>Loading PyTorch, please wait ...</b><br>")
+		self.CONSOLE.SetPage(self.html_start + '<b>Loading PyTorch, please wait ...</b><br></body>')
 		self.Progress_Bar.Value = 0
 		self.Progress_Text.SetLabel("")
 		
 		# TAB 3
-		self.sys_info.SetPage("")
+		self.sys_info.SetPage(self.html_start + '</body>')
 
 		# Update readouts text
 		self.high_pass_OnSlider(None)
@@ -200,7 +268,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 	
 	def Btn_Start_OnClick(self, event):
 
-		self.HELP.SetPage(self.html_start + self.html_end)  # Clear HELP
+		self.HELP.SetPage(self.help_start + '</body>')  # Clear HELP
 
 		msg = ""
 		if self.input_path.Value == "":
@@ -222,7 +290,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 		
 		if msg != "":
 			msg = "ERROR !!<br>"+ msg
-			self.HELP.SetPage(self.html_start +'<div style="color: #f00">'+ msg +'</div>'+ self.html_end)
+			self.HELP.SetPage(self.help_start +'<div style="color: #f00">'+ msg +'</div></body>')
 			return
 		
 		# Normalize paths
@@ -248,7 +316,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 			self.thread.start()
 
 	def Process(self):
-		import App.inference;  self.CONSOLE.SetPage("")
+		import App.inference;  self.CONSOLE.SetPage(self.html_start + '</body>')
 		
 		try:
 			App.inference.Process(self.params, self.config, wxWindow = self)  # Pass to "inference" this wxForm object
@@ -259,11 +327,29 @@ class KaraFanForm(Gui.wx_Window.Form):
 			Gui.wx_Error.Report(f"{e.__class__.__name__} : {e}", sys.exc_info()[2], self)
 
 
+	def Theme_Toggle_OnClick(self, event):
+		
+		Theme = "Dark" if self.Theme_Toggle.GetValue() else "Light"
+
+		self.config['BONUS']['THEME'] = Theme
+
+		self.Theme_Toggle.SetBitmap(self.Themes[ Theme ]['Image'])
+
+		self.SetBackgroundColour(self.Themes[ Theme ]['Background'])
+		self.SetForegroundColour(self.Themes[ Theme ]['Foreground'])
+
+		Set_Theme(self, self.Themes[ Theme ]['Background'], self.Themes[ Theme ]['Foreground'])
+		
+		if Theme == "Dark":	self.html_start	= '<body text="#ffffff" bgcolor="#222222">'
+		else:				self.html_start	= '<body text="#000000" bgcolor="#fcfcfc">'
+
+		self.Refresh()
+
 	def Btn_SysInfo_OnClick(self, event):
 		import App.sys_info
 
-		self.sys_info.SetPage("")
-		self.sys_info.SetPage(App.sys_info.Get('14px'))
+		self.sys_info.SetPage(self.html_start + '</body>')
+		self.sys_info.SetPage(self.html_start + App.sys_info.Get('14px') + '</body>')
 
 	def Btn_Preset_1_OnClick(self, event):
 		self.music_1.Value		= App.settings.Presets[0]['music_1']
@@ -325,17 +411,17 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.bleed_5.Value		= App.settings.Presets[4]['bleed_5']
 		self.bleed_6.Value		= App.settings.Presets[4]['bleed_6']
 
-	def Btn_input_Path_OnClick( self, event ):
+	def Dlg_input_Path_OnClick( self, event ):
 		dlg = wx.DirDialog(self, "Choose a folder :", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
 			self.input_path.Value = dlg.GetPath().replace(self.Gdrive, "")
 
-	def Btn_input_File_OnClick( self, event ):
+	def Dlg_input_File_OnClick( self, event ):
 		dlg = wx.FileDialog(self, "Choose a file :", "", "", "Audio files (*.flac;*.mp3;*.wav)|*.flac;*.mp3;*.wav", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
 			self.input_path.Value = dlg.GetPath().replace(self.Gdrive, "")
 
-	def Btn_output_Path_OnClick( self, event ):
+	def Dlg_output_Path_OnClick( self, event ):
 		dlg = wx.DirDialog(self, "Choose a folder :", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
 			self.output_path.Value = dlg.GetPath().replace(self.Gdrive, "")
@@ -377,6 +463,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 				'DEBUG':		self.DEBUG.Value,
 				'GOD_MODE':		self.GOD_MODE.Value,
 				'KILL_on_END': 	self.KILL_on_END.Value,
+				'THEME':		"Dark" if self.Theme_Toggle.GetValue() else "Light",
 				# TODO : Large GPU -> Do multiple Pass with steps with 3 models max for each Song
 				# 'large_gpu': large_gpu.Value,
 				'large_gpu':	False,
@@ -399,7 +486,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 	def Show_Help(self, event):
 		label = event.GetEventObject().GetName()
 		if label in App.settings.Help_Dico:
-			self.HELP.SetPage(self.html_start + App.settings.Help_Dico[label] + self.html_end)
+			self.HELP.SetPage(self.help_start + App.settings.Help_Dico[label] + '</body>')
 
 	# Don't allow to type in the Combo Boxes (Better than "READONLY" that make the background color grey)
 	def ComboBox_OnKeyDown(self, event):
@@ -413,7 +500,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 	def input_path_OnChange(self, event):
 
 		if self.HELP.ToText().find("ERROR") != -1:
-			self.HELP.SetPage(self.html_start + self.html_end)  # Clear HELP
+			self.HELP.SetPage(self.help_start + '</body>')  # Clear HELP
 
 		# DO NOT USE os.path.normpath() :
 		# it will remove the last separator in real-time --> impossible to type it in the input field !
@@ -425,14 +512,14 @@ class KaraFanForm(Gui.wx_Window.Form):
 			if path != self.input_path.Value:  self.input_path.Value = path
 			
 			if os.path.isdir(os.path.join(self.Gdrive, path)):
-				self.HELP.SetPage(self.html_start +'<span style="color: #c00000"><b>Your input is a folder path :</b><br>ALL audio files inside this folder will be separated by a Batch processing !</span>'+ self.html_end)
+				self.HELP.SetPage(self.help_start + '<span style="color: #c00000"><b>Your input is a folder path :</b><br>ALL audio files inside this folder will be separated by a Batch processing !</span></body>')
 			else:
-				self.HELP.SetPage(self.html_start + self.html_end)
+				self.HELP.SetPage(self.help_start + '</body>')
 
 	def output_path_OnChange(self, event):
 			
 		if self.HELP.ToText().find("ERROR") != -1:
-			self.HELP.SetPage(self.html_start + self.html_end)  # Clear HELP
+			self.HELP.SetPage(self.help_start + '</body>')  # Clear HELP
 
 		path = self.output_path.Value
 		if path != "":

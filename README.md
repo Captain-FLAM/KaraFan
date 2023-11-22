@@ -12,18 +12,13 @@ This project is **open to all goodwill**.
 
 Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made this project possible.
 
-KaraFan works **on Your PC** (Windows 8/10/11, Linux, Mac OSX), if you have a decent **Nvidia GPU**.  
+KaraFan works **on Your PC** (Windows 8/10/11, Linux, Mac OSX), if you have a **decent GPU**.  
 KaraFan works with **Google Colab**.  
 KaraFan will work with **GPU web services API** ... (in the future).
 
 # 💲 And if you like this software :
 
 [![ko-fi](images/ko-fi.png)](https://ko-fi.com/captain_flam)
-
-If you own some Bitcoins (or cryptos) that you don't know what to do with,  
-click here to send me an email, I'll give you my wallet address :
-
-[![Bitcoin](https://img.shields.io/badge/Donate-Bitcoin-green.svg?style=for-the-badge)](mailto:Captain_FLAM@gmx.fr) 😍
 
 You can reach me by [**email**](https://github.com/Captain-FLAM) or Join all of us on the [**Dedicated channel on Discord**](https://discord.com/channels/708579735583588363/1162265179271200820) ![Discord](images/discord.svg)  
 (prior to : [**Discord Invitation**](https://discord.gg/ErkXU4JGKn) on the "Audio Separation" server)

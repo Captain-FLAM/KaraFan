@@ -45,21 +45,21 @@ class Form ( wx.Frame ):
 
 		bSizer8.Add( self.label_input, 0, wx.TOP, 5 )
 
-		self.Dlg_input_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+		self.Btn_input_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
 
-		self.Dlg_input_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
-		self.Dlg_input_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
-		self.Dlg_input_Path.SetToolTip( _(u"PATH") )
+		self.Btn_input_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
+		self.Btn_input_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Btn_input_Path.SetToolTip( _(u"PATH") )
 
-		bSizer8.Add( self.Dlg_input_Path, 0, wx.LEFT|wx.RIGHT, 5 )
+		bSizer8.Add( self.Btn_input_Path, 0, wx.LEFT|wx.RIGHT, 5 )
 
-		self.Dlg_input_File = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+		self.Btn_input_File = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
 
-		self.Dlg_input_File.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_NORMAL_FILE, wx.ART_HELP_BROWSER ) )
-		self.Dlg_input_File.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
-		self.Dlg_input_File.SetToolTip( _(u"X File") )
+		self.Btn_input_File.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_NORMAL_FILE, wx.ART_HELP_BROWSER ) )
+		self.Btn_input_File.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Btn_input_File.SetToolTip( _(u"X File") )
 
-		bSizer8.Add( self.Dlg_input_File, 0, wx.LEFT|wx.RIGHT, 5 )
+		bSizer8.Add( self.Btn_input_File, 0, wx.LEFT|wx.RIGHT, 5 )
 
 
 		bSizer7.Add( bSizer8, 0, wx.EXPAND, 5 )
@@ -91,13 +91,13 @@ class Form ( wx.Frame ):
 
 		bSizer9.Add( self.label_output, 0, wx.TOP, 5 )
 
-		self.Dlg_output_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
+		self.Btn_output_Path = wx.Button( sbSizer1.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_NONE|wx.BU_EXACTFIT )
 
-		self.Dlg_output_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
-		self.Dlg_output_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
-		self.Dlg_output_Path.SetToolTip( _(u"PATH") )
+		self.Btn_output_Path.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FOLDER_OPEN, wx.ART_HELP_BROWSER ) )
+		self.Btn_output_Path.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		self.Btn_output_Path.SetToolTip( _(u"PATH") )
 
-		bSizer9.Add( self.Dlg_output_Path, 0, wx.LEFT|wx.RIGHT, 5 )
+		bSizer9.Add( self.Btn_output_Path, 0, wx.LEFT|wx.RIGHT, 5 )
 
 
 		fgSizer6.Add( bSizer9, 0, wx.EXPAND, 5 )
@@ -480,13 +480,13 @@ class Form ( wx.Frame ):
 		self.Bind( wx.EVT_CLOSE, self.Form_OnClose )
 		self.Tabs.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.Tab_Changed )
 		self.label_input.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.Dlg_input_Path.Bind( wx.EVT_BUTTON, self.Btn_input_Path_OnClick )
-		self.Dlg_input_File.Bind( wx.EVT_BUTTON, self.Btn_input_File_OnClick )
+		self.Btn_input_Path.Bind( wx.EVT_BUTTON, self.Btn_input_Path_OnClick )
+		self.Btn_input_File.Bind( wx.EVT_BUTTON, self.Btn_input_File_OnClick )
 		self.input_path.Bind( wx.EVT_TEXT, self.input_path_OnChange )
 		self.label_normalize.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.normalize.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )
 		self.label_output.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
-		self.Dlg_output_Path.Bind( wx.EVT_BUTTON, self.Btn_output_Path_OnClick )
+		self.Btn_output_Path.Bind( wx.EVT_BUTTON, self.Btn_output_Path_OnClick )
 		self.output_path.Bind( wx.EVT_TEXT, self.output_path_OnChange )
 		self.label_format.Bind( wx.EVT_ENTER_WINDOW, self.Show_Help )
 		self.output_format.Bind( wx.EVT_KEY_DOWN, self.ComboBox_OnKeyDown )

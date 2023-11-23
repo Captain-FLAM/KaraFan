@@ -411,17 +411,17 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.bleed_5.Value		= App.settings.Presets[4]['bleed_5']
 		self.bleed_6.Value		= App.settings.Presets[4]['bleed_6']
 
-	def Dlg_input_Path_OnClick( self, event ):
+	def Btn_input_Path_OnClick( self, event ):
 		dlg = wx.DirDialog(self, "Choose a folder :", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
 			self.input_path.Value = dlg.GetPath().replace(self.Gdrive, "")
 
-	def Dlg_input_File_OnClick( self, event ):
+	def Btn_input_File_OnClick( self, event ):
 		dlg = wx.FileDialog(self, "Choose a file :", "", "", "Audio files (*.flac;*.mp3;*.wav)|*.flac;*.mp3;*.wav", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
 			self.input_path.Value = dlg.GetPath().replace(self.Gdrive, "")
 
-	def Dlg_output_Path_OnClick( self, event ):
+	def Btn_output_Path_OnClick( self, event ):
 		dlg = wx.DirDialog(self, "Choose a folder :", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
 			self.output_path.Value = dlg.GetPath().replace(self.Gdrive, "")

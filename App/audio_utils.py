@@ -5,6 +5,7 @@
 
 import os, librosa, subprocess, tempfile, soundfile as sf, numpy as np
 from scipy import signal
+from mutagen.id3 import ID3
 
 def Load_Audio(file, sample_rate, ffmpeg = None, output_path = None):
 
@@ -46,17 +47,22 @@ def Load_Audio(file, sample_rate, ffmpeg = None, output_path = None):
 
 	return audio, sample_rate
 
-def Save_Audio(file_path, audio, sample_rate, output_format, cut_off, ffmpeg):
+def Save_Audio(file_path, audio, sample_rate, output_format, cut_off, ffmpeg, audio_file):
+
+	# Get output audio file path
+	output_path = ''
 
 	if output_format == 'PCM_16' or output_format == 'FLOAT':
-		sf.write(file_path + '.wav',  audio.T, sample_rate, format='wav', subtype = output_format)
+		output_path = file_path + '.wav'
+		sf.write(output_path,  audio.T, sample_rate, format='wav', subtype = output_format)
 	else:
 		# Create a temporary file
 		temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
 
 		if output_format == 'FLAC':
+			output_path = file_path + '.flac'
 			sf.write(temp, audio.T, sample_rate, format='wav', subtype='FLOAT')
-			ffmpeg = f'"{ffmpeg}" -y -i "{temp.name}" -codec:a flac -compression_level 5 -ch_mode mid_side -frame_size {sample_rate} -lpc_type cholesky -lpc_passes 1 -exact_rice_parameters 1 "{file_path}.flac"'
+			ffmpeg = f'"{ffmpeg}" -y -i "{temp.name}" -codec:a flac -compression_level 5 -ch_mode mid_side -frame_size {sample_rate} -lpc_type cholesky -lpc_passes 1 -exact_rice_parameters 1 "{output_path}"'
 
 		elif output_format == 'MP3':
 			# TODO : Correct the BUG of Lame encoder which modify the length of audio results (~ +30 ms on short song, -30 ms on long song) ?!?!
@@ -70,9 +76,9 @@ def Save_Audio(file_path, audio, sample_rate, output_format, cut_off, ffmpeg):
 			# And also, parameters = ['-joint_stereo', '0'] (Separated stereo channels)
 			# is WORSE than "Joint Stereo" for High Frequencies !
 			# So let's use it by default for MP3 encoding !!
-
+			output_path = file_path + '.mp3'
 			sf.write(temp, audio.T, sample_rate, format='wav', subtype='PCM_16')
-			ffmpeg = f'"{ffmpeg}" -y -i "{temp.name}" -codec:a libmp3lame -b:a 320k -q:a 0 -joint_stereo 1 -cutoff {cut_off} "{file_path}.mp3"'
+			ffmpeg = f'"{ffmpeg}" -y -i "{temp.name}" -codec:a libmp3lame -b:a 320k -q:a 0 -joint_stereo 1 -cutoff {cut_off} "{output_path}"'
 
 		try:
 			subprocess.run(ffmpeg, shell=True, text=True, capture_output=True, check=True)
@@ -85,6 +91,20 @@ def Save_Audio(file_path, audio, sample_rate, output_format, cut_off, ffmpeg):
 
 		temp.close()
 		os.remove(temp.name)
+
+	# Copy original tags to the output file
+	# only for MP3 files
+	input_format = file_format(audio_file)
+	output_format = file_format(output_path)
+
+	if(input_format == '.mp3' and output_format == '.mp3'):
+		input_tags = ID3(audio_file)
+		output_tags = ID3(output_path)
+		for tag in input_tags:
+			output_tags[tag] = input_tags[tag]
+
+		print("► Copying tags...")
+		output_tags.save()
 
 def Normalize(audio, threshold_dB = -1.0):
 	"""
@@ -396,3 +416,5 @@ def to_shape(x, target_shape):
 		padding_list.append(pad_tuple)
 	
 	return np.pad(x, tuple(padding_list), mode='constant')
+
+def file_format(file): return os.path.splitext(file)[1]

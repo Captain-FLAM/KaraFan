@@ -42,6 +42,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 		self.timer	= None
 
 		icon_path = params['Project'] + os.path.sep + "images" + os.path.sep
+		SYSTEM = platform.system()
 
 		# Reset defaults
 		self.Tabs.SetSelection(0)
@@ -75,7 +76,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 		if self.config['BONUS']['THEME'] == "":
 
 			Dark_Theme = None
-			if platform.system() == "Windows":
+			if SYSTEM == "Windows":
 				import winreg
 				try:
 					key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")
@@ -86,13 +87,13 @@ class KaraFanForm(Gui.wx_Window.Form):
 			else:
 				import subprocess
 				result = ""
-				if platform.system() == "Darwin":
+				if SYSTEM == "Darwin":
 					try:
 						result = subprocess.check_output("defaults read -g AppleInterfaceStyle", shell=True).decode("utf-8").strip()
 						Dark_Theme = ("dark" in result.lower())
 					except:
 						pass
-				elif platform.system() == "Linux":
+				elif SYSTEM == "Linux":
 					try:
 						# for Gnome : "Adwaita-dark"
 						result = subprocess.check_output("gsettings get org.gnome.desktop.interface gtk-theme", shell=True).decode("utf-8").strip()
@@ -118,7 +119,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 
 		# Set fonts for ALL controls
 		Font = None
-		if platform.system() == "Windows":
+		if SYSTEM == "Windows":
 			Font = wx.Font(11, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Segoe UI")
 
 		Set_Theme(self, self.Themes[ Theme ]['Background'], self.Themes[ Theme ]['Foreground'], Font)
@@ -136,7 +137,7 @@ class KaraFanForm(Gui.wx_Window.Form):
 			self.timer = wx.Timer(self)  # Local Timer
 			self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)  # Link timer to function
 		else:
-			if platform.system() == "Darwin":
+			if SYSTEM == "Darwin":
 				self.GPU.SetForegroundColour(wx.Colour(0, 179, 45))
 				self.GPU.SetLabel(f"Using GPU ►")
 				self.GPU_info.SetLabel("... if you have installed the correct drivers !")
@@ -185,6 +186,8 @@ class KaraFanForm(Gui.wx_Window.Form):
 		for item in App.settings.Options['Normalize']:	self.normalize.Append(item[0], item[1])
 		for item in App.settings.Options['Format']:		self.output_format.Append(item[0], item[1])
 		for item in App.settings.Options['Silent']:		self.silent.Append(item[0], item[1])
+
+		if SYSTEM == "Darwin":  self.output_format.Delete(0)  # Remove "FLAC" option on Mac OSX
 
 		for item in instru:
 			self.music_1.Append(item); self.music_2.Append(item)

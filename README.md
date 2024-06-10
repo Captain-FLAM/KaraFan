@@ -4,30 +4,26 @@
 
 The **BEST music separation** software with help of A.I. ... **to my ears** ! 👂👂
 
-🥇 Awarded to **1st place** by the community as the **Best software in the World**, for having **the less vocal residues** in Music track !  
+🥇 Awarded to **1st place** by the community as the **Best software in the World**, for having **the less vocal residues** in Music track !
 Read the [**Success Story**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B0-Success-Story) ...
 
-As you've guessed, it was made specially for Karaoke (▶️ focus on musical part).  
-This project is **open to all goodwill**.  
+As you've guessed, it was made specially for Karaoke (▶️ focus on musical part).
+This project is **open to all goodwill**.
 
 Discord community, Chat-GPT & Copilot ...  **and my human intelligence** made this project possible.
 
-KaraFan works **on Your PC** (Windows 8/10/11, Linux, Mac OSX), if you have a **decent GPU**.  
-KaraFan works with **Google Colab**.  
+KaraFan works **on Your PC** (Windows 8/10/11, Linux, Mac OSX), if you have a **decent GPU**.
+KaraFan works with **Google Colab**.
 KaraFan will work with **GPU web services API** ... (in the future).
 
-# 💲 And if you like this software :
-
-[![ko-fi](images/ko-fi.png)](https://ko-fi.com/captain_flam)
-
-You can reach me by [**email**](https://github.com/Captain-FLAM) or Join all of us on the [**Dedicated channel on Discord**](https://discord.com/channels/708579735583588363/1162265179271200820) ![Discord](images/discord.svg)  
-(prior to : [**Discord Invitation**](https://discord.gg/ErkXU4JGKn) on the "Audio Separation" server)
+You can join all of us on the **[Dedicated channel on Discord](https://discord.com/channels/708579735583588363/1162265179271200820)** ![Discord](images/discord.svg)
+(prior to : **[Discord Invitation](https://discord.gg/ErkXU4JGKn)** on the "Audio Separation" server)
 
 # 🚀 INSTALL
 
-- on [**Your PC**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-PC-users) for Users
-- on [**Your PC**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-PC-devs) for Developers
-- &nbsp;in [**Google Colab**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-Colab)
+- on **[Your PC](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-PC-users)** for Users
+- on **[Your PC](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-PC-devs)** for Developers
+- &nbsp;in **[Google Colab](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%9A%80-Install-Colab)**
 
 # 📖 Table of Contents
 
@@ -48,7 +44,7 @@ You can reach me by [**email**](https://github.com/Captain-FLAM) or Join all of 
 - 💡 [Technical Details](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%92%A1-Technical-Details)
 - 🎰 [Success Story](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B0-Success-Story)
 
-So for now, in addition to being obliged to **R.T.F.R.M** (Read This Fucking READ ME),  
+So for now, in addition to being obliged to **R.T.F.R.M** (Read This Fucking READ ME),
 you have to **R.T.F.W** (Read The Fucking WIKI) !! 😛
 
 ~
@@ -71,20 +67,20 @@ TODAY, I'M 54 YEARS OLD, I'M STILL SINGING, AND MY DREAM HAS COME TRUE !
 
 Now, I have the ability to create my own « **KFN** » files for my favorite songs, featuring real musicians who played on the original track, and use them with my beloved software : « KaraFun » 🎤💋
 
-[KaraFun](https://www.karafun.com/) is a free software that you can use to play Karaoke files on your PC.  
+[KaraFun](https://www.karafun.com/) is a free software that you can use to play Karaoke files on your PC.
 They have subscription plans to access their huge library of songs, but you can also use for free with **your own** MID, KAR, CDG & KFN files !!
 
 Perhaps it's time to turn on your dreams too ... ?
 
 # 🧒 BIOGRAPHY
 
-Programmer since the age of 12 (1981).  
-Before, I developed in ASM, C, C++, Basic, Visual Basic.  
+Programmer since the age of 12 (1981).
+Before, I developed in ASM, C, C++, Basic, Visual Basic.
 Since the year 2000, I have been coding in PHP, MySQL, JavaScript, jQuery, HTML, CSS.
 
 And today in Python. ❤️
 
-----
+---
 
 # 📆 HISTORY
 
@@ -94,14 +90,14 @@ Then I discovered the MDX model, and I was amazed by the quality of the results,
 
 But I was still disappointed with the instrumental part, which was **not shining enough** for me.
 
-So I decided to create my own process, based on the MDX models, but with the **best instrumental** that I could get.  
+So I decided to create my own process, based on the MDX models, but with the **best instrumental** that I could get.
 (Remembers : It's for **Karaoke !**).
 
 I also added a few tricks to improve the quality of the results.
 
 ~
 
-----
+---
 
 # 🦄 NEAR FUTURE
 
@@ -109,7 +105,7 @@ You will see ... I have hundreds of ideas, but I need time to implement them.
 
 And as I'm an independent developer, I have to work to earn my living.
 
-So if you want to encourage me to give more time to improve this project,  
+So if you want to encourage me to give more time to improve this project,
 you can make a donation or become one of my patrons :
 
 🎵 **[Go back to the top of this page](#-karafan)** 🎵 where you can find the donation buttons.
@@ -117,9 +113,9 @@ you can make a donation or become one of my patrons :
 **This helps me to :**
 
 - Pay calculation time on Google Colab (100 units = 11 €, I eat all in 3-4 days)
-- Perhaps, buy new hardware to make more and more tests to improve the quality of the results.  
-  I'm currently using a 4 years old laptop with a GTX 1060 Ti **4GB**  
-  I'm dreaming of a **RTX 4090** ... and I'm NOT a gamer !  
+- Perhaps, buy new hardware to make more and more tests to improve the quality of the results.
+  I'm currently using a 4 years old laptop with a GTX 1060 Ti **4GB**
+  I'm dreaming of a **RTX 4090** ... and I'm NOT a gamer !
   ... and if you are too generous, Me can buy an **Nvidia A100 40GB** !! 😍
 
 ~
@@ -145,18 +141,18 @@ All these wonderful people without whom this project would not have been possibl
 
 ✔️ [Jarredou](https://github.com/jarredou/MVSEP-MDX23-Colab_v2/) - For his multiples **Colab** sharing, for his really helpful hand on Discord, and from whom **I've stolen ALL the code** of inference.py to create my own GUI with it !! 👼
 
-✔️ [Deton 24](https://github.com/deton24/MVSEP-MDX23-Colab_v2.1) - For helping hand and for his **very BIG documentation**, that you can find [**HERE ! Read it !!**](https://docs.google.com/document/d/17fjNvJzj8ZGSer7c7OFe_CNfUKbAxEh_OBv94ZdRG5c/edit)  
+✔️ [Deton 24](https://github.com/deton24/MVSEP-MDX23-Colab_v2.1) - For helping hand and for his **very BIG documentation**, that you can find [**HERE ! Read it !!**](https://docs.google.com/document/d/17fjNvJzj8ZGSer7c7OFe_CNfUKbAxEh_OBv94ZdRG5c/edit)
 ✔️ [Bas Curtiz](https://www.youtube.com/@bascurtiz) - For his Youtube video : [Tips &amp; Tricks - Inverting](https://www.youtube.com/watch?v=FBMOWcDDxIs) that confort my FIRST intuition (after thousands tests 😛) about the importance of cascading the models to improve the quality of the results.
 
-✔️ [Anjok07](https://github.com/Anjok07) & Aufr33 - for having trained **all the MDX-Net AI models** that KaraFan uses.  
-✔️ [Roman Solovyev (aka ZFTurbo)](https://github.com/ZFTurbo) - for having trained the last BEST model : « **MDX23 - 8K FFT** » - (with some assistance from Aufr33 & Anjok).  
-✔️ [Kimberley Jensen](https://github.com/KimberleyJensen) - for having trained Kim MDX-Net AI models, especially « **Kim Vocal 2** » (that won the 3rd place in the « MDX-C 2022 » challenge)  
+✔️ [Anjok07](https://github.com/Anjok07) & Aufr33 - for having trained **all the MDX-Net AI models** that KaraFan uses.
+✔️ [Roman Solovyev (aka ZFTurbo)](https://github.com/ZFTurbo) - for having trained the last BEST model : « **MDX23 - 8K FFT** » - (with some assistance from Aufr33 & Anjok).
+✔️ [Kimberley Jensen](https://github.com/KimberleyJensen) - for having trained Kim MDX-Net AI models, especially « **Kim Vocal 2** » (that won the 3rd place in the « MDX-C 2022 » challenge)
 
-✔️ [Anjok07](https://github.com/Anjok07) & [DilanBoskan](https://github.com/DilanBoskan) & Aufr33 - Authors of [**Ultimate Vocal Remover GUI**](https://github.com/Anjok07/ultimatevocalremovergui) from where ZFTurbo has stolen some parts of code to create his own... 🙄  
-✔️ [Roman Solovyev (aka ZFTurbo)](https://github.com/ZFTurbo) - For sharing [his code](https://github.com/ZFTurbo/MVSEP-MDX23-music-separation-model) that serve as base to Jarredou & Deton 24 to create their own code.  
+✔️ [Anjok07](https://github.com/Anjok07) & [DilanBoskan](https://github.com/DilanBoskan) & Aufr33 - Authors of [**Ultimate Vocal Remover GUI**](https://github.com/Anjok07/ultimatevocalremovergui) from where ZFTurbo has stolen some parts of code to create his own... 🙄
+✔️ [Roman Solovyev (aka ZFTurbo)](https://github.com/ZFTurbo) - For sharing [his code](https://github.com/ZFTurbo/MVSEP-MDX23-music-separation-model) that serve as base to Jarredou & Deton 24 to create their own code.
 And it's also the creator of [MVSEP.com](https://mvsep.com/en), where you can follow the **SDR** evolution of the MDX models : [Quality Checker](https://mvsep.com/quality_checker/multisong_leaderboard?sort=instrum) !
 
-✔️ [Kuielab](https://github.com/kuielab) - Who have developed the original MDX-Net AI code.  
+✔️ [Kuielab](https://github.com/kuielab) - Who have developed the original MDX-Net AI code.
 ✔️ [Facebook Research Demucs](https://github.com/facebookresearch/demucs) - For giving me the first steps & the desire to start this project ...
 
 We are all standing on the shoulders of giants !

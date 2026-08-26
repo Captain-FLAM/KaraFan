@@ -4,6 +4,14 @@
 
 The **BEST music separation** software with help of A.I. ... **to my ears** ! 👂👂
 
+---
+
+> ## This project has been on hold since June 2024.
+> ## It needs a complete overhaul to move to version 2 !
+> ## I'll come back to it one day when I have more time available...
+
+---
+
 🥇 Awarded to **1st place** by the community as the **Best software in the World**, for having **the less vocal residues** in Music track !
 Read the [**Success Story**](https://github.com/Captain-FLAM/KaraFan/wiki/%F0%9F%8E%B0-Success-Story) ...
 

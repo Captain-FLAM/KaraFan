@@ -20,6 +20,6 @@ onnxruntime-gpu
 ml_collections
 PyYAML
 
-#****  MP3 Tags (for future use)  ****
+#****  MP3 Tags ****
 
-# mutagen
+mutagen
